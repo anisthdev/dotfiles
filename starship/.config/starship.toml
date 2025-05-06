@@ -2,7 +2,7 @@
 
 add_newline = false
 format = """
-$directory$git_branch$git_status$nodejs$rust$java$python$time$character
+$username$directory$git_branch$git_status$nodejs$rust$java$python$time$character
 """
 
 # PROMPT CHARACTER
@@ -79,3 +79,7 @@ disabled = true
 [kubernetes]
 disabled = true
 
+[username]
+show_always = true
+style_user = "bold #d3869b"
+format = "[$user]($style) "
