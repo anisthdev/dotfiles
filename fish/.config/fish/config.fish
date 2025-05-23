@@ -19,7 +19,7 @@ fzf --fish | source
 set -gx FZF_DEFAULT_COMMAND 'rg --files --hidden --follow --glob "!.git/*"'
 set -gx FZF_CTRL_T_COMMAND 'fd --type f --hidden --follow --exclude .git'
 set -gx FZF_ALT_C_COMMAND 'fd --type d --hidden --follow --exclude .git'
-set -gx FZF_DEFAULT_OPTS '--tmux --layout=reverse --border --preview "bat --color=always --style=numbers {}"'
+set -gx FZF_DEFAULT_OPTS '--layout=reverse --border --preview "bat --color=always --style=numbers {}"'
 
 # color setting for fish prompt
 set -g fish_color_command green
