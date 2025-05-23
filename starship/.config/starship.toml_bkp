@@ -1,0 +1,85 @@
+# ~/.config/starship.toml
+
+add_newline = false
+format = """
+$username$directory$git_branch$git_status$nodejs$rust$java$python$time$character
+"""
+
+# PROMPT CHARACTER
+[character]
+success_symbol = "[ ~>](bold #b8bb26)"
+error_symbol = "[ ~>](bold #fb4934)"
+vicmd_symbol = "[ ~<](bold #83a598)"
+
+# DIRECTORY
+[directory]
+style = "bold #83a598"
+format = "[$path]($style) "
+
+# GIT BRANCH
+[git_branch]
+symbol = " "
+style = "bold #fe8019"
+format = "[$symbol$branch]($style) "
+
+# GIT STATUS
+[git_status]
+style = "#fabd2f"
+format = '([$all_status]($style) )'
+ahead = "⇡${count}"
+behind = "⇣${count}"
+diverged = "⇕⇡${ahead_count}⇣${behind_count}"
+staged = "+${count}"
+conflicted = "✖${count}"
+deleted = "-${count}"
+modified = "~${count}"
+untracked = "?${count}"
+stashed = "💾${count}"
+
+# NODEJS
+[nodejs]
+symbol = " "
+style = "#b8bb26"
+format = "[$symbol($version)]($style) "
+
+# RUST
+[rust]
+symbol = " "
+style = "#d3869b"
+format = "[$symbol($version)]($style) "
+
+# JAVA
+[java]
+symbol = " "
+style = "#fabd2f"
+format = "[$symbol($version)]($style) "
+
+# PYTHON
+[python]
+symbol = " "
+style = "#8ec07c"
+format = "[$symbol$virtualenv]($style) "
+
+# TIME (24hr)
+[time]
+disabled = false
+format = "[$time]($style) "
+style = "#928374"
+time_format = "%H:%M"
+
+# CLEANUP
+[aws]
+disabled = true
+[gcloud]
+disabled = true
+[azure]
+disabled = true
+[helm]
+disabled = true
+[kubernetes]
+disabled = true
+
+[username]
+show_always = true
+style_user = "bold #d3869b"
+format = "[$user]($style) "
