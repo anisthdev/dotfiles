@@ -1,83 +1,68 @@
-format = """
-$username\
-$hostname\
+# Inserts a blank line between shell prompts for better readability.
+add_newline = true
+# Timeout for starship to scan files in the current directory.
+command_timeout = 1000
+
+
+# --- Main prompt structure ---
+# Defines the order of modules.
+# Starship intelligently handles powerline separators:
+# The foreground of the separator is the background of its own module.
+# The background of the separator is the background of the *next* module.
+format = """\
 $directory\
 $git_branch\
-$git_state\
 $git_status\
-$git_metrics\
-$fill\
-$cmd_duration $jobs\
+$cmd_duration\
 $line_break\
+$status\
 $character\
 """
-add_newline = false
 
-[fill]
-symbol = " "
+# --- Module Configurations ---
 
 [directory]
-style = "blue"
-read_only = " "
-truncation_length = 4
-truncate_to_repo = false
-
-[character]
-success_symbol = "[~> ](bold yellow)"
-error_symbol = "[~> ](bold red)"
-vicmd_symbol = "[~> ](bold green)"
+# Style for directory path
+style = "#8EC07C"
+format = "[ $path ]($style)"
+truncation_length = 3 # Max number of parent directories to show 
+truncate_to_repo = true # If in a git repo, show path relative to repo root if shorter
+home_symbol = " ~" # Icon for home directory (nf-fa-home)
+read_only = " " # Icon for read-only directory (nf-fa-lock)
+read_only_style = "red" # Make lock icon redon directory's aqua background
 
 [git_branch]
-symbol = " "
-format = 'on [$symbol$branch(:$remote_branch)]($style) '
-ignore_branches=[]
-style = "bold purple"
-
+symbol = " " # Git branch icon (nf-fa-code_fork)
+style = "bold #FE8019"
+format = "[ $symbol$branch ]($style)"
 
 [git_status]
-format = '([\[$all_status$ahead_behind\]]($style) )'
-style = "cyan"
-
-[git_state]
-format = '\([$state( $progress_current/$progress_total)]($style)\) '
-style = "bright-black"
-
-[git_metrics]
-disabled = false
-
-[jobs]
-symbol = ""
-style = "bold red"
-number_threshold = 1
-format = "[$symbol]($style)"
+format='([\[$all_status$ahead_behind\]](green) )'
 
 [cmd_duration]
-format = "[$duration]($style)"
-style = "yellow"
+min_time = 1000 # Show if command took longer than 1 second
+# Style for command duration (on default terminal background)
+style = "fg:gruv_yellow"
+format = "[took $duration]($style) " # �� nf-md-timer_sand_complete
 
-[memory_usage]
-symbol = " "
+[line_break]
+# Ensures the prompt character starts on a new line
+disabled = false
+
+[status]
+# Shows exit status of the last command if it failed
+style = "fg:gruv_red" # On default terminal background
+symbol = "x " # nf-mdi-alert_circle_outline (error icon)
+format = "[$symbol$status]($style) "
+disabled = false # Show only on error
+map_symbol = true # Use specific symbols for different error codes if available
+
+[character]
+success_symbol = "[ ~> ](bold green)" # Green ❯ for success
+error_symbol = "[ ~> ](bold red)"     # Red ❯ for error
+# vicmd_symbol = "[❮](bold gruv_blue)" # Optional: for vi mode indicator
 
 [python]
-symbol="󰌠"
-
-[c]
-symbol=""
-
-[lua]
-symbol="󰢱"
-
-[rust]
-symbol = ""
-
-[time]
-disabled = false
-style = "bold yellow"
-format = "[$time]($style)"
-
-[custom.stunnel]
-when = "ps aux | grep stunnel | grep -v grep"
-command = "ps -o etime= -p $(ps aux | grep stunnel | grep -v grep | awk '{print $2}')"
-style = "red"
-format = "[TUNNEL OPEN for $output]($style)"
+symbol=" "
+pyenv_prefix = "venv "
 
