@@ -1,5 +1,6 @@
-set -x TMUX_CONF $HOME/.config/tmux/.tmux.conf
 set -x PATH $PATH:$HOME/.local/bin
+set -x TMUX_CONF $HOME/.config/tmux/.tmux.conf
+set -x TNS_ADMIN /opt/instantclient/network/admin
 
 # search and edit files
 function f
