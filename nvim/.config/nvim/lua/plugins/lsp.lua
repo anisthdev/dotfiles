@@ -21,16 +21,52 @@ local servers = {
 	lua_ls = {
 		settings = {
 			Lua = {
+				runtime = {
+					version = "LuaJIT",
+					path = {
+						"?.lua",
+						"?/init.lua",
+						vim.fn.stdpath("data") .. "lazy/?.lua",
+						vim.fn.stdpath("data") .. "lazy/?/init.lua",
+					},
+				},
 				completion = {
 					callSnippet = "Replace",
+					keywordSnippet = "Replace",
 				},
 				diagnostics = {
 					globals = { "vim" },
+					useLocalExclude = { "_*" },
+				},
+				workspace = {
+					library = {
+						vim.api.nvim_get_runtime_file("", true),
+						[vim.fn.expand("$VIMRUNTIME/lua")] = true,
+						[vim.fn.stdpath("config") .. "/lua"] = true,
+					},
+					maxPreload = 2000,
+					preloadFileSize = 50000,
+					checkThirdParty = false,
+				},
+				telemetry = { enable = false },
+			},
+		},
+	},
+	pyright = {
+		settings = {
+			pyright = {
+				disableOrganizeImports = true,
+			},
+			python = {
+				analysis = {
+					autoSearchPaths = true,
+					diagnosticMode = "workspace",
+					useLibraryCodeForTypes = true,
+					typeCheckingMode = "basic",
 				},
 			},
 		},
 	},
-	ts_ls = {},
 }
 
 local ensure_installed = vim.tbl_keys(servers or {})
