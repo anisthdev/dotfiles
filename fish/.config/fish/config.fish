@@ -2,16 +2,6 @@ set -x PATH $PATH:$HOME/.local/bin
 set -x TMUX_CONF $HOME/.config/tmux/.tmux.conf
 set -x TNS_ADMIN /opt/instantclient/network/admin
 
-# search and edit files
-function f
-    set dir (count $argv) > /dev/null; and set dir $argv[1]; or set dir .
-    set selected (fd --type f --hidden --exclude .git . $dir | fzf --tmux --reverse)
-
-    if test -n "$selected"
-        nvim $selected
-    end
-end
-
 # initiate starship
 starship init fish | source
 
@@ -20,7 +10,10 @@ fzf --fish | source
 set -gx FZF_DEFAULT_COMMAND 'rg --files --hidden --follow --glob "!.git/*"'
 set -gx FZF_CTRL_T_COMMAND 'fd --type f --hidden --follow --exclude .git'
 set -gx FZF_ALT_C_COMMAND 'fd --type d --hidden --follow --exclude .git'
-set -gx FZF_DEFAULT_OPTS '--layout=reverse --border --preview "bat --color=always --style=numbers {}"'
+set -gx FZF_DEFAULT_OPTS '--layout=reverse --tmux --border --preview "bat --color=always --style=numbers {}"'
+
+# intiate atuin
+atuin init fish --disable-up-arrow | source
 
 # color setting for fish prompt
 set -g fish_color_command green
@@ -42,7 +35,7 @@ alias t='tmux'
 alias ta='tmux attach || tmux new'
 alias tl='tmux list-sessions'
 
-alias gs='git status'
+alias gs='git status --short'
 alias ga='git add'
 alias gl='git log --oneline --graph --all'
 alias gd='git diff'
@@ -76,7 +69,7 @@ end
 
 # quickly find and edit a file in neovim
 function f -d "Search and open files in Neovim"
-    set -l file (rg --files --hidden --follow --glob "!.git/*" | fzf --tmux --preview "bat --color=always --style=numbers {}")
+    set -l file (rg --files --hidden --follow --glob "!.git/*" --glob "!**/node_modules/*"| fzf --tmux --preview "bat --color=always --style=numbers {}")
     if test -n "$file"
         nvim "$file"
     end
