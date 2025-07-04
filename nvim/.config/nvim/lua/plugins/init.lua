@@ -123,6 +123,10 @@ require("lazy").setup({
 			dependencies = "kevinhwang91/promise-async",
 			event = "VeryLazy",
 		},
+		{
+			"lewis6991/gitsigns.nvim",
+			event = "VeryLazy",
+		},
 	},
 	defaults = {
 		lazy = false,
