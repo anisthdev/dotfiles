@@ -118,6 +118,11 @@ require("lazy").setup({
 				smear_between_neighbour_lines = true,
 			},
 		},
+		{
+			"kevinhwang91/nvim-ufo",
+			dependencies = "kevinhwang91/promise-async",
+			event = "VeryLazy",
+		},
 	},
 	defaults = {
 		lazy = false,
