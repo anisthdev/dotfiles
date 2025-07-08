@@ -57,13 +57,14 @@ require("lazy").setup({
 				"saghen/blink.cmp",
 			},
 		},
-		{ -- Autoformat
+		-- Autoformat
+		{
 			"stevearc/conform.nvim",
 			event = { "BufWritePre" },
 			cmd = { "ConformInfo" },
 		},
-
-		{ -- Autocompletion
+		-- Autocompletion
+		{
 			"saghen/blink.cmp",
 			event = "VimEnter",
 			version = "1.*",
@@ -91,10 +92,12 @@ require("lazy").setup({
 				"folke/lazydev.nvim",
 			},
 		},
+		-- LSP Saga
 		{
 			"nvimdev/lspsaga.nvim",
 			event = "LspAttach",
 		},
+		-- oil
 		{
 			"stevearc/oil.nvim",
 			---@module 'oil'
@@ -104,13 +107,18 @@ require("lazy").setup({
 			dependencies = { { "echasnovski/mini.icons", opts = {} } },
 			lazy = false,
 		},
+		-- comment
 		{ "numToStr/Comment.nvim", opts = {} },
+		-- bracket pairs
 		{ "windwp/nvim-autopairs", event = "InsertEnter", opts = {} },
+		-- indentation lines
 		{ "lukas-reineke/indent-blankline.nvim", main = "ibl", opts = {} },
+		-- smooth scrolling
 		{
 			"karb94/neoscroll.nvim",
 			event = "VeryLazy",
 		},
+		-- fuzzy cursor
 		{
 			"sphamba/smear-cursor.nvim",
 			event = "VeryLazy",
@@ -118,11 +126,13 @@ require("lazy").setup({
 				smear_between_neighbour_lines = true,
 			},
 		},
+		-- code folding
 		{
 			"kevinhwang91/nvim-ufo",
 			dependencies = "kevinhwang91/promise-async",
 			event = "VeryLazy",
 		},
+		-- git signs
 		{
 			"lewis6991/gitsigns.nvim",
 			event = "VeryLazy",
