@@ -1,68 +1,64 @@
-# Inserts a blank line between shell prompts for better readability.
-add_newline = true
-# Timeout for starship to scan files in the current directory.
-command_timeout = 1000
-
-
-# --- Main prompt structure ---
-# Defines the order of modules.
-# Starship intelligently handles powerline separators:
-# The foreground of the separator is the background of its own module.
-# The background of the separator is the background of the *next* module.
-format = """\
+format = """
+[░▒▓](#a9b665)\
+[ 󰣇 ](bg:#a9b665 fg:#585a36)\
+[](bg:#89b482 fg:#a9b665)\
 $directory\
+[](fg:#89b482 bg:#d8a657)\
 $git_branch\
 $git_status\
-$cmd_duration\
-$line_break\
-$status\
-$character\
-"""
-
-# --- Module Configurations ---
+[](fg:#d8a657 bg:#3c3836)\
+$nodejs\
+$rust\
+$golang\
+$php\
+[](fg:#3c3836 bg:#282828)\
+$time\
+[ ](fg:#282828)\n$character"""
 
 [directory]
-# Style for directory path
-style = "#8EC07C"
+style = "fg:#475d44 bg:#89b482"
 format = "[ $path ]($style)"
-truncation_length = 3 # Max number of parent directories to show 
-truncate_to_repo = true # If in a git repo, show path relative to repo root if shorter
-home_symbol = " ~" # Icon for home directory (nf-fa-home)
-read_only = " " # Icon for read-only directory (nf-fa-lock)
-read_only_style = "red" # Make lock icon redon directory's aqua background
+truncation_length = 3
+truncation_symbol = "…/"
+
+[directory.substitutions]
+"Documents" = "󰈙 "
+"Downloads" = " "
+"Music" = " "
+"Pictures" = " "
 
 [git_branch]
-symbol = " " # Git branch icon (nf-fa-code_fork)
-style = "bold #FE8019"
-format = "[ $symbol$branch ]($style)"
+symbol = ""
+style = "bg:#d8a657"
+format = '[[ $symbol $branch ](fg:#795f34 bg:#d8a657)]($style)'
 
 [git_status]
-format='([\[$all_status$ahead_behind\]](green) )'
+style = "bg:#d8a657"
+format = '[[($all_status$ahead_behind )](fg:#795f34 bg:#d8a657)]($style)'
 
-[cmd_duration]
-min_time = 1000 # Show if command took longer than 1 second
-# Style for command duration (on default terminal background)
-style = "fg:gruv_yellow"
-format = "[took $duration]($style) " # �� nf-md-timer_sand_complete
+[nodejs]
+symbol = ""
+style = "bg:#3c3836"
+format = '[[ $symbol ($version) ](fg:#b8bb26 bg:#3c3836)]($style)'
 
-[line_break]
-# Ensures the prompt character starts on a new line
+[rust]
+symbol = ""
+style = "bg:#3c3836"
+format = '[[ $symbol ($version) ](fg:#d3869b bg:#3c3836)]($style)'
+
+[golang]
+symbol = ""
+style = "bg:#3c3836"
+format = '[[ $symbol ($version) ](fg:#795f34 bg:#3c3836)]($style)'
+
+[php]
+symbol = ""
+style = "bg:#3c3836"
+format = '[[ $symbol ($version) ](fg:#8ec07c bg:#3c3836)]($style)'
+
+[time]
 disabled = false
-
-[status]
-# Shows exit status of the last command if it failed
-style = "fg:gruv_red" # On default terminal background
-symbol = "x " # nf-mdi-alert_circle_outline (error icon)
-format = "[$symbol$status]($style) "
-disabled = false # Show only on error
-map_symbol = true # Use specific symbols for different error codes if available
-
-[character]
-success_symbol = "[ ~> ](bold green)" # Green ❯ for success
-error_symbol = "[ ~> ](bold red)"     # Red ❯ for error
-# vicmd_symbol = "[❮](bold gruv_blue)" # Optional: for vi mode indicator
-
-[python]
-symbol=" "
-pyenv_prefix = "venv "
+time_format = "%R"
+style = "bg:#282828"
+format = '[[  $time ](fg:#ebdbb2 bg:#282828)]($style)'
 
