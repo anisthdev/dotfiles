@@ -24,7 +24,7 @@ telescope.setup({
 				["<C-c"] = actions.close,
 			},
 			i = {
-				["<C-s>"] = "select_horizontal",
+				["<C-s>"] = "select_vertical",
 			},
 		},
 		border = true,
