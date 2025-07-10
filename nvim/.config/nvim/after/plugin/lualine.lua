@@ -16,7 +16,7 @@ local colors = {
 local gruv_material = {
 	normal = {
 		a = { bg = colors.aqua, fg = colors.bg_dim, gui = "bold" },
-		b = { bg = colors.bg1, fg = colors.cream, gui = "bold" },
+		b = { bg = colors.bg1, fg = colors.violet, gui = "bold" },
 		c = { bg = colors.bg2, fg = colors.cream, gui = "bold" },
 	},
 	insert = {
@@ -67,7 +67,8 @@ lualine.setup({
 	},
 	sections = {
 		lualine_a = { { "mode", icon = "" } },
-		lualine_b = {
+		lualine_b = { { "branch", icon = "󰘬" } },
+		lualine_c = {
 			{
 				"buffers",
 				show_filename_only = true,
@@ -80,6 +81,7 @@ lualine.setup({
 					packer = "Packer",
 					fzf = "FZF",
 					alpha = "Alpha",
+					oil = "Oil",
 				},
 				buffers_color = {
 					active = { bg = colors.yellow, fg = colors.bg_dim },
@@ -91,21 +93,13 @@ lualine.setup({
 				},
 			},
 		},
-		lualine_c = {
-			{
-				"filename",
-				file_status = true,
-				path = 3,
-				shorting_target = 0,
-			},
-		},
-		lualine_x = {},
-		lualine_y = { "searchcount", "selectioncount", "encoding", "filetpe" },
+		lualine_x = { "diff", "diagnostics" },
+		lualine_y = { "searchcount", "selectioncount", "encoding", "filetype" },
 		lualine_z = { "progress", "location" },
 	},
 	tabline = {},
 	winbar = {},
 	inactive_winbar = {},
-	extensions = {},
+	extensions = { "oil" },
 })
 vim.opt.laststatus = 3
