@@ -9,6 +9,7 @@ $git_status\
 [](fg:#d8a657 bg:#32302f)\
 $python\
 $nodejs\
+$java\
 $rust\
 $golang\
 $php\
@@ -45,6 +46,11 @@ format = '[[ $symbol ($version) ](fg:#b8bb26 bg:#32302f)]($style)'
 
 [rust]
 symbol = ""
+style = "bg:#32302f"
+format = '[[ $symbol ($version) ](fg:#d3869b bg:#32302f)]($style)'
+
+[java]
+symbol = "󰬷"
 style = "bg:#32302f"
 format = '[[ $symbol ($version) ](fg:#d3869b bg:#32302f)]($style)'
 
