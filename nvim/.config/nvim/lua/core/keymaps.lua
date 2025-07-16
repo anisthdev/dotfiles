@@ -11,7 +11,7 @@ vim.g.mapleader = " "
 vim.g.maplocalleader = "\\"
 
 -- jj for normal mode
-map({ "i", "v" }, "jj", "<Esc>", { desc = "return to normal mode" })
+map("i", "jj", "<Esc>", { desc = "return to normal mode" })
 
 -- window navigation
 map("n", "<A-h>", "<C-w>h")
