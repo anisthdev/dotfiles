@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+
+if [ -z "$OPENAI_API_KEY" ]; then
+    echo "Error: OPENAI_API_KEY environment variable not set"
+    exit 1
+fi
+
+MODEL="gpt-4o"
+API_URL="https://api.openai.com/v1/chat/completions"
+
+if [ $# -gt 0 ]; then
+    QUESTION="$*"
+else 
+    echo -n "Ask: " >&2
+    QUESTION=$(gum input --cursor.foreground "#e78a4e" --prompt "* " --no-show-help --placeholder "Ask your programming question")
+fi
+
+if [ -z "$QUESTION" ]; then
+    echo "No question provided"
+    exit 1
+fi
+
+echo "$QUESTION"
+
+RESPONSE=$(gum spin --spinner.foreground "#e78a4e" --title "Thinking..." --show-output -- curl -s "$API_URL" \
+    -H "Authorization: Bearer $OPENAI_API_KEY" \
+    -H "Content-Type: application/json" \
+    -d @- <<EOF
+{
+    "model": "$MODEL",
+    "messages": [
+        {
+            "role": "system",
+            "content": "You're a concise coding assistant to ask short questions instead of googling things. Give short practical answers with minimal andn to the point explaination, also include a couple of code examples if applicable."
+        },
+        {
+            "role": "user",
+            "content": "$QUESTION"
+        }
+    ],
+    "temperature": 0.5,
+    "max_tokens": 600
+}
+EOF
+)
+ANSWER=$(jq -r '.choices[0].message.content' <<< "$RESPONSE")
+ANSWER_LENGTH=$(echo "$ANSWER" | wc -l)
+LINES=$(tput lines)
+
+if [ "$ANSWER_LENGTH" -gt "$LINES" ]; then
+    glow -p <<< "$ANSWER"
+else
+    glow <<< "$ANSWER"
+    while true; do
+        read -n 1 -s -r key; [ "$key" = "q" ] && break
+    done
+fi 

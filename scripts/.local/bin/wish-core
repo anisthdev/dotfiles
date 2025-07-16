@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+
+INSTANCE_ID=""
+LOCAL_PORT=""
+AWS_PROFILE=""
+AWS_REGION=""
+SSH_USER=""
+
+print_usage() {
+    echo "Usage: $0 <INSTANCE_ID> <LOCAL_PORT> [--profile <aws-profile>] [--region <aws-region>]"
+    exit 1
+}
+
+# Parse positional args
+if [[ $# -lt 3 ]]; then
+    print_usage
+fi
+
+INSTANCE_ID="$1"
+LOCAL_PORT="$2"
+SSH_USER="$3"
+shift 3
+
+# Parse optional named args
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --profile)
+            AWS_PROFILE="$2"
+            shift 2
+            ;;
+        --region)
+            AWS_REGION="$2"
+            shift 2
+            ;;
+        *)
+            echo "Unknown option: $1"
+            print_usage
+            ;;
+    esac
+done
+
+LOG_PIPE=$(mktemp -u)
+mkfifo "$LOG_PIPE"
+trap "rm -f $LOG_PIPE" EXIT
+
+# open pipe for both reading and writing to keep the pipe alive
+exec 3<> "$LOG_PIPE"
+
+# Construct optional args
+aws_args=(--target "$INSTANCE_ID"
+    --document-name AWS-StartPortForwardingSession
+    --parameters "portNumber=22,localPortNumber=$LOCAL_PORT")
+
+    [[ -n "$AWS_PROFILE" ]] && aws_args+=(--profile "$AWS_PROFILE")
+    [[ -n "$AWS_REGION" ]] && aws_args+=(--region "$AWS_REGION")
+
+# Start port forwarding in background
+aws ssm start-session "${aws_args[@]}" > "$LOG_PIPE" 2>&1 &
+
+pid=$!
+echo "Starting the session..."
+
+# Block and read from the pipe until the target text is found
+while IFS= read -r line <&3; do
+    if [[ "$line" == "Waiting for connections..." ]]; then
+        break
+    fi
+done 
+
+ssh "$SSH_USER"@localhost -p "$LOCAL_PORT"
+
+# After ssh exits, kill the background port forwarding session and clean up.
+echo "Cleaning up session..."
+exec 3<&-
+rm -f "$LOG_PIPE"
+pkill -TERM -P "$pid"

@@ -1,0 +1,16 @@
+#! /usr/bin/env bash
+CONFIG_LOCATION="$HOME/.config/sesshin/servers.yml"
+SERVER=$(yq -r ".[] | select(has(\"ssh\")) |.name" $CONFIG_LOCATION | gum choose --header="Choose server: ")
+INSTANCE_ID=$(yq -r ".[] | select(.name == \"$SERVER\") | .instance" $CONFIG_LOCATION)
+PROFILE=$(yq -r ".[] | select(.name == \"$SERVER\") | .profile" $CONFIG_LOCATION)
+REGION=$(yq -r ".[] | select(.name == \"$SERVER\") | .region" $CONFIG_LOCATION)
+SSH_USER=$(yq -r ".[] | select(.name == \"$SERVER\") | .ssh.user" $CONFIG_LOCATION)
+PORT=$(yq -r ".[] | select(.name == \"$SERVER\") | .ssh.port" $CONFIG_LOCATION)
+
+if [ "$SSH_USER" == "null" ] || [ "$PORT" == "null" ]; then
+    echo "Error: SSH user or port not defined for instance"
+    exit 1
+fi
+
+wish-core "$INSTANCE_ID" "$PORT" "$SSH_USER" --profile "$PROFILE" --region "$REGION"
+
