@@ -31,8 +31,8 @@ map("v", "<", "<gv")
 map("v", ">", ">gv")
 
 -- move text up down
-map("v", "J", ":m '>+1<CR>gv=gv")
-map("v", "K", ":m '<-2<CR>gv=gv")
+map("x", "J", ":m '>+1<CR>gv=gv")
+map("x", "K", ":m '<-2<CR>gv=gv")
 
 -- cusor centered when jumping
 map("n", "n", "nzzzv")
