@@ -159,6 +159,10 @@ require("lazy").setup({
 				"nvim-telescope/telescope.nvim",
 			},
 		},
+		--code dimming
+		{
+			"folke/twilight.nvim",
+		},
 	},
 	defaults = {
 		lazy = false,
