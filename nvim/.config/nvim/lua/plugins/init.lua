@@ -150,18 +150,13 @@ require("lazy").setup({
 				vim.g.db_ui_winwidth = 30 -- Set the UI window width
 			end,
 		},
-		-- neogit
-		{
-			"NeogitOrg/neogit",
-			dependencies = {
-				"nvim-lua/plenary.nvim",
-				"sindrets/diffview.nvim",
-				"nvim-telescope/telescope.nvim",
-			},
-		},
 		--code dimming
 		{
 			"folke/twilight.nvim",
+		},
+		-- git commit and staging
+		{
+			"chrisgrieser/nvim-tinygit",
 		},
 	},
 	defaults = {
