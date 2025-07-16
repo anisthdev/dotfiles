@@ -1,6 +1,7 @@
 format = """
 [░▒▓](#a9b665)\
-[ 󰣇 ](bg:#a9b665 fg:#585a36)\
+$os\
+[$hostname](bg:#a9b665 fg:#585a36)\
 [](bg:#89b482 fg:#a9b665)\
 $directory\
 [](fg:#89b482 bg:#d8a657)\
@@ -15,6 +16,22 @@ $golang\
 $php\
 [](fg:#32302f bg:#282828)\
 \n~> """
+
+[os]
+disabled = false
+style = "bg:#a9b665 fg:#585a36"
+format = "[$symbol]($style)"
+
+[os.symbols]
+Ubuntu = " 󰕈 "
+Arch = " 󰣇 "
+Redhat = " 󱄛 "
+RedHatEnterprise = " 󱄛 "
+
+[hostname]
+style = "bg:#a9b665 fg:#585a36"
+format = "[$ssh_symbol$hostname]($style)"
+ssh_symbol = "󰣀 " 
 
 [directory]
 style = "fg:#475d44 bg:#89b482"
