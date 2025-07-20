@@ -3,7 +3,7 @@ if ! command -v yq &> /dev/null; then
     echo "Error: Required command 'yq' not found in PATH."
     exit 1
 fi
-echo $SESSHIN_DIR
+
 if [ -z $SESSHIN_DIR ]; then
     echo "Error: No configuration directory found. Please set \$SESSHIN_DIR"
     exit 1
