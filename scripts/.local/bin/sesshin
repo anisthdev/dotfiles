@@ -32,7 +32,7 @@ list_instances ()
 
 describe_instance ()
 {
-    yq -y ".[] | select(.name == \"$1\")" "$CONFIG_FILE" || echo "Error: invalid server name"
+    yq -y ".[] | select(.name == \"$1\")" "$CONFIG_FILE"
 }
 
 case "$1" in
