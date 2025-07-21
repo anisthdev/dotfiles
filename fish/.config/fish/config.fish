@@ -12,7 +12,7 @@ fzf --fish | source
 set -gx FZF_DEFAULT_COMMAND 'rg --files --hidden --follow --glob "!.git/*"'
 set -gx FZF_CTRL_T_COMMAND 'fd --type f --hidden --follow --exclude .git'
 set -gx FZF_ALT_C_COMMAND 'fd --type d --hidden --follow --exclude .git'
-set -gx FZF_DEFAULT_OPTS '--layout=reverse --tmux --border --preview "bat --color=always --style=numbers {} 2> /dev/null || ls -l --color=always {}"'
+set -gx FZF_DEFAULT_OPTS '--layout=reverse --tmux --border --preview "bat --color=always --style=numbers {} 2> /dev/null || ls -la --color=always {}"'
 
 # neovim as editor
 set -gx EDITOR nvim
