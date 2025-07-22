@@ -24,7 +24,7 @@ alias less='bat --style=auto --paging=always'
 
 alias c='clear'
 alias h='history'
-alias df='duf -hide special'
+alias df='duf -only local,network,fuse -output filesystem,type,size,used,usage,mountpoint -hide-mp "/mnt/w*,/usr/*"'
 alias du='dust -r'
 alias mkdir='mkdir -p'
 
