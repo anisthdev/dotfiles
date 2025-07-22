@@ -24,7 +24,7 @@ alias less='bat --style=auto --paging=always'
 
 alias c='clear'
 alias h='history'
-alias df='df -h'
-alias du='du -h'
+alias df='duf -hide special'
+alias du='dust -r'
 alias mkdir='mkdir -p'
 
