@@ -40,12 +40,12 @@ truncation_length = 3
 truncation_symbol = "…/"
 
 [directory.substitutions]
-"Documents" = "󰈙 "
-"Downloads" = " "
-"Music" = " "
+"Documents" = "󱔘 "
+"Downloads" = ""
+"Music" = ""
 "Pictures" = " "
-"study" = "󱉟 "
-"work" = "󰦑 "
+"Study" = "󱉟 "
+"Work" = "󱔟 "
 
 [git_branch]
 symbol = ""
@@ -84,7 +84,7 @@ format = '[[ $symbol ($version) ](fg:#8ec07c bg:#32302f)]($style)'
 [python]
 symbol = " "                        # Python icon (can be anything)
 style = "fg:#74706d bg:#32302f"     # Gruvbox-style color
-format = '[[ $symbol($virtualenv) ](fg:#74706d bg:#32302f)]($style)'
+format = '[[ $symbol ($version) ($virtualenv) ](fg:#74706d bg:#32302f)]($style)'
 
 [time]
 disabled = false
