@@ -2,3 +2,4 @@ fish_variables
 lazy-lock.json
 nvim/.config/nvim/db_ui/
 openai.fish
+secrets.fish
