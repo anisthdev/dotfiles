@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# --- Configuration ---
+INSTANCE_ID="$1"          # First argument: EC2 instance ID or SSM-managed ID
+shift                     # Shift to get the port specs
+PORTS=("$@")              # Remaining arguments: port forwarding specs
+
+if [[ -z "$INSTANCE_ID" || "${#PORTS[@]}" -eq 0 ]]; then
+  echo "Usage: $0 <instance-id> <local_port:remote_port> [...]"
+  exit 1
+fi
+
+for port_spec in "${PORTS[@]}"; do
+  if [[ "$port_spec" =~ ^[0-9]+:[0-9]+$ ]]; then
+    local_port="${port_spec%%:*}"
+    remote_port="${port_spec##*:}"
+  elif [[ "$port_spec" =~ ^[0-9]+$ ]]; then
+    local_port="$port_spec"
+    remote_port="$port_spec"
+  else
+    echo "Invalid port format: $port_spec. Use <port> or <local:remote>"
+    exit 1
+  fi
+
+  service_name="ssm-fwd-${INSTANCE_ID}-${local_port}-${remote_port}"
+
+  echo "Starting SSM port forwarding on port $local_port -> $remote_port as service $service_name"
+
+  systemd-run --unit="$service_name" --description="SSM port forward $local_port->$remote_port" \
+    --user \
+    --slice=ssm.slice \
+    --property=Restart=always \
+    --property=RestartSec=5 \
+    --property=StandardOutput=journal \
+    --property=StandardError=journal \
+    aws ssm start-session \
+      --target "$INSTANCE_ID" \
+      --document-name AWS-StartPortForwardingSession \
+      --parameters "portNumber=$remote_port,localPortNumber=$local_port" \
+      --profile kccb \
+      --region ap-south-1
+done
+

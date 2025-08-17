@@ -1,0 +1,9 @@
+#! /usr/bin/env bash
+table=$(echo "INSTANCE_ID,FORWARDING,STATUS,SERVICE"; \
+    systemctl --user --no-pager list-units --output=json 'ssm-fwd-*.service' | jq -r '.[] | (.unit | capture("ssm-fwd-(?<instance>i-[a-z0-9]+)-(?<local>[0-9]+)-(?<remote>[0-9]+)\\.service")) as $c |
+    if $c then
+        "\( $c.instance ),\( $c.local )->\( $c.remote ),\(.active),\(.unit)"
+    else
+        empty
+    end')
+gum table -p <<< $table
