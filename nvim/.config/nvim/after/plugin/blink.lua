@@ -34,7 +34,6 @@ require("blink.cmp").setup({
 			},
 		},
 		trigger = { show_in_snippet = false },
-		signature = { window = { border = "rounded" } },
 	},
 
 	sources = {
