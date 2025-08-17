@@ -8,7 +8,8 @@ vim.api.nvim_create_autocmd("LspAttach", {
 
 		map("<leader>rn", "<cmd>Lspsaga rename<CR>", "rename")
 		map("<leader>ca", "<cmd>Lspsaga code_action<CR>", "goto code action", { "n", "x" })
-		map("gd", "<cmd>Lspsaga peek_definition<CR>", "goto definition")
+		map("gd", "<cmd>Lspsaga peek_definition<CR>", "peek definition")
+		map("gD", "<cmd>Lspsaga goto_definition<CR>", "goto definition")
 		map("K", "<cmd>Lspsaga hover_doc<CR>", "hover doc")
 		map("]d", "<cmd>Lspsaga diagnostic_jump_next<CR>", "diagnostic jump next")
 		map("[d", "<cmd>Lspsaga diagnostic_jump_prev<CR>", "diagnostic jump prev")
@@ -19,34 +20,12 @@ vim.diagnostic.config({
 	severity_sort = true,
 	float = { border = "rounded", source = "if_many" },
 	underline = { severity = vim.diagnostic.severity.ERROR },
-	signs = vim.g.have_nerd_font and {
-		text = {
-			[vim.diagnostic.severity.ERROR] = "󰅚 ",
-			[vim.diagnostic.severity.WARN] = "󰀪 ",
-			[vim.diagnostic.severity.INFO] = "󰋽 ",
-			[vim.diagnostic.severity.HINT] = "󰌶 ",
-		},
-	} or {},
+	signs = false,
 	virtual_text = {
 		source = "if_many",
 		spacing = 2,
-		format = function(diagnostic)
-			local diagnostic_message = {
-				[vim.diagnostic.severity.ERROR] = diagnostic.message,
-				[vim.diagnostic.severity.WARN] = diagnostic.message,
-				[vim.diagnostic.severity.INFO] = diagnostic.message,
-				[vim.diagnostic.severity.HINT] = diagnostic.message,
-			}
-			return diagnostic_message[diagnostic.severity]
-		end,
 	},
 })
-
-local signs = { Error = " ", Warn = " ", Hint = "󰌵 ", Info = " " }
-for type, icon in pairs(signs) do
-	local hl = "DiagnosticSign" .. type
-	vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = "" })
-end
 
 local capabilities = require("blink.cmp").get_lsp_capabilities()
 
