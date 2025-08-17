@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+theme="$1"                 
+lualine_theme="${2:-$theme}"
+
+find "${XDG_RUNTIME_DIR:-/tmp}" -type s -name 'nvim.*.0' 2> /dev/null | while read -r sock; do
+  nvim --server "$sock" --headless \
+      --remote-expr "execute('colorscheme ${theme} | lua require(\"lualine\").setup({ options = { theme = \"${lualine_theme}\" } })')"
+done
+
