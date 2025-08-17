@@ -1,0 +1,52 @@
+@import "./colors.rasi"
+
+* {
+    font: 'SF Mono 26';
+}
+
+window {
+    location: north;
+    anchor: north;
+    y-offset: 10px;
+    width: 20%;
+    padding: 16px;
+    border: 0px;
+    border-radius: 16px;
+    background-color: @background;
+}
+
+listview {
+    lines: 1;
+    columns: 3;
+    spacing: 8px;
+    flow: horizontal;
+    background-color: @background;
+}
+
+element {
+    color: @on-background;
+    border-radius: 16px;
+    padding: 4px;
+    background-color: @background;
+}
+
+element.selected {
+    padding: 8px 8px;
+    background-color: @primary-container;
+}
+
+element-text {
+    horizontal-align: 0.5;
+    vertical-align: 0.5;
+    color: @on-background;
+    background-color: @background;
+}
+
+element-text.selected {
+    color: @on-primary-container;
+    background-color: @primary-container;
+}
+
+inputbar {
+    enabled: false;
+}

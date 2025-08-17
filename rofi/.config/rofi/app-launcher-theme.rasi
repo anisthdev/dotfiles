@@ -1,0 +1,84 @@
+@import "./colors.rasi"
+
+/* The main Rofi window */
+window {
+    width:              25%; /* Adjust width as needed */
+    padding:            16px;
+    border:             0px;
+    border-radius:      16px; /* Key for rounded corners */
+    background-color:   @background;
+}
+
+/* The list of all elements */
+listview {
+    lines:              7; /* Number of visible entries */
+    columns:            1;
+    spacing:            8px; /* Space between entries */
+    fixed-height:       false;
+    layout:             vertical;
+    background-color: @background;
+}
+
+mainbox {
+    background-color: @background;
+}
+
+/* Each entry in the list */
+element {
+    padding:            8px 12px;
+    border-radius:      12px;
+    orientation:        horizontal;
+    background-color: @background;
+}
+
+element-icon {
+    size:               1.7em;
+    vertical-align:     0.5;
+    margin:             0px 10px 0px 0px;
+    background-color: @background;
+}
+element-icon.selected {
+    background-color: @primary-container;
+}
+
+element-text {
+    vertical-align:     0.5;
+    background-color: @background;
+    color: @on-background;
+}
+
+element-text.selected {
+    background-color: @primary-container;
+    color: @on-primary-container;
+}
+
+/* Style for the selected entry */
+element.selected {
+    background-color:   @primary-container;
+    text-color:         @background; /* Dark text on light background */
+}
+
+/* The top input bar */
+inputbar {
+    padding:            12px;
+    margin:             0px 0px 10px 0px; /* Margin below the input bar */
+    border-radius:      32px;
+    background-color: @surface-variant;
+    border: 2px;
+    border-color: @primary;
+    children:           [ prompt, entry ];
+}
+
+prompt {
+    enabled:            true;
+    padding:            0px 8px 0px 0px;
+    background-color:   inherit;
+    text-color:         @primary;
+}
+
+entry {
+    placeholder:        "Search...";
+    placeholder-color:  inherit;
+    background-color:   inherit;
+    text-color:         @primary;
+}

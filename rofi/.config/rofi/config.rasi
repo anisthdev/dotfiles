@@ -1,0 +1,8 @@
+@theme "app-launcher-theme.rasi"
+configuration {
+    modi: "drun,run,window";
+    show-icons: true;
+    icon-theme: "McMojave-circle-dark"; 
+    display-drun: " ";
+    font: "SF Pro Display Medium 12"; 
+}
