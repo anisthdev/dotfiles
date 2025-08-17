@@ -95,13 +95,7 @@ lualine.setup({
 		},
 		lualine_x = { "diff", "diagnostics" },
 		lualine_y = { "searchcount", "selectioncount", "encoding", "filetype" },
-		lualine_z = {
-			{
-				flutter_device_component,
-				color = { bg = gruvbox_material_color.green, fg = gruvbox_material_color.bg1 },
-			},
-			"location",
-		},
+		lualine_z = { "location" },
 	},
 	tabline = {},
 	winbar = {},
