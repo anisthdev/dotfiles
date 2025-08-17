@@ -1,0 +1,12 @@
+-  instance: i-0c850dcf8b85b1447
+   name: kccb-anc
+   size: m5.large
+   static-ip: null
+-  instance: i-0f1116d2fdf035110
+   name: kccb-mobile-uat
+   size: t3.medium
+   static-ip: 15.206.224.224
+-  instance: i-0f03da0b44d46823c
+   name: td-development-server
+   size: t3.medium
+   static-ip: 13.235.10.208
