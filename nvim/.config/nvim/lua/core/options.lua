@@ -6,7 +6,7 @@ vim.opt.signcolumn = "yes"
 vim.opt.scrolloff = 8
 vim.opt.sidescrolloff = 8
 vim.opt.termguicolors = true
-vim.opt.cmdheight = 0
+vim.opt.cmdheight = 1
 vim.opt.pumheight = 10
 vim.opt.wrap = false
 
@@ -15,3 +15,5 @@ vim.opt.tabstop = 4
 vim.opt.shiftwidth = 4
 vim.opt.expandtab = true
 vim.opt.smartindent = true
+
+vim.opt.guifont = "Liga SFMonoNerdFont:h16"
