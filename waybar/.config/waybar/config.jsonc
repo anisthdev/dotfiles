@@ -7,16 +7,10 @@
     "modules-left": ["custom/launcher", "clock", "hyprland/workspaces"],
     "modules-center": ["custom/recording", "hyprland/window"],
     "modules-right": ["pulseaudio", "battery", "network", "bluetooth", "power-profiles-daemon"],
-    "height": 25,
+    "height": 30,
 
     "hyprland/window": {
         "format": "{title}",
-        "rewrite": {
-            "(.*) — Mozilla Firefox": "🌎 $1",
-            "(.*) — Chromium": "🌎 $1",
-            "(.*) - fish": "> [$1]",
-            "kitty": "mitty"
-        },
         "separate-outputs": true,
         "icon": true
     },
