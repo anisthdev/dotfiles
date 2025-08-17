@@ -3,3 +3,6 @@ lazy-lock.json
 nvim/.config/nvim/db_ui/
 openai.fish
 secrets.fish
+colors.conf
+mako/.config/mako/config
+waybar/.config/waybar/colors.css
