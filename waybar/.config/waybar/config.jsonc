@@ -1,0 +1,167 @@
+{
+    "layer": "top",
+    "position": "top",
+    "margin-top": 5,
+    "margin-left": 5,
+    "margin-right": 5,
+    "modules-left": ["custom/launcher", "clock", "hyprland/workspaces"],
+    "modules-center": ["custom/recording", "hyprland/window"],
+    "modules-right": ["pulseaudio", "battery", "network", "bluetooth", "power-profiles-daemon"],
+    "height": 25,
+
+    "hyprland/window": {
+        "format": "{title}",
+        "rewrite": {
+            "(.*) — Mozilla Firefox": "🌎 $1",
+            "(.*) — Chromium": "🌎 $1",
+            "(.*) - fish": "> [$1]",
+            "kitty": "mitty"
+        },
+        "separate-outputs": true,
+        "icon": true
+    },
+
+    "custom/launcher": {
+        "format": "",
+        "on-click": "rofi -show drun",
+        "tooltip-format": "Launch your favorite apps"
+    },
+    "custom/recording": {
+        "format": "{text}",
+        "tooltip": true,
+        "tooltip-format": "Screen recording is in progress",
+        "exec": "/home/asif/.config/waybar/scripts/get_recording_time.sh",
+        "exec-if": "pgrep -x wl-screenrec",
+        "interval": 1
+    },
+    
+    "bluetooth": {
+        "format": " {num_connections}",
+        "format-disabled": "󰂲",
+        "format-connected": " {num_connections}",
+        "tooltip-format": "Devices connected: {num_connections}",
+        "on-click": "kitty --class=Bluetuith -e bluetuith"
+    },
+
+    "custom/pacman": {
+        "format": "  {}",
+        "interval": "once",
+        "exec": "checkupdates | wc -l",
+        "on-click": "update-system",
+        "signal": 8,
+        "tooltip-format": "{} updates available"
+    },
+
+    "battery": {
+        "format": "{icon}  {capacity}%",
+        "format-charging": "󰂄  {capacity}%",
+        "format-icons": ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
+        "tooltip-format": "Battery is at {capacity}%" 
+    },
+
+    "clock": {
+        "format": "󰥔  {:%I:%M %p}",
+        "format-alt": "󰥔  {:%a, %d. %b  %I:%M %p}",
+        "tooltip-format": "Date: {:%Y-%m-%d}"
+    },
+
+    "pulseaudio": {
+        "format": "{icon}  {volume}%",
+        "format-bluetooth": "󰂱 {volume}%",
+        "format-muted": "󰖁",
+        "scroll-step": 1,
+        "on-click": "kitty --class=Wiremix -e wiremix",
+        "ignored-sinks": ["Easy Effects Sink"],
+        "format-icons": {
+            "headphone": "",
+            "hands-free": "",
+            "headset": "󰋎",
+            "phone": "",
+            "portable": "",
+            "car": "",
+            "default": ["󰖀", "󰕾"]
+        },
+        "tooltip-format": "Volume: {volume}%"
+    },
+
+    "network": {
+        "interface": "wlan0",
+        "format": "{ifname}",
+        "format-wifi": "{icon}  {essid}",
+        "format-ethernet": "󰈀  {ipaddr}/{cidr}",
+        "format-disconnected": "󰤭  Disconnected",
+        "max-length": 50,
+        "format-icons": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
+        "tooltip-format": "Connected to {essid}",
+        "on-click": "kitty --class=Nmtui -e nmtui"
+    },
+
+    "hyprland/workspaces": {
+        "format": "{icon}",
+        "on-click": "activate",
+        "format-icons": {
+            "1": "1",
+            "2": "2",
+            "3": "3",
+            "4": "4",
+            "5": "5",
+            "6": "6",
+            "7": "7",
+            "8": "8",
+            "9": "9",
+            "10": "10"
+        },
+        "persistent-workspaces": {
+            "1": [],
+            "2": [],
+            "3": [],
+            "4": [],
+            "5": []
+        },
+        "sort-by-number": true
+    },
+
+    "backlight": {
+        "device": "intel_backlight",
+        "format": "{icon}   {percent}%",
+        "format-icons": ["󰃞", "󰃟", "󰃠"]
+    },
+
+    "custom/weather": {
+        "exec": "${HOME}/.config/waybar/scripts/get_weather.sh Bangalore+India",
+        "return-type": "json",
+        "format": "{}",
+        "tooltip": true,
+        "interval": 3600
+    },
+
+    "power-profiles-daemon": {
+        "format": "{icon}",
+        "tooltip-format": "Power mode: {profile}",
+        "tooltip": true,
+        "format-icons": {
+            "default": "",
+            "performance": "󰠠",
+            "balanced": "󰚀",
+            "power-saver": "󰌪"
+        }
+    },
+
+    "cpu": {
+        "interval": 10,
+        "format": "    {}%",
+        "max-length": 10
+    },
+
+    "memory": {
+        "interval": 30,
+        "format": "    {}%",
+        "max-length": 10
+    },
+
+    "disk": {
+        "interval": 30,
+        "format": "   {percentage_used}% used on {path}",
+        "path": "/"
+    }
+}
