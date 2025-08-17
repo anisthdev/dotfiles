@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# Set recorder based on GPU
+screenrecording() {
+  filename="$HOME/Videos/screenrecording-$(date +'%Y-%m-%d_%H-%M-%S').mp4"
+  notify-send "Screen recording starting..." -t 1000 -i /home/asif/.local/share/icons/McMojave-circle/apps/scalable/simplescreenrecorder.svg
+  sleep 1
+
+  if lspci | grep -qi 'nvidia'; then
+    wf-recorder -f "$filename" -c libx264 -p crf=23 -p preset=medium -p movflags=+faststart "$@"
+  else
+    wl-screenrec -f "$filename" --ffmpeg-encoder-options="-c:v libx264 -crf 23 -preset medium -movflags +faststart" "$@"
+  fi
+}
+
+launch_rofi() {
+    ICON_SELECT="󰆞"  # nf-fa-crop
+    ICON_OUTPUT=""  # nf-fa-desktop
+
+    options="$ICON_SELECT\n$ICON_OUTPUT"
+    selected_icon=$(echo -e "$options" | rofi -dmenu -p "Screenshot" -theme ~/.config/rofi/screenshot-theme.rasi -theme-str 'window {widht: 15%;}' -no-config)
+    
+    case "$selected_icon" in
+    "$ICON_OUTPUT")
+        screenrecording
+        ;;
+    "$ICON_SELECT")
+        region=$(slurp) || exit 1
+        screenrecording -g "$region"
+        ;;
+    esac
+}
+
+if pgrep -x wl-screenrec >/dev/null || pgrep -x wf-recorder >/dev/null; then
+  pkill -x wl-screenrec
+  pkill -x wf-recorder
+  notify-send "Screen recording saved to ~/Videos" -t 2000 -i /home/asif/.local/share/icons/McMojave-circle/apps/scalable/simplescreenrecorder.svg
+else
+    launch_rofi
+fi

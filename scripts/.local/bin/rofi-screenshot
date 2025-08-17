@@ -1,0 +1,24 @@
+#!/bin/bash
+
+ICON_SELECT="󰆞"  # nf-fa-crop
+ICON_WINDOW=""  # nf-fa-window_maximize
+ICON_OUTPUT=""  # nf-fa-desktop
+
+options="$ICON_SELECT\n$ICON_WINDOW\n$ICON_OUTPUT"
+
+
+selected_icon=$(echo -e "$options" | rofi -dmenu -p "Screenshot" -theme ~/.config/rofi/screenshot-theme.rasi -no-config)
+
+# Check the selected icon and execute the corresponding command
+case "$selected_icon" in
+    "$ICON_SELECT")
+        hyprshot -m region 
+        ;;
+    "$ICON_WINDOW")
+        hyprshot -m window
+        ;;
+    "$ICON_OUTPUT")
+        hyprshot -m output
+        ;;
+esac
+
