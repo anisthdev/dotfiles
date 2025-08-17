@@ -1,4 +1,5 @@
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+---@diagnostic disable-next-line: undefined-field
 if not vim.loop.fs_stat(lazypath) then
 	vim.fn.system({
 		"git",
@@ -18,6 +19,8 @@ require("lazy").setup({
 			"sainnhe/gruvbox-material",
 			priroty = 1000,
 		},
+		{ "catppuccin/nvim", name = "catppuccin", priority = 1000 },
+
 		-- lualine
 		{
 			"nvim-lualine/lualine.nvim",
@@ -41,6 +44,7 @@ require("lazy").setup({
 				"windwp/nvim-ts-autotag",
 			},
 		},
+		-- maninpulate surroundings
 		{
 			"kylechui/nvim-surround",
 			version = "*",
@@ -108,21 +112,6 @@ require("lazy").setup({
 		{ "numToStr/Comment.nvim", opts = {} },
 		-- bracket pairs
 		{ "windwp/nvim-autopairs", event = "InsertEnter", opts = {} },
-		-- indentation lines
-		{ "lukas-reineke/indent-blankline.nvim", main = "ibl", opts = {} },
-		-- smooth scrolling
-		{
-			"karb94/neoscroll.nvim",
-			event = "VeryLazy",
-		},
-		-- fuzzy cursor
-		{
-			"sphamba/smear-cursor.nvim",
-			event = "VeryLazy",
-			opts = {
-				smear_between_neighbour_lines = true,
-			},
-		},
 		-- code folding
 		{
 			"kevinhwang91/nvim-ufo",
@@ -134,29 +123,48 @@ require("lazy").setup({
 			"lewis6991/gitsigns.nvim",
 			event = "VeryLazy",
 		},
-		-- dadbod for sql queries
-		{
-			"kristijanhusak/vim-dadbod-ui",
-			dependencies = {
-				{ "tpope/vim-dadbod" },
-				{ "kristijanhusak/vim-dadbod-completion" },
-			},
-			ft = { "sql", "plsql", "mysql" },
-			init = function()
-				vim.g.db_ui_save_location = "~/.config/nvim/db_ui"
-				vim.g.db_ui_use_nerd_fonts = 1 -- Use Nerd Font icons
-				vim.g.db_ui_show_help = 0 -- Hide the help menu by default
-				vim.g.db_ui_win_position = "left" -- Open the UI on the left
-				vim.g.db_ui_winwidth = 30 -- Set the UI window width
-			end,
-		},
-		--code dimming
+		-- code dimming
 		{
 			"folke/twilight.nvim",
 		},
-		-- git commit and staging
+		-- flutter
 		{
-			"chrisgrieser/nvim-tinygit",
+			"nvim-flutter/flutter-tools.nvim",
+			lazy = false,
+			dependencies = {
+				"nvim-lua/plenary.nvim",
+				"stevearc/dressing.nvim", -- optional for vim.ui.select
+			},
+			config = true,
+		},
+		-- debugger
+		{
+			"mfussenegger/nvim-dap",
+			dependencies = {
+				"jay-babu/mason-nvim-dap.nvim",
+				"rcarriga/nvim-dap-ui",
+				"nvim-neotest/nvim-nio",
+			},
+		},
+		{
+			"folke/lazydev.nvim",
+			ft = "lua",
+			opts = {},
+		},
+		{
+			"folke/snacks.nvim",
+			opts = {
+				animate = {},
+				scroll = {},
+				indent = {},
+				input = {},
+				notifier = {},
+				statuscolumn = {},
+				picker = {},
+			},
+		},
+		{
+			"onsails/lspkind.nvim",
 		},
 	},
 	defaults = {
