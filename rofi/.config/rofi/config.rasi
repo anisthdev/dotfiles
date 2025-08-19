@@ -4,5 +4,5 @@ configuration {
     show-icons: true;
     icon-theme: "McMojave-circle-dark"; 
     display-drun: " ";
-    font: "SF Pro Display Medium 12"; 
+    font: "SF Pro Display Medium 14"; 
 }

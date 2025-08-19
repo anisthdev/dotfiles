@@ -2,7 +2,7 @@
 
 /* The main Rofi window */
 window {
-    width:              25%; /* Adjust width as needed */
+    width:              20%; /* Adjust width as needed */
     padding:            16px;
     border:             0px;
     border-radius:      16px; /* Key for rounded corners */
@@ -11,7 +11,7 @@ window {
 
 /* The list of all elements */
 listview {
-    lines:              7; /* Number of visible entries */
+    lines:              8; /* Number of visible entries */
     columns:            1;
     spacing:            8px; /* Space between entries */
     fixed-height:       false;
