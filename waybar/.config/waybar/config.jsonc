@@ -33,8 +33,11 @@
         "format": " {num_connections}",
         "format-disabled": "󰂲",
         "format-connected": " {num_connections}",
-        "tooltip-format": "Devices connected: {num_connections}",
-        "on-click": "kitty --class=Bluetuith -e bluetuith"
+        "tooltip-format": "{device_enumerate}",
+        "tooltip-format": "{controller_alias}\t{controller_address}",
+        "tooltip-format-connected": "{device_enumerate}",
+        "tooltip-format-enumerate-connected": "{device_alias}\t{device_battery_percentage}%",
+        "on-click": "kitty --override font_size=12 --override single_window_padding_width=20 --class=Bluetuith -e bluetuith"
     },
 
     "custom/pacman": {
@@ -64,7 +67,7 @@
         "format-bluetooth": "󰂱 {volume}%",
         "format-muted": "󰖁",
         "scroll-step": 1,
-        "on-click": "kitty --class=Wiremix -e wiremix",
+        "on-click": "kitty --override font_size=12 --override single_window_padding_width=20 --class=Wiremix -e wiremix -v output",
         "ignored-sinks": ["Easy Effects Sink"],
         "format-icons": {
             "headphone": "",

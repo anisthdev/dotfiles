@@ -3,7 +3,6 @@
 * {
   font-family: "SF Pro Display", "JetBrainsMono Nerd Font Propo", sans-serif;
   font-size: 15px;
-  border-radius: 30px;
   font-weight: bold;
 }
 
@@ -18,32 +17,17 @@ window#waybar {
 }
 
 #workspaces {
-  background-color: @primary_container_low;
-  /* padding: 2px; */
+  background-color: transparent;
+  margin: 2px;
   border-radius: 30px;
-  margin: 2px 0px 2px 12px;
-}
-
-#workspaces button.active {
-  background-color: @primary_fixed_dim;
-  color: @on_primary_fixed;
-  padding: 0px 20px;
-}
-
-#workspaces button.active:hover {
-  color: @primary_fixed_dim;
-  background: inherit;
-}
-
-#workspaces button.empty {
-  color: @outline_variant;
+  margin-left: 12px;
 }
 
 #workspaces button {
   background-color: transparent;
   color: @outline;
-  /* transition: margin 150ms ease-in-out, padding 150ms ease-in-out; */
-  /* transition: background-color 0.3s ease, color 0.3s ease, padding 0.2s ease; */
+  transition: margin 150ms ease-in-out;
+  transition: background-color 0.3s ease, color 0.3s ease, padding 0.2s ease;
 }
 
 #workspaces button:hover {
@@ -55,11 +39,26 @@ window#waybar {
   color: @on_error;
 }
 
-#battery,
+#workspaces button.active {
+  background-color: @primary_fixed_dim;
+  color: @on_primary_fixed;
+  padding: 0px 20px;
+  border-radius: 20px;
+}
+
+#workspaces button.active:hover {
+  color: @primary_fixed_dim;
+  background: inherit;
+}
+
+#workspaces button.empty {
+  color: @outline_variant;
+}
+
+
 #pulseaudio,
 #backlight,
 #custom-pacman,
-#network,
 #clock,
 #custom-weather,
 #custom-media,
@@ -69,14 +68,36 @@ window#waybar {
 #disk,
 #tray,
 #custom-launcher,
-#bluetooth,
 #custom-recording,
 #custom-notification,
 #power-profiles-daemon {
   color: @primary;
   background-color: @primary_container_low;
   padding: 0 15px 0 15px;
-  margin: 5px 0 5px 12px;
+  margin-left: 12px;
+}
+
+#custom-recording {
+    border-radius: 30px;
+}
+
+#network,
+#battery,
+#bluetooth {
+    margin: 0px;
+    border-radius: 0px;
+    background-color: @secondary;
+    color: @on_secondary;
+    margin: 3px 0px;
+    padding: 0px 15px;
+}
+
+#battery {
+    border-radius: 10px 0 0 10px;
+}
+
+#bluetooth {
+    border-radius: 0 10px 10px 0;
 }
 
 
