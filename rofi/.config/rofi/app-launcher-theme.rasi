@@ -6,7 +6,7 @@ window {
     padding:            16px;
     border:             0px;
     border-radius:      16px; /* Key for rounded corners */
-    background-color:   @background;
+    background-color:   @surface-container;
 }
 
 /* The list of all elements */
@@ -16,11 +16,11 @@ listview {
     spacing:            8px; /* Space between entries */
     fixed-height:       false;
     layout:             vertical;
-    background-color: @background;
+    background-color: @surface-container;
 }
 
 mainbox {
-    background-color: @background;
+    background-color: @surface-container;
 }
 
 /* Each entry in the list */
@@ -28,14 +28,14 @@ element {
     padding:            8px 12px;
     border-radius:      12px;
     orientation:        horizontal;
-    background-color: @background;
+    background-color: @surface-container;
 }
 
 element-icon {
     size:               1.7em;
     vertical-align:     0.5;
     margin:             0px 10px 0px 0px;
-    background-color: @background;
+    background-color: @surface-container;
 }
 element-icon.selected {
     background-color: @primary-container;
@@ -43,7 +43,7 @@ element-icon.selected {
 
 element-text {
     vertical-align:     0.5;
-    background-color: @background;
+    background-color: @surface-container;
     color: @on-background;
 }
 
