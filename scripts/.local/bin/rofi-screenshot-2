@@ -12,9 +12,9 @@ theme=$HOME/.config/rofi/modern-theme.rasi
 prompt='Screenshot'
 mesg="DIR: `xdg-user-dir PICTURES`/Screenshots"
 
-list_col='1'
-list_row='5'
-win_width='110px'
+list_col='5'
+list_row='1'
+win_width='500px'
 
 # Options
 option_1=""

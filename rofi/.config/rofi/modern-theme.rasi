@@ -13,19 +13,19 @@ USE_ICON=YES
 
 window {
     transparency:                "real";
-    location:                    east;
-    anchor:                      east;
+    location:                    north;
+    anchor:                      north;
     fullscreen:                  false;
-    width:                       120px;
-    x-offset:                    -20px;
-    y-offset:                    0px;
+    width:                       620px;
+    x-offset:                    0px;
+    y-offset:                    10px;
     margin:                      0px;
     padding:                     0px;
     border:                      0px solid;
     border-radius:               100%;
     border-color:                @primary;
     cursor:                      "default";
-    background-color:            @background;
+    background-color:            @surface-container;
 }
 
 /*****----- Main Box -----*****/
@@ -102,7 +102,7 @@ listview {
 /*****----- Elements -----*****/
 element {
     enabled:                     true;
-    padding:                     23px 10px;
+    padding:                     18px 0px 28px 0px;
     border:                      0px solid;
     border-radius:               100%;
     border-color:                @primary;
