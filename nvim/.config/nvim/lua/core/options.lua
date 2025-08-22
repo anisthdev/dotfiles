@@ -16,4 +16,4 @@ vim.opt.shiftwidth = 4
 vim.opt.expandtab = true
 vim.opt.smartindent = true
 
-vim.opt.guifont = "Liga SFMonoNerdFont:h16"
+vim.opt.guifont = "SF Mono:h16"
