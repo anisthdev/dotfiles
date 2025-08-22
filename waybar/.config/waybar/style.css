@@ -40,8 +40,8 @@ window#waybar {
 }
 
 #workspaces button.active {
-  background-color: @primary_fixed_dim;
-  color: @on_primary_fixed;
+  background-color: @primary;
+  color: @on_secondary;
   padding: 0px 20px;
   border-radius: 20px;
 }
@@ -86,7 +86,7 @@ window#waybar {
 #bluetooth {
     margin: 0px;
     border-radius: 0px;
-    background-color: @secondary;
+    background-color: @primary;
     color: @on_secondary;
     margin: 3px 0px;
     padding: 0px 15px;
