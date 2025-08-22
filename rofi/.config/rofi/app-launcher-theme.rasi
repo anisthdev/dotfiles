@@ -16,11 +16,11 @@ listview {
     spacing:            8px; /* Space between entries */
     fixed-height:       false;
     layout:             vertical;
-    background-color: @surface-container;
+    background-color: transparent;
 }
 
 mainbox {
-    background-color: @surface-container;
+    background-color: transparent;
 }
 
 /* Each entry in the list */
@@ -28,14 +28,14 @@ element {
     padding:            8px 12px;
     border-radius:      12px;
     orientation:        horizontal;
-    background-color: @surface-container;
+    background-color: transparent;
 }
 
 element-icon {
     size:               1.7em;
     vertical-align:     0.5;
     margin:             0px 10px 0px 0px;
-    background-color: @surface-container;
+    background-color: transparent;
 }
 element-icon.selected {
     background-color: @primary-container;
@@ -43,7 +43,7 @@ element-icon.selected {
 
 element-text {
     vertical-align:     0.5;
-    background-color: @surface-container;
+    background-color: transparent;
     color: @on-background;
 }
 
@@ -64,8 +64,6 @@ inputbar {
     margin:             0px 0px 10px 0px; /* Margin below the input bar */
     border-radius:      32px;
     background-color: @surface-variant;
-    border: 2px;
-    border-color: @primary;
     children:           [ prompt, entry ];
 }
 
