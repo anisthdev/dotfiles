@@ -10,9 +10,8 @@ mesg="Uptime : `uptime -p | sed -e 's/up //g'`"
 list_col='6'
 list_row='1'
 win_width='600px'
-position='south'
-anchor='south'
-yoffset='-20px'
+position='center'
+anchor='center'
 
 # Options
 option_1=""
@@ -25,7 +24,7 @@ option_6=""
 # Rofi CMD
 rofi_cmd() {
 	rofi -theme-str "listview {columns: $list_col; lines: $list_row;}" \
-        -theme-str "window {width: $win_width; location: $position; anchor: $anchor; y-offset: $yoffset;}" \
+        -theme-str "window {width: $win_width; location: $position; anchor: $anchor; }" \
 		-theme-str 'textbox-prompt-colon {str: "";}' \
 		-dmenu \
 		-p "$prompt" \

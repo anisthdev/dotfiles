@@ -2,7 +2,7 @@
 configuration {
     modi: "drun,run,window";
     show-icons: true;
-    icon-theme: "McMojave-circle-dark"; 
+    icon-theme: "Fluent Dark"; 
     display-drun: " ";
     font: "SF Pro Display Medium 14"; 
     drun-display-format: "{name}";
