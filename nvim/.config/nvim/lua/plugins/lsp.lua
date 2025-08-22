@@ -16,17 +16,6 @@ vim.api.nvim_create_autocmd("LspAttach", {
 	end,
 })
 
-vim.diagnostic.config({
-	severity_sort = true,
-	float = { border = "rounded", source = "if_many" },
-	underline = { severity = vim.diagnostic.severity.ERROR },
-	signs = false,
-	virtual_text = {
-		source = "if_many",
-		spacing = 2,
-	},
-})
-
 local capabilities = require("blink.cmp").get_lsp_capabilities()
 
 local servers = {
