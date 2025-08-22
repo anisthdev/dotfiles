@@ -1,5 +1,5 @@
 * {
     <* for name, value in colors *>
-        {{name | replace: "_", "-" }}: {{value.default.hex}};
+        {{name | replace: "_", "-" }}: {{value.default.rgba | set_alpha: 0.85}};
     <* endfor *>
 }

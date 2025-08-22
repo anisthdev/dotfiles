@@ -38,7 +38,7 @@ element-icon {
     background-color: transparent;
 }
 element-icon.selected {
-    background-color: @primary-container;
+    background-color: transparent;
 }
 
 element-text {
@@ -48,7 +48,7 @@ element-text {
 }
 
 element-text.selected {
-    background-color: @primary-container;
+    background-color: transparent;
     color: @on-primary-container;
 }
 
@@ -70,13 +70,13 @@ inputbar {
 prompt {
     enabled:            true;
     padding:            0px 8px 0px 0px;
-    background-color:   inherit;
+    background-color:   transparent;
     text-color:         @primary;
 }
 
 entry {
     placeholder:        "Search...";
     placeholder-color:  inherit;
-    background-color:   inherit;
+    background-color:   transparent;
     text-color:         @primary;
 }
