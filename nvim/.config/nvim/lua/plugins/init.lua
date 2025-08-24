@@ -175,6 +175,10 @@ require("lazy").setup({
 		{
 			"onsails/lspkind.nvim",
 		},
+		{
+			"catgoose/nvim-colorizer.lua",
+			event = "BufReadPre",
+		},
 	},
 	defaults = {
 		lazy = false,
