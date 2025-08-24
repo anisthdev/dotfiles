@@ -11,13 +11,14 @@ local colors = {
 	bg1 = "#3C3836",
 	bg2 = "#32302F",
 	bg_dim = "#252423",
+	disable = "#888888",
 }
 
 local gruv_material = {
 	normal = {
 		a = { bg = colors.aqua, fg = colors.bg_dim, gui = "bold" },
-		b = { bg = colors.bg1, fg = colors.violet, gui = "bold" },
-		c = { bg = colors.bg2, fg = colors.cream, gui = "bold" },
+		b = { bg = colors.bg1, fg = colors.blue },
+		c = { bg = colors.bg1, fg = colors.cream },
 	},
 	insert = {
 		a = { bg = colors.blue, fg = colors.bg_dim, gui = "bold" },
@@ -67,7 +68,7 @@ lualine.setup({
 	},
 	sections = {
 		lualine_a = { { "mode", icon = "" } },
-		lualine_b = { { "branch", icon = "󰘬" } },
+		lualine_b = { { "branch", icon = " " } },
 		lualine_c = {
 			{
 				"buffers",
@@ -84,8 +85,8 @@ lualine.setup({
 					oil = "Oil",
 				},
 				buffers_color = {
-					active = { bg = colors.yellow, fg = colors.bg_dim },
-					inactive = { bg = colors.bg1, fg = colors.cream },
+					active = { bg = colors.yellow, fg = colors.bg1 },
+					inactive = { bg = colors.bg1, fg = colors.disable },
 				},
 				symbols = {
 					alternate_file = "",
