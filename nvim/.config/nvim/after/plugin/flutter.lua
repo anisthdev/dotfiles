@@ -55,6 +55,6 @@ require("flutter-tools").setup({
 		focus_on_open = false,
 	},
 	widget_guides = {
-		enabled = true,
+		enabled = false,
 	},
 })

@@ -100,6 +100,6 @@ lualine.setup({
 	tabline = {},
 	winbar = {},
 	inactive_winbar = {},
-	extensions = { "oil" },
+	extensions = { "oil", "quickfix" },
 })
 vim.opt.laststatus = 3
