@@ -101,6 +101,11 @@ require("lazy").setup({
 			"nvimdev/lspsaga.nvim",
 			event = "LspAttach",
 		},
+		{
+			"tpope/vim-fugitive",
+			cmd = { "Git", "G", "GBrowse" },
+		},
+
 		-- oil
 		{
 			"stevearc/oil.nvim",
