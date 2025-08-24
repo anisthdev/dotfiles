@@ -117,6 +117,11 @@ require("lazy").setup({
 		{ "numToStr/Comment.nvim", opts = {} },
 		-- bracket pairs
 		{ "windwp/nvim-autopairs", event = "InsertEnter", opts = {} },
+		--indentations
+		{
+			"lukas-reineke/indent-blankline.nvim",
+			main = "ibl",
+		},
 		-- code folding
 		{
 			"kevinhwang91/nvim-ufo",
@@ -161,7 +166,6 @@ require("lazy").setup({
 			opts = {
 				animate = {},
 				scroll = {},
-				indent = {},
 				input = {},
 				notifier = {},
 				statuscolumn = {},
