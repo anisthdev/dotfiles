@@ -28,15 +28,21 @@ telescope.setup({
 			},
 		},
 		border = true,
+		theme = "ivy",
 		borderchars = { " ", " ", " ", " ", " ", " ", " ", " " },
 		color_devicons = true,
 	},
 	pickers = {
+		find_files = {
+			theme = "ivy",
+		},
 		live_grep = {
 			additional_args = { "--hidden" },
+			theme = "ivy",
 		},
 		buffers = {
 			sort_mru = true,
+			theme = "ivy",
 		},
 		oldfiles = {
 			cwd_only = true,
@@ -62,43 +68,16 @@ telescope.setup({
 	},
 })
 
-local function find_project_files()
-	local is_flutter_project = vim.fn.findfile("pubspec.yaml", ".;") ~= ""
-	local opts = {}
-
-	if is_flutter_project then
-		local command = { "fd", "--type", "f", "--hidden", "--strip-cwd-prefix" }
-		local ignore_patterns = {
-			"android/*",
-			"ios/*",
-			"web/*",
-			"linux/*",
-			"macos/*",
-			"windows/*",
-			"build/*",
-			".dart_tool/*",
-			".idea/*",
-		}
-
-		for _, pattern in ipairs(ignore_patterns) do
-			table.insert(command, "--exclude")
-			table.insert(command, pattern)
-		end
-		opts.find_command = command
-	end
-	require("telescope.builtin").find_files(opts)
-end
-
-vim.api.nvim_set_hl(0, "TelescopeNormal", { bg = "#3c3836" })
-vim.api.nvim_set_hl(0, "TelescopeBorder", { bg = "#3c3836", fg = "#3c3836" })
-vim.api.nvim_set_hl(0, "TelescopePromptNormal", { bg = "#3c3836" })
+vim.api.nvim_set_hl(0, "TelescopeNormal", { bg = "#32302F" })
+vim.api.nvim_set_hl(0, "TelescopeBorder", { bg = "#32302F", fg = "#32302F" })
+vim.api.nvim_set_hl(0, "TelescopePromptNormal", { bg = "#32302F" })
 
 telescope.load_extension("fzf")
 telescope.load_extension("ui-select")
 
 map("n", "<C-p>", ":Telescope<CR>")
 map("n", "<leader>fb", builtin.buffers)
-map("n", "<leader>ff", find_project_files)
+map("n", "<leader>ff", builtin.find_files)
 map("n", "<leader>fg", builtin.live_grep)
 map("n", "<leader>f/", "<cmd>Telescope current_buffer_fuzzy_find fuzzy=false case_mode=smart_case<cr>")
 map("n", "<leader>fk", "<cmd>Telescope quickfix<cr>")
