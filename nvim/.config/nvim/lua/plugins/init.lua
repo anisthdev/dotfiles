@@ -41,7 +41,6 @@ require("lazy").setup({
 			build = ":TSUpdate",
 			dependencies = {
 				"nvim-treesitter/nvim-treesitter-textobjects",
-				"windwp/nvim-ts-autotag",
 			},
 		},
 		-- maninpulate surroundings
@@ -178,6 +177,13 @@ require("lazy").setup({
 		{
 			"catgoose/nvim-colorizer.lua",
 			event = "BufReadPre",
+		},
+		{
+			"windwp/nvim-ts-autotag",
+			dependencies = "nvim-treesitter/nvim-treesitter",
+			config = function()
+				require("nvim-ts-autotag").setup()
+			end,
 		},
 	},
 	defaults = {
