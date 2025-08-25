@@ -14,6 +14,7 @@ $java\
 $rust\
 $golang\
 $php\
+$dart\
 [](fg:#32302f bg:#1D2021)\
 \n~> """
 
@@ -72,35 +73,41 @@ format = '[[ $symbol $branch ](fg:on_secondary bg:secondary)]($style)'
 style = "bg:secondary"
 format = '[[($all_status$ahead_behind )](fg:on_secondary bg:secondary)]($style)'
 
-[nodejs]
-symbol = ""
+[dart]
+symbol = " "
 style = "bg:#32302f"
-format = '[[ $symbol ($version) ](fg:#b8bb26 bg:#32302f)]($style)'
+format = '[[ $symbol($version) ](fg:#0468D7 bg:#32302f)]($style)'
+
+
+[nodejs]
+symbol = " "
+style = "bg:#32302f"
+format = '[[ $symbol($version) ](fg:#b8bb26 bg:#32302f)]($style)'
 
 [rust]
-symbol = ""
+symbol = " "
 style = "bg:#32302f"
-format = '[[ $symbol ($version) ](fg:#d3869b bg:#32302f)]($style)'
+format = '[[ $symbol($version) ](fg:#d3869b bg:#32302f)]($style)'
 
 [java]
-symbol = "󰬷"
+symbol = "󰬷 "
 style = "bg:#32302f"
 format = '[[ $symbol ($version) ](fg:#d3869b bg:#32302f)]($style)'
 
 [golang]
-symbol = ""
+symbol = " "
 style = "bg:#32302f"
-format = '[[ $symbol ($version) ](fg:#795f34 bg:#32302f)]($style)'
+format = '[[ $symbol($version) ](fg:#00ADD8 bg:#32302f)]($style)'
 
 [php]
-symbol = ""
+symbol = " "
 style = "bg:#32302f"
-format = '[[ $symbol ($version) ](fg:#8ec07c bg:#32302f)]($style)'
+format = '[[ $symbol($version) ](fg:#8ec07c bg:#32302f)]($style)'
 
 [python]
 symbol = " "                        # Python icon (can be anything)
 style = "fg:#74706d bg:#32302f"     # Gruvbox-style color
-format = '[[ $symbol ($version) ($virtualenv) ](fg:#74706d bg:#32302f)]($style)'
+format = '[[ $symbol($version) ($virtualenv) ](fg:#74706d bg:#32302f)]($style)'
 
 [time]
 disabled = false
