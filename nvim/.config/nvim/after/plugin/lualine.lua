@@ -68,7 +68,7 @@ lualine.setup({
 	},
 	sections = {
 		lualine_a = { { "mode", icon = "" } },
-		lualine_b = { { "branch", icon = " " } },
+		lualine_b = { { "branch", icon = "" } },
 		lualine_c = {
 			{
 				"buffers",
