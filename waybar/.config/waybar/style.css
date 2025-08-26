@@ -77,6 +77,10 @@ window#waybar {
   margin-left: 12px;
 }
 
+#custom-launcher {
+    font-size: 22px;
+}
+
 #custom-recording {
     border-radius: 30px;
 }
