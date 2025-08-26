@@ -29,7 +29,7 @@ local gruv_material = {
 		c = { bg = colors.bg2, fg = colors.cream, gui = "bold" },
 	},
 	command = {
-		a = { bg = colors.aqua, fg = colors.black, gui = "bold" },
+		a = { bg = colors.red, fg = colors.black, gui = "bold" },
 		c = { bg = colors.bg2, fg = colors.cream, gui = "bold" },
 	},
 	terminal = {
