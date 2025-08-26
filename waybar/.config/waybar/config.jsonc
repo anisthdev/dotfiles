@@ -30,9 +30,9 @@
     },
     
     "bluetooth": {
-        "format": " {num_connections}",
-        "format-disabled": "󰂲",
-        "format-connected": " {num_connections}",
+        "format": "<span font_family='lucide' rise='-4000' size='large'> </span> {num_connections}",
+        "format-disabled": " ",
+        "format-connected": "<span font_family='lucide' rise='-4000' size='large'> </span> {num_connections}",
         "tooltip-format": "{device_enumerate}",
         "tooltip-format": "{controller_alias}\t{controller_address}",
         "tooltip-format-connected": "{device_enumerate}",
@@ -50,22 +50,21 @@
     },
 
     "battery": {
-        "format": "{icon}  {capacity}%",
-        "format-charging": "󰂄  {capacity}%",
-        "format-icons": ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
+        "format": "<span font_family='lucide' rise='-4000' size='large'>{icon}</span> {capacity}%",
+        "format-charging": "<span font_family='lucide' rise='-4000' size='large'> </span> {capacity}%",
+        "format-icons": [" ", " ", " ", " "],
         "tooltip-format": "Battery is at {capacity}%" 
     },
 
     "clock": {
-        "format": "󰥔  {:%I:%M %p}",
-        "format-alt": "󰥔  {:%a, %d. %b  %I:%M %p}",
+        "format": "<span rise='-4000' size='large'> </span> {:%I:%M %p}",
+        "format-alt": "<span rise='-4000' size='large'> </span> {:%a, %d. %b  %I:%M %p}",
         "tooltip-format": "Date: {:%Y-%m-%d}"
     },
-
     "pulseaudio": {
-        "format": "{icon}  {volume}%",
+        "format": "<span font_family='lucide' rise='-4000' size='large'>{icon}</span> {volume}%",
         "format-bluetooth": "󰂱 {volume}%",
-        "format-muted": "󰖁",
+        "format-muted": " ",
         "scroll-step": 1,
         "on-click": "kitty --override font_size=12 --override single_window_padding_width=20 --class=Wiremix -e wiremix -v output",
         "ignored-sinks": ["Easy Effects Sink"],
@@ -76,19 +75,18 @@
             "phone": "",
             "portable": "",
             "car": "",
-            "default": ["󰖀", "󰕾"]
+            "default": [" ", " "]
         },
         "tooltip-format": "Volume: {volume}%"
     },
-
     "network": {
         "interface": "wlan0",
         "format": "{ifname}",
-        "format-wifi": "{icon}  {essid}",
+        "format-wifi": "<span font_family='lucide' rise='-4000' size='large'>{icon}</span>{essid}",
         "format-ethernet": "󰈀  {ipaddr}/{cidr}",
-        "format-disconnected": "󰤭  Disconnected",
+        "format-disconnected": "  Disconnected",
         "max-length": 50,
-        "format-icons": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
+        "format-icons": [" ", " ", " ", " "],
         "tooltip-format": "Connected to {essid}",
         "on-click": "kitty --class=Nmtui -e nmtui"
     },

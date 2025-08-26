@@ -1,7 +1,7 @@
 @import url("/home/asif/.config/waybar/colors.css");
 
 * {
-  font-family: "SF Pro Display", "JetBrainsMono Nerd Font Propo", sans-serif;
+  font-family:  "lucide", "SF Pro Display", sans-serif;
   font-size: 15px;
   font-weight: bold;
 }
