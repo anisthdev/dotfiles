@@ -61,8 +61,8 @@ telescope.setup({
 	extensions = {
 		["ui-select"] = {
 			layout_config = {
-				width = 100,
-				height = 30,
+				width = 75,
+				height = 10,
 			},
 		},
 	},
