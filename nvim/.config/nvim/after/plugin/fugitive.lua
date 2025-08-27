@@ -13,7 +13,7 @@ vim.api.nvim_create_autocmd("BufWinEnter", {
 	group = "FugitiveLeft",
 	pattern = "fugitive://*",
 	callback = function()
-		vim.cmd("wincmd H") -- move fugitive buffer to the far left
+		vim.cmd("wincmd H")
 		local total_cols = vim.o.columns
 		local target_width = math.floor(total_cols / 4)
 		vim.cmd("vertical resize " .. target_width)
@@ -24,9 +24,7 @@ vim.api.nvim_create_autocmd("BufWinEnter", {
 	group = "FugitiveLeft",
 	pattern = "COMMIT_EDITMSG",
 	callback = function()
-		-- Move commit window to the far right (or left if you prefer)
 		vim.cmd("wincmd J")
-		-- Set width (optional: same 1/4 rule)
 		vim.cmd("resize 15")
 	end,
 })
