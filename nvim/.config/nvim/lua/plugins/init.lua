@@ -165,10 +165,8 @@ require("lazy").setup({
 			opts = {
 				animate = {},
 				scroll = {},
-				input = {},
 				notifier = {},
 				statuscolumn = {},
-				picker = {},
 			},
 		},
 		{
@@ -184,6 +182,22 @@ require("lazy").setup({
 			config = function()
 				require("nvim-ts-autotag").setup()
 			end,
+		},
+		{
+			"anisthdev/npm-runner.nvim",
+			dependencies = "m00qek/baleia.nvim",
+			root = {
+				"package.json",
+			},
+			config = function()
+				require("npm-runner").setup({
+					focus_on_open = false,
+				})
+			end,
+			keys = {
+				{ "<leader>nt", "<cmd>NpmRun<cr>", desc = "Run Npm runner" },
+				{ "<leader>l", "<cmd>NpmRunToggle dev<cr>", desc = "Toggle npm dev log" },
+			},
 		},
 	},
 	defaults = {
