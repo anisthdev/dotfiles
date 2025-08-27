@@ -15,6 +15,7 @@ $rust\
 $golang\
 $php\
 $dart\
+$lua\
 [](fg:#32302f bg:#1D2021)\
 \n~> """
 
@@ -99,15 +100,20 @@ symbol = " "
 style = "bg:#32302f"
 format = '[[ $symbol($version) ](fg:#00ADD8 bg:#32302f)]($style)'
 
+[lua]
+symbol = "󰢱 "
+style = "bg:#32302f"
+format = '[[ $symbol($version) ](fg:#03037E bg:#32302f)]($style)'
+
 [php]
 symbol = " "
 style = "bg:#32302f"
 format = '[[ $symbol($version) ](fg:#8ec07c bg:#32302f)]($style)'
 
 [python]
-symbol = " "                        # Python icon (can be anything)
-style = "fg:#74706d bg:#32302f"     # Gruvbox-style color
-format = '[[ $symbol($version) ($virtualenv) ](fg:#74706d bg:#32302f)]($style)'
+symbol = " "
+style = "fg:#F7BA0A bg:#32302f"
+format = '[[ $symbol($version) ($virtualenv) ](fg:#F7BA0A bg:#32302f)]($style)'
 
 [time]
 disabled = false
