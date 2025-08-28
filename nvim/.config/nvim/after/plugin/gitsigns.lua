@@ -10,19 +10,19 @@ require("gitsigns").setup({
 		untracked = { text = "┆" },
 	},
 	signcolumn = true, -- Toggle with `:Gitsigns toggle_signs`
-	numhl = true, -- Toggle with `:Gitsigns toggle_numhl`
+	numhl = false, -- Toggle with `:Gitsigns toggle_numhl`
 	linehl = false, -- Toggle with `:Gitsigns toggle_linehl`
 	word_diff = false, -- Toggle with `:Gitsigns toggle_word_diff`
 	watch_gitdir = {
 		follow_files = true,
 		interval = 1000,
 	},
-	attach_to_untracked = true,
+	attach_to_untracked = false,
 	current_line_blame = false, -- Toggle with `:Gitsigns toggle_current_line_blame`
 	current_line_blame_opts = {
 		virt_text = true,
 		virt_text_pos = "eol", -- 'eol' | 'overlay' | 'right_align'
-		delay = 1000,
+		delay = 2000,
 		ignore_whitespace = false,
 	},
 	current_line_blame_formatter = "<author>, <author_time:%Y-%m-%d> - <summary>",
@@ -81,7 +81,7 @@ require("gitsigns").setup({
 		map("n", "<leader>htb", gs.toggle_current_line_blame, { desc = "Toggle line blame" })
 		map("n", "<leader>hd", gs.diffthis, { desc = "Diff against index" })
 		map("n", "<leader>hD", function()
-			gs.diffthis("~")
+			gs.diffthis("~1")
 		end, { desc = "Diff against last commit" })
 
 		-- Text object
