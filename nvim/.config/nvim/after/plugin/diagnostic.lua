@@ -88,5 +88,5 @@ set(ns, "DiagnosticFloatingInfo", { fg = P.blue })
 set(ns, "DiagnosticFloatingHint", { fg = P.aqua })
 
 -- Keep the diagnostic text readable in virtual lines and floats
-set(ns, "NormalFloat", { bg = P.bg_soft })
-set(ns, "FloatBorder", { fg = P.bg_soft, bg = P.bg_soft })
+-- set(ns, "NormalFloat", { bg = P.bg_soft })
+-- set(ns, "FloatBorder", { fg = P.bg_soft, bg = P.bg_soft })
