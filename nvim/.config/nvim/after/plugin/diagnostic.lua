@@ -6,6 +6,15 @@ vim.diagnostic.config({
 	virtual_text = {
 		source = "if_many",
 		spacing = 2,
+		prefix = function(diagnostic)
+			local icons = {
+				[vim.diagnostic.severity.ERROR] = "  ",
+				[vim.diagnostic.severity.WARN] = "  ",
+				[vim.diagnostic.severity.INFO] = "  ",
+				[vim.diagnostic.severity.HINT] = "  ",
+			}
+			return icons[diagnostic.severity]
+		end,
 	},
 })
 
