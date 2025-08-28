@@ -37,7 +37,7 @@ require("gitsigns").setup({
 
 	-- Keymaps
 	on_attach = function(bufnr)
-		local gs = require("after.plugin.git")
+		local gs = require("gitsigns")
 
 		local function map(mode, l, r, opts)
 			opts = opts or {}
