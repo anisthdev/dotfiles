@@ -50,9 +50,7 @@ require("gitsigns").setup({
 			if vim.wo.diff then
 				return "]c"
 			end
-			vim.schedule(function()
-				gs.next_hunk()
-			end)
+			vim.schedule(gs.next_hunk)
 			return "<Ignore>"
 		end, { expr = true, desc = "Go to next git hunk" })
 
@@ -60,9 +58,7 @@ require("gitsigns").setup({
 			if vim.wo.diff then
 				return "[c"
 			end
-			vim.schedule(function()
-				gs.prev_hunk()
-			end)
+			vim.schedule(gs.prev_hunk)
 			return "<Ignore>"
 		end, { expr = true, desc = "Go to previous git hunk" })
 
