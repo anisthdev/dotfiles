@@ -1,4 +1,4 @@
-require("after.plugin.git").setup({
+require("gitsigns").setup({
 	signs = {
 		add = { text = "│" },
 		change = { text = "│" },
@@ -102,15 +102,19 @@ local function open_bottom()
 	vim.cmd("resize 15")
 end
 
+local function open_left()
+	vim.cmd("wincmd H")
+	local total_cols = vim.o.columns
+	local target_width = math.floor(total_cols / 4)
+	vim.cmd("vertical resize " .. target_width)
+end
+
 vim.api.nvim_create_autocmd("BufWinEnter", {
 	group = "GitLayout",
 	callback = function(args)
 		local ft = vim.bo[args.buf].filetype
 		if ft == "fugitive" then
-			vim.cmd("wincmd H")
-			local total_cols = vim.o.columns
-			local target_width = math.floor(total_cols / 4)
-			vim.cmd("vertical resize " .. target_width)
+			open_left()
 		end
 	end,
 })
