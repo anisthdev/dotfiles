@@ -68,9 +68,9 @@ telescope.setup({
 	},
 })
 
-vim.api.nvim_set_hl(0, "TelescopeNormal", { link = "Normal" })
-vim.api.nvim_set_hl(0, "TelescopeBorder", { link = "Normal" })
-vim.api.nvim_set_hl(0, "TelescopePromptNormal", { link = "Normal" })
+vim.api.nvim_set_hl(0, "TelescopeNormal", { link = "NormalFloat" })
+vim.api.nvim_set_hl(0, "TelescopeBorder", { link = "NormalFloat" })
+vim.api.nvim_set_hl(0, "TelescopePromptNormal", { link = "NormalFloat" })
 
 telescope.load_extension("fzf")
 telescope.load_extension("ui-select")
