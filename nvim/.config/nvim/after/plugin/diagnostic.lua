@@ -18,6 +18,36 @@ vim.diagnostic.config({
 	},
 })
 
+-- Auto-update QF list with all workspace diagnostics
+vim.api.nvim_create_autocmd("DiagnosticChanged", {
+	callback = function()
+		-- Don’t steal focus if qf is closed, just update silently
+		local winid = vim.fn.getqflist({ winid = 1 }).winid
+		vim.diagnostic.setqflist({ open = winid ~= 0 })
+	end,
+})
+
+-- Helper: check if quickfix is open
+local function qf_is_open()
+	for _, win in ipairs(vim.fn.getwininfo()) do
+		if win.quickfix == 1 then
+			return true
+		end
+	end
+	return false
+end
+
+-- Toggle workspace diagnostics in quickfix
+local function toggle_ws_diags()
+	if qf_is_open() then
+		vim.cmd("cclose")
+	else
+		vim.diagnostic.setqflist({ open = true, severity_sort = true }) -- defaults to all buffers
+	end
+end
+
+vim.keymap.set("n", "<leader>d", toggle_ws_diags, { desc = "Toggle workspace diagnostics (qf)" })
+
 local P = {
 	bg = "#282828",
 	bg_soft = "#1d2021",
@@ -97,5 +127,5 @@ set(ns, "DiagnosticFloatingInfo", { fg = P.blue })
 set(ns, "DiagnosticFloatingHint", { fg = P.aqua })
 
 -- Keep the diagnostic text readable in virtual lines and floats
--- set(ns, "NormalFloat", { bg = P.bg_soft })
--- set(ns, "FloatBorder", { fg = P.bg_soft, bg = P.bg_soft })
+set(ns, "NormalFloat", { bg = "#323232" })
+set(ns, "FloatBorder", { fg = P.aqua, bg = "#323232" })
