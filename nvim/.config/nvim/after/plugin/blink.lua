@@ -1,4 +1,3 @@
-vim.api.nvim_set_hl(0, "Pmenu", { link = "NormalFloat" })
 require("lspkind").init({
 	mode = "symbol_text",
 	preset = "codicons",

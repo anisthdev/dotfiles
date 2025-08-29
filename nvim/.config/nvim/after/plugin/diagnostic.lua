@@ -19,13 +19,13 @@ vim.diagnostic.config({
 })
 
 -- Auto-update QF list with all workspace diagnostics
-vim.api.nvim_create_autocmd("DiagnosticChanged", {
+--[[ vim.api.nvim_create_autocmd("DiagnosticChanged", {
 	callback = function()
 		-- Don’t steal focus if qf is closed, just update silently
 		local winid = vim.fn.getqflist({ winid = 1 }).winid
 		vim.diagnostic.setqflist({ open = winid ~= 0 })
 	end,
-})
+}) ]]
 
 -- Helper: check if quickfix is open
 local function qf_is_open()
@@ -76,7 +76,7 @@ local function blend(fg_hex, bg_hex, alpha)
 end
 
 -- Soft tint for virtual text background; tweak to taste (0.06–0.12 works well)
-local VT_ALPHA = is_dark and 0.08 or 0.10
+local VT_ALPHA = 0.08
 
 -- Convenience constructor
 local function vt(fg)
@@ -127,5 +127,6 @@ set(ns, "DiagnosticFloatingInfo", { fg = P.blue })
 set(ns, "DiagnosticFloatingHint", { fg = P.aqua })
 
 -- Keep the diagnostic text readable in virtual lines and floats
-set(ns, "NormalFloat", { bg = "#323232" })
-set(ns, "FloatBorder", { fg = P.aqua, bg = "#323232" })
+set(ns, "NormalFloat", { bg = "#202420" })
+set(0, "Pmenu", { link = "NormalFloat" })
+set(ns, "FloatBorder", { fg = P.aqua, bg = "#202420" })
