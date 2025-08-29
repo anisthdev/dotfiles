@@ -110,7 +110,7 @@ vim.api.nvim_create_autocmd("BufWinEnter", {
 	callback = function(args)
 		local ft = vim.bo[args.buf].filetype
 		if ft == "fugitive" then
-			open_left()
+			open_bottom()
 		end
 	end,
 })
