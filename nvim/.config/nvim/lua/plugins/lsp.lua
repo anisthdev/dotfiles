@@ -7,7 +7,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
 		end
 
 		map("<leader>rn", "<cmd>Lspsaga rename<CR>", "rename")
-		map("<leader>ca", "<cmd>Lspsaga code_action<CR>", "goto code action", { "n", "x" })
+		map("gc", "<cmd>Lspsaga code_action<CR>", "goto code action", { "n", "x" })
 		map("gd", "<cmd>Lspsaga peek_definition<CR>", "peek definition")
 		map("gD", "<cmd>Lspsaga goto_definition<CR>", "goto definition")
 		map("K", "<cmd>Lspsaga hover_doc<CR>", "hover doc")
