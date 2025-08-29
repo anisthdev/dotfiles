@@ -5,8 +5,8 @@ local map = vim.keymap.set
 
 telescope.setup({
 	defaults = {
-		prompt_prefix = "   ",
-		selection_caret = " ",
+		prompt_prefix = " ",
+		selection_caret = "  ",
 		sorting_strategy = "ascending",
 		layout_strategy = "flex",
 		layout_config = {
