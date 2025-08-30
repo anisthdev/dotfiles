@@ -58,3 +58,11 @@ require("flutter-tools").setup({
 		enabled = false,
 	},
 })
+vim.api.nvim_create_autocmd("BufWritePost", {
+	pattern = "*.dart",
+	callback = function()
+		vim.schedule(function()
+			vim.cmd("FlutterReload")
+		end)
+	end,
+})
