@@ -9,9 +9,16 @@ vim.opt.termguicolors = true
 vim.opt.cmdheight = 1
 vim.opt.pumheight = 10
 vim.opt.wrap = false
+vim.o.list = true
+vim.opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
+vim.o.confirm = true
 
 -- editing
-vim.opt.tabstop = 4
-vim.opt.shiftwidth = 4
+vim.opt.tabstop = 2
+vim.opt.shiftwidth = 2
 vim.opt.expandtab = true
 vim.opt.smartindent = true
+vim.o.ignorecase = true
+vim.o.smartcase = true
+vim.o.splitright = true
+vim.o.splitbelow = true

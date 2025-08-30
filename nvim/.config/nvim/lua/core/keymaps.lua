@@ -24,7 +24,7 @@ map("n", "<S-l>", ":bnext<CR>")
 map("n", "<S-h>", ":bprevious<CR>")
 
 -- clear highlights
-map("n", "<leader>h", ":nohlsearch<CR>")
+map("n", "<Esc>", "<cmd>nohlsearch<CR>")
 
 -- indentations
 map("v", "<", "<gv")
@@ -45,6 +45,7 @@ map("n", "<leader>bd", ":bd<CR>", { desc = "close buffer" })
 -- map("n", "gf", ":lua OpenFile()<cr>", { desc = "Open or create file under cursor" })
 
 -- others
+map("t", "<Esc><Esc>", "<C-\\><C-n>", { desc = "Exit terminal mode" })
 map("n", "<leader><leader>S", ":source %<CR>", { desc = "source buffer" })
 map("n", "j", "gj", { desc = "down in wrapped line" })
 map("n", "k", "gk", { desc = "up in wrapped line" })
@@ -52,12 +53,3 @@ map("n", "<C-S-H>", "3<C-w>>", { desc = "Resize Left" })
 map("n", "<C-S-J>", "3<C-w>-", { desc = "Resize Right" })
 map("n", "<C-S-K>", "3<C-w>+", { desc = "Resize Up" })
 map("n", "<C-S-L>", "3<C-w><", { desc = "Resize Down" })
-
-vim.keymap.set("n", "<leader>f", function()
-	vim.lsp.buf.format({
-		async = true,
-		filter = function(client)
-			return client.name == "null-ls"
-		end,
-	})
-end, { desc = "Format with null-ls" })
