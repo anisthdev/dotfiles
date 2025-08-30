@@ -108,8 +108,7 @@ require("lazy").setup({
 		-- oil
 		{
 			"stevearc/oil.nvim",
-			---@module 'oil'
-			dependencies = { { "echasnovski/mini.icons", opts = {} } },
+			-- dependencies = { { "echasnovski/mini.icons", opts = {} } },
 			lazy = false,
 		},
 		-- comment
