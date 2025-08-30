@@ -1,7 +1,21 @@
 local telescope = require("telescope")
 local builtin = require("telescope.builtin")
 local actions = require("telescope.actions")
+local themes = require("telescope.themes")
 local map = vim.keymap.set
+
+for k, v in pairs(builtin) do
+	if type(v) == "function" then
+		builtin[k] = function(opts)
+			opts = opts or {}
+			return v(themes.get_ivy(vim.tbl_extend("force", {
+				layout_config = {
+					height = 15, -- absolute number of lines
+				},
+			}, opts)))
+		end
+	end
+end
 
 telescope.setup({
 	defaults = {
@@ -33,16 +47,11 @@ telescope.setup({
 		color_devicons = true,
 	},
 	pickers = {
-		find_files = {
-			theme = "ivy",
-		},
 		live_grep = {
 			additional_args = { "--hidden" },
-			theme = "ivy",
 		},
 		buffers = {
 			sort_mru = true,
-			theme = "ivy",
 		},
 		oldfiles = {
 			cwd_only = true,
@@ -60,10 +69,11 @@ telescope.setup({
 
 	extensions = {
 		["ui-select"] = {
-			layout_config = {
-				width = 75,
-				height = 10,
-			},
+			require("telescope.themes").get_ivy({
+				layout_config = {
+					height = 15,
+				},
+			}),
 		},
 	},
 })
