@@ -12,6 +12,12 @@ for k, v in pairs(builtin) do
 				layout_config = {
 					height = 20, -- absolute number of lines
 				},
+				border = false, -- disable border highlight
+				borderchars = {
+					prompt = { " ", " ", " ", " ", " ", " ", " ", " " },
+					results = { " ", " ", " ", " ", " ", " ", " ", " " },
+					preview = { " ", " ", " ", " ", " ", " ", " ", " " },
+				},
 			}, opts)))
 		end
 	end
@@ -41,9 +47,13 @@ telescope.setup({
 				["<C-s>"] = "select_vertical",
 			},
 		},
-		border = true,
 		theme = "ivy",
-		borderchars = { " ", " ", " ", " ", " ", " ", " ", " " },
+		border = false,
+		borderchars = {
+			prompt = { " ", " ", " ", " ", " ", " ", " ", " " },
+			results = { " ", " ", " ", " ", " ", " ", " ", " " },
+			preview = { " ", " ", " ", " ", " ", " ", " ", " " },
+		},
 		color_devicons = true,
 	},
 	pickers = {
