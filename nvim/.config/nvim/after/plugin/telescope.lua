@@ -79,11 +79,7 @@ telescope.setup({
 
 	extensions = {
 		["ui-select"] = {
-			require("telescope.themes").get_ivy({
-				layout_config = {
-					height = 20,
-				},
-			}),
+			themes.get_dropdown(),
 		},
 	},
 })
