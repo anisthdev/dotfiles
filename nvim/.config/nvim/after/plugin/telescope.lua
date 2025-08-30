@@ -10,7 +10,7 @@ for k, v in pairs(builtin) do
 			opts = opts or {}
 			return v(themes.get_ivy(vim.tbl_extend("force", {
 				layout_config = {
-					height = 15, -- absolute number of lines
+					height = 20, -- absolute number of lines
 				},
 			}, opts)))
 		end
@@ -71,7 +71,7 @@ telescope.setup({
 		["ui-select"] = {
 			require("telescope.themes").get_ivy({
 				layout_config = {
-					height = 15,
+					height = 20,
 				},
 			}),
 		},
