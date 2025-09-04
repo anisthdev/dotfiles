@@ -1,4 +1,5 @@
 {
       "$schema": "https://raw.githubusercontent.com/LuaLS/lua-language-server/master/schema/luarc.json",
-      "diagnostics.globals": ["vim"],
+      "diagnostics.globals": ["vim",
+        "Snacks"],
 }

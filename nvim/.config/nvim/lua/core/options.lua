@@ -11,7 +11,7 @@ vim.opt.pumheight = 10
 vim.opt.wrap = false
 vim.o.list = true
 vim.opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
-vim.o.confirm = true
+vim.o.updatetime = 1000
 
 -- editing
 vim.opt.tabstop = 2
