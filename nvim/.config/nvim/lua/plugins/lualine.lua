@@ -69,9 +69,9 @@ return {
 						mode = 0,
 						max_length = vim.o.columns * 2 / 3,
 						filetype_names = {
-							TelescopePrompt = " ",
-							dashboard = "Dashboard",
-							oil = "Oil",
+							TelescopePrompt = "  Find",
+							dashboard = "󰨝 Dashboard",
+							oil = "  Oil",
 						},
 						buffers_color = {
 							active = { bg = lualine_theme.colors.yellow, fg = lualine_theme.colors.bg1 },
@@ -143,7 +143,7 @@ return {
 			},
 			winbar = {},
 			inactive_winbar = {},
-			extensions = { "oil", "quickfix" },
+			extensions = { "quickfix" },
 		})
 
 		vim.schedule(function()
