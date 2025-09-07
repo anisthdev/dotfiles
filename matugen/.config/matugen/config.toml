@@ -21,15 +21,10 @@ input_path = './templates/hyprland.conf'
 output_path = '~/.config/hypr/colors.conf'
 post_hook = 'hyprctl reload'
 
-[templates.swayosd]
-input_path = './templates/colors.css'
-output_path = '~/.config/swayosd/colors.css'
-post_hook = 'pkill swayosd-server; setsid uwsm app -- swayosd-server &>/dev/null &'
-
 [templates.mako]
 input_path = './templates/mako.ini'
 output_path = '~/.config/mako/config'
-post_hook = 'makoctl reload'
+post_hook = '/home/asif/.config/matugen/post_scripts/set_mako_opacity.sh && makoctl reload'
 
 [templates.btop]
 input_path = './templates/btop.theme'
