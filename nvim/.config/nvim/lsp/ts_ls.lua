@@ -1,10 +1,4 @@
-local M = {}
-M.config = {
-	init_options = {
-		preferences = {
-			disableSuggestions = false,
-		},
-	},
+return {
 	settings = {
 		typescript = {
 			suggest = {
@@ -44,5 +38,3 @@ M.config = {
 		},
 	},
 }
-return M
-
