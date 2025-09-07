@@ -72,6 +72,8 @@ return {
 							TelescopePrompt = "  Find",
 							dashboard = "󰨝 Dashboard",
 							oil = "  Oil",
+							fugitive = "Git",
+							checkhealth = "  health",
 						},
 						buffers_color = {
 							active = { bg = lualine_theme.colors.yellow, fg = lualine_theme.colors.bg1 },
