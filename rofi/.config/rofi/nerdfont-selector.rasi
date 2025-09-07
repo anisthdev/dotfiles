@@ -1,0 +1,68 @@
+@import "./colors.rasi"
+* {
+  font: 'SF Mono 14';
+}
+
+configuration {
+    show-icons:         false;
+    display-nerdy: " ";
+}
+
+window {
+    width:              40%; /* Adjust width as needed */
+    padding:            16px;
+    border:             0px;
+    border-radius:      16px; /* Key for rounded corners */
+    background-color:   @surface-container;
+}
+
+mainbox {
+  background-color: transparent;
+}
+
+element {
+  background-color: transparent;
+}
+
+listview {
+    columns:            4;
+    lines: 5;
+    background-color: transparent;
+    fixed-height: false;
+    spacing: 30px;
+}
+
+element-text {
+    padding: 15px;
+    background-color: transparent;
+    color: @primary;
+    border-radius: 10px;
+}
+
+element-text.selected {
+    background-color: @primary;
+    color: @on-primary;
+}
+
+/* The top input bar */
+inputbar {
+    padding:            12px;
+    margin:             0px 0px 10px 0px; /* Margin below the input bar */
+    border-radius:      32px;
+    background-color: @surface-variant;
+    children:           [ prompt, entry ];
+}
+
+prompt {
+    enabled:            true;
+    padding:            0px 8px 0px 0px;
+    background-color:   transparent;
+    text-color:         @primary;
+}
+
+entry {
+    placeholder:        "Search...";
+    placeholder-color:  inherit;
+    background-color:   transparent;
+    text-color:         @primary;
+}
