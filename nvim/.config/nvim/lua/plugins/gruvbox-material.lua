@@ -22,7 +22,24 @@ return {
 
 		vim.api.nvim_set_hl(0, "DiagnosticVirtualTextHint", {
 			fg = "#a9b665", -- green
-			bg = "#3c3836",
+			italic = true,
+		})
+		vim.api.nvim_set_hl(0, "DiagnosticVirtualLinesError", {
+			fg = "#ea6962", -- red
+			bold = true,
+		})
+
+		vim.api.nvim_set_hl(0, "DiagnosticVirtualLinesWarn", {
+			fg = "#d8a657", -- yellow
+			bold = true,
+		})
+
+		vim.api.nvim_set_hl(0, "DiagnosticVirtualLinesInfo", {
+			fg = "#7daea3", -- aqua
+		})
+
+		vim.api.nvim_set_hl(0, "DiagnosticVirtualLinesHint", {
+			fg = "#a9b665", -- green
 			italic = true,
 		})
 	end,
