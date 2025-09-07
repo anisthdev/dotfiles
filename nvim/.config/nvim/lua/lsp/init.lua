@@ -20,6 +20,7 @@ function M.setup()
 		"tailwindcss",
 		"marksman",
 	}
+	vim.lsp.enable("kotlin_lsp")
 	for _, server in ipairs(servers) do
 		local has_custom_config, server_config = pcall(require, "lsp.servers." .. server)
 		if has_custom_config then
