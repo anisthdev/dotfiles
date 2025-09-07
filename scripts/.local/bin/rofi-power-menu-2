@@ -27,6 +27,7 @@ rofi_cmd() {
         -theme-str "window {width: $win_width; location: $position; anchor: $anchor; }" \
 		-theme-str 'textbox-prompt-colon {str: "";}' \
 		-dmenu \
+    -u 5 \
 		-p "$prompt" \
 		-mesg "$mesg" \
 		-markup-rows \
