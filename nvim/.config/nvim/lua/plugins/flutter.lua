@@ -19,40 +19,49 @@ return {
 					virtual_text_str = "󱓻 ",
 				},
 				on_attach = function(_, bufnr)
-					local opts = { buffer = bufnr, desc = "" }
-
 					vim.keymap.set(
 						"n",
 						"<leader>r",
 						":FlutterRestart<CR>",
-						vim.tbl_extend("force", opts, { desc = "Run Flutter" })
+						{ buffer = bufnr, desc = "[R]estart Flutter" }
 					)
 					vim.keymap.set(
 						"n",
 						"<leader>h",
 						":FlutterReload<CR>",
-						vim.tbl_extend("force", opts, { desc = "Run Flutter" })
+						{ buffer = bufnr, desc = "[H]ot Reload Flutter" }
 					)
 					vim.keymap.set(
 						"n",
 						"<leader>R",
 						":FlutterDevices<CR>",
-						vim.tbl_extend("force", opts, { desc = "Run Flutter" })
+						{ buffer = bufnr, desc = "List Devices Flutter" }
 					)
 					vim.keymap.set(
 						"n",
 						"<leader>l",
 						":FlutterLogToggle<CR>",
-						vim.tbl_extend("force", opts, { desc = "Run Flutter" })
+						{ buffer = bufnr, desc = "[L]og Toggle Flutter" }
 					)
-					vim.keymap.set("n", "<leader>th", function()
-						vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
-					end, vim.tbl_extend("force", opts, { desc = "Run Flutter" }))
 					vim.keymap.set(
 						"n",
 						"<leader>ft",
 						":Telescope flutter commands<CR>",
-						vim.tbl_extend("force", opts, { desc = "Run Flutter" })
+						{ buffer = bufnr, desc = "[F]lutter [T]ools" }
+					)
+					vim.keymap.set("n", "grr", vim.lsp.buf.references, { buffer = bufnr, desc = "[G]oto [R]eferences" })
+					vim.keymap.set("n", "grd", vim.lsp.buf.definition, { buffer = bufnr, desc = "[G]oto [D]efinition" })
+					vim.keymap.set(
+						"n",
+						"gri",
+						vim.lsp.buf.implementation,
+						{ buffer = bufnr, desc = "[G]oto [I]mplementation" }
+					)
+					vim.keymap.set(
+						"n",
+						"gra",
+						vim.lsp.buf.code_action,
+						{ buffer = bufnr, desc = "[G]oto Code [A]ction" }
 					)
 				end,
 			},
