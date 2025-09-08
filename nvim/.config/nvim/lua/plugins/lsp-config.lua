@@ -2,7 +2,6 @@ return {
 	"neovim/nvim-lspconfig",
 	event = { "BufReadPre", "BufNewFile" },
 	dependencies = {
-		{ "arkav/lualine-lsp-progress", opts = {} },
 		{ "williamboman/mason.nvim", opts = {} },
 	},
 	config = function()
@@ -16,29 +15,42 @@ return {
 			"kotlin_lsp",
 		}
 
-		-- default lsp configuration for all servers
-		vim.lsp.config("*", {
-			on_attach = function(_, bufnr)
+		-- define all the keymaps and other settings on lsp attach
+		vim.api.nvim_create_autocmd("LspAttach", {
+			callback = function(args)
+				local bufnr = args.buf
+				vim.lsp.document_color.enable(true, bufnr, { style = " 󱓻 " })
 				vim.keymap.set("n", "grd", vim.lsp.buf.definition, { buffer = bufnr, desc = "Go to Definition" })
-				vim.keymap.set("n", "]d", function()
-					vim.diagnostic.jump({ count = 1, float = true })
-				end, { buffer = bufnr, desc = "Next diagnostic" })
-
-				vim.keymap.set("n", "[d", function()
-					vim.diagnostic.jump({ count = -1, float = true })
-				end, { buffer = bufnr, desc = "Previous diagnostic" })
 			end,
+		})
+
+		-- default capabilities and root_markers for all servers
+		vim.lsp.config("*", {
 			capabilities = require("blink.cmp").get_lsp_capabilities(),
 			root_markers = { ".git" },
 		})
 
-		-- default diagnostic configuration
+		-- diagnostic configuration
 		vim.diagnostic.config({
 			severity_sort = true,
 			float = { border = "rounded", source = "if_many" },
 			underline = { severity = vim.diagnostic.severity.ERROR },
 			signs = false,
-			virtual_lines = true,
+			virtual_text = {
+				prefix = function(diagnostic)
+					if diagnostic.severity == vim.diagnostic.severity.ERROR then
+						return " "
+					elseif diagnostic.severity == vim.diagnostic.severity.WARN then
+						return " "
+					elseif diagnostic.severity == vim.diagnostic.severity.INFO then
+						return " "
+					elseif diagnostic.severity == vim.diagnostic.severity.HINT then
+						return " "
+					end
+					return "➤ "
+				end,
+				spacing = 2,
+			},
 		})
 
 		-- enable the server configurations

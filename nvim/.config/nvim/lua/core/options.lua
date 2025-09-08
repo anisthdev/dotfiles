@@ -12,6 +12,7 @@ vim.opt.wrap = false
 vim.o.list = true
 vim.opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
 vim.o.updatetime = 1000
+vim.opt.winborder = "rounded"
 
 -- editing
 vim.opt.tabstop = 2
