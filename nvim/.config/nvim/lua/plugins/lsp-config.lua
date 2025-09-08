@@ -13,6 +13,7 @@ return {
 			"cssls",
 			"tailwindcss",
 			"kotlin_lsp",
+			"copilot",
 		}
 
 		-- define all the keymaps and other settings on lsp attach
@@ -20,7 +21,13 @@ return {
 			callback = function(args)
 				local bufnr = args.buf
 				vim.lsp.document_color.enable(true, bufnr, { style = " 󱓻 " })
+				vim.lsp.inline_completion.enable()
 				vim.keymap.set("n", "grd", vim.lsp.buf.definition, { buffer = bufnr, desc = "Go to Definition" })
+				vim.keymap.set("i", "<Tab>", function()
+					if not vim.lsp.inline_completion.get() then
+						return "<Tab>"
+					end
+				end, { buffer = bufnr, expr = true, desc = "Accept the current inline completion" })
 			end,
 		})
 
@@ -39,15 +46,15 @@ return {
 			virtual_text = {
 				prefix = function(diagnostic)
 					if diagnostic.severity == vim.diagnostic.severity.ERROR then
-						return " "
+						return "  "
 					elseif diagnostic.severity == vim.diagnostic.severity.WARN then
-						return " "
+						return "  "
 					elseif diagnostic.severity == vim.diagnostic.severity.INFO then
-						return " "
+						return "  "
 					elseif diagnostic.severity == vim.diagnostic.severity.HINT then
-						return " "
+						return "  "
 					end
-					return "➤ "
+					return " ➤ "
 				end,
 				spacing = 2,
 			},
