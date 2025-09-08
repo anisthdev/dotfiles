@@ -1,9 +1,7 @@
 return {
 	"nvim-lualine/lualine.nvim",
-	dependencies = { "nvim-tree/nvim-web-devicons" },
+	dependencies = { "nvim-tree/nvim-web-devicons", { "arkav/lualine-lsp-progress", opts = {} } },
 	config = function()
-		local lualine_theme = require("core.ui.lualine")
-
 		local function lsp_status()
 			local clients = vim.lsp.get_clients({ bufnr = 0 })
 			if #clients == 0 then
@@ -43,7 +41,7 @@ return {
 		require("lualine").setup({
 			options = {
 				icons_enabled = true,
-				theme = lualine_theme.theme,
+				theme = "gruvbox-material",
 				section_separators = "",
 				component_separators = "", -- { left = "│", right = "│" },
 				disabled_filetypes = {
@@ -62,42 +60,10 @@ return {
 				lualine_a = { { "mode", icon = "" } },
 				lualine_b = { { "branch", icon = "" } },
 				lualine_c = {
-					{
-						"buffers",
-						show_filename_only = true,
-						show_modified_status = true,
-						mode = 0,
-						max_length = vim.o.columns * 2 / 3,
-						filetype_names = {
-							TelescopePrompt = "  Find",
-							dashboard = "󰨝 Dashboard",
-							oil = "  Oil",
-							fugitive = "Git",
-							checkhealth = "  health",
-						},
-						buffers_color = {
-							active = { bg = lualine_theme.colors.yellow, fg = lualine_theme.colors.bg1 },
-							inactive = { bg = lualine_theme.colors.bg1, fg = lualine_theme.colors.disable },
-						},
-						symbols = {
-							alternate_file = "",
-							directory = " ",
-						},
-					},
-				},
-				lualine_x = {
 					"diff",
 					"diagnostics",
 					{
 						"lsp_progress",
-						colors = {
-							percentage = lualine_theme.colors.aqua,
-							title = lualine_theme.colors.aqua,
-							message = lualine_theme.colors.aqua,
-							spinner = lualine_theme.colors.aqua,
-							lsp_client_name = lualine_theme.colors.yellow,
-							use = true,
-						},
 						separators = {
 							component = " ",
 							progress = " | ",
@@ -113,32 +79,21 @@ return {
 						spinner_symbols = { ".  ", ".. ", "...", " ..", "  .", "   " },
 					},
 				},
-				lualine_y = {
+				lualine_x = {
 					{
 						flutter_device,
 						icon = "",
-						color = { fg = lualine_theme.colors.violet, bg = lualine_theme.colors.bg2 },
 					},
+				},
+				lualine_y = {
 					{
 						lsp_status,
 						icon = " ",
-						color = { fg = lualine_theme.colors.green, bg = lualine_theme.colors.bg2 },
-					}, -- LSP status
+					},
 				},
 				lualine_z = { "location" },
 			},
-			tabline = {
-				lualine_a = {
-					{
-						"tabs",
-						mode = 2,
-						tabs_color = {
-							active = { fg = lualine_theme.colors.bg1, bg = lualine_theme.colors.yellow },
-							inactive = { fg = lualine_theme.colors.disable, bg = lualine_theme.colors.bg1 },
-						},
-					},
-				},
-			},
+			tabline = {},
 			winbar = {},
 			inactive_winbar = {},
 			extensions = { "quickfix" },
