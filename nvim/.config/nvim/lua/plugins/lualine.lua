@@ -2,7 +2,7 @@ return {
 	"nvim-lualine/lualine.nvim",
 	dependencies = { "nvim-tree/nvim-web-devicons" },
 	config = function()
-		local lualine_theme = require("ui.lualine")
+		local lualine_theme = require("core.ui.lualine")
 
 		local function lsp_status()
 			local clients = vim.lsp.get_clients({ bufnr = 0 })
@@ -51,7 +51,7 @@ return {
 					winbar = {},
 				},
 				globalstatus = true,
-				always_show_tabline = true,
+				always_show_tabline = false,
 				refresh = {
 					statusline = 500,
 					tabline = 500,
@@ -85,8 +85,9 @@ return {
 						},
 					},
 				},
-				lualine_x = { "diff", "diagnostics" },
-				lualine_y = {
+				lualine_x = {
+					"diff",
+					"diagnostics",
 					{
 						"lsp_progress",
 						colors = {
@@ -111,18 +112,13 @@ return {
 						timer = { progress_enddelay = 500, spinner = 1000, lsp_client_name_enddelay = 1000 },
 						spinner_symbols = { ".  ", ".. ", "...", " ..", "  .", "   " },
 					},
+				},
+				lualine_y = {
 					{
 						flutter_device,
 						icon = "",
 						color = { fg = lualine_theme.colors.violet, bg = lualine_theme.colors.bg2 },
 					},
-					-- {
-					-- 	function()
-					-- 		return "│"
-					-- 	end, -- fake separator
-					-- 	color = { fg = lualine_theme.colors.aqua, bg = lualine_theme.colors.bg2 }, -- red line on same bg
-					-- 	padding = { left = 1, right = 1 },
-					-- },
 					{
 						lsp_status,
 						icon = " ",
@@ -147,9 +143,5 @@ return {
 			inactive_winbar = {},
 			extensions = { "quickfix" },
 		})
-
-		vim.schedule(function()
-			vim.opt.showtabline = 1
-		end)
 	end,
 }
