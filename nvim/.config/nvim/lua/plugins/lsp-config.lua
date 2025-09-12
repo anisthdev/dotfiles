@@ -13,7 +13,6 @@ return {
 			"cssls",
 			"tailwindcss",
 			"kotlin_lsp",
-			"copilot",
 		}
 
 		-- define all the keymaps and other settings on lsp attach
