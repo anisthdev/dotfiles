@@ -16,7 +16,7 @@ return {
 		require("blink.cmp").setup({
 			completion = {
 				menu = { auto_show = false, border = "none" },
-				ghost_text = { enabled = true, show_with_menu = false, auto_show = true },
+				ghost_text = { enabled = true, show_with_menu = false },
 				documentation = { auto_show = true, auto_show_delay_ms = 1500 },
 				trigger = { show_in_snippet = false },
 			},
