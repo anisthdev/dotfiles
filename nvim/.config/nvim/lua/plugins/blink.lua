@@ -3,11 +3,7 @@ return {
 	event = "VimEnter",
 	version = "1.*",
 	dependencies = {
-		{
-			"L3MON4D3/LuaSnip",
-			version = "2.*",
-			build = "make install_jsregexp",
-		},
+		{ "L3MON4D3/LuaSnip", version = "2.*", build = "make install_jsregexp" },
 		"rafamadriz/friendly-snippets",
 	},
 	config = function()
@@ -22,9 +18,7 @@ return {
 			},
 			sources = {
 				default = { "lsp", "path", "snippets", "lazydev" },
-				providers = {
-					lazydev = { module = "lazydev.integrations.blink", score_offset = 100 },
-				},
+				providers = { lazydev = { module = "lazydev.integrations.blink", score_offset = 100 } },
 			},
 			snippets = { preset = "luasnip" },
 			fuzzy = { implementation = "lua" },
