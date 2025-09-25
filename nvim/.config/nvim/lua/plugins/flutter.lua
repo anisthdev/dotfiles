@@ -10,14 +10,6 @@ return {
 				settings = {
 					inlayHints = true,
 				},
-				color = {
-					enabled = true,
-					background = false,
-					background_color = nil,
-					foreground = false,
-					virtual_text = true,
-					virtual_text_str = "󱓻 ",
-				},
 				on_attach = function(_, bufnr)
 					vim.keymap.set(
 						"n",

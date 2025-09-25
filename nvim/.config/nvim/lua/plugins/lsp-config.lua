@@ -1,24 +1,24 @@
 return {
 	"neovim/nvim-lspconfig",
 	event = { "BufReadPre", "BufNewFile" },
-	dependencies = {
-		{ "williamboman/mason.nvim", opts = {} },
-	},
+	dependencies = { { "williamboman/mason.nvim", opts = {} } },
 	config = function()
 		local servers = {
-			"lua_ls",
-			"ts_ls",
+			"emmylua_ls",
+			"vtsls",
 			"pyright",
 			"eslint",
 			"cssls",
 			"tailwindcss",
 			"kotlin_lsp",
+			"jsonls",
 		}
 
 		-- define all the keymaps and other settings on lsp attach
 		vim.api.nvim_create_autocmd("LspAttach", {
 			callback = function(args)
 				local bufnr = args.buf
+				local client = vim.lsp.get_client_by_id(args.data.client_id)
 				vim.lsp.document_color.enable(true, bufnr, { style = " 󱓻 " })
 				vim.lsp.inline_completion.enable()
 				vim.keymap.set("n", "grd", vim.lsp.buf.definition, { buffer = bufnr, desc = "Go to Definition" })
@@ -27,6 +27,14 @@ return {
 						return "<Tab>"
 					end
 				end, { buffer = bufnr, expr = true, desc = "Accept the current inline completion" })
+
+				if client and client:supports_method("textDocument/codeLens") then
+					vim.lsp.codelens.refresh()
+					vim.api.nvim_create_autocmd({ "BufEnter", "CursorHold", "InsertLeave" }, {
+						buffer = bufnr,
+						callback = vim.lsp.codelens.refresh,
+					})
+				end
 			end,
 		})
 
@@ -34,6 +42,7 @@ return {
 		vim.lsp.config("*", {
 			capabilities = require("blink.cmp").get_lsp_capabilities(),
 			root_markers = { ".git" },
+			cmd = {},
 		})
 
 		-- diagnostic configuration

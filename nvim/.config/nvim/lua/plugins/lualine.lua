@@ -1,5 +1,6 @@
 return {
 	"nvim-lualine/lualine.nvim",
+	event = "VeryLazy",
 	dependencies = { "nvim-tree/nvim-web-devicons", { "arkav/lualine-lsp-progress", opts = {} } },
 	config = function()
 		local function lsp_status()
@@ -60,8 +61,28 @@ return {
 				lualine_a = { { "mode", icon = "" } },
 				lualine_b = { { "branch", icon = "" } },
 				lualine_c = {
-					"diff",
-					"diagnostics",
+					{
+						"buffers",
+						buffers_color = {
+							active = "lualine_a_insert", -- Color for active buffer.
+							inactive = "lualine_c_inactive", -- Color for inactive buffer.
+						},
+						symbols = {
+							alternate_file = "",
+							directory = "",
+						},
+						filetype_names = {
+							TelescopePrompt = " Find",
+							dashboard = "Dashboard",
+							packer = "Packer",
+							fzf = "FZF",
+							alpha = "Alpha",
+							oil = " Oil",
+							checkhealth = " health",
+						},
+					},
+				},
+				lualine_x = {
 					{
 						"lsp_progress",
 						separators = {
@@ -78,14 +99,14 @@ return {
 						timer = { progress_enddelay = 500, spinner = 1000, lsp_client_name_enddelay = 1000 },
 						spinner_symbols = { ".  ", ".. ", "...", " ..", "  .", "   " },
 					},
+					"diff",
+					"diagnostics",
 				},
-				lualine_x = {
+				lualine_y = {
 					{
 						flutter_device,
 						icon = "",
 					},
-				},
-				lualine_y = {
 					{
 						lsp_status,
 						icon = " ",

@@ -1,6 +1,13 @@
 return {
 	settings = {
 		typescript = {
+			referencesCodeLens = {
+				enabled = true,
+				showOnAllFunctions = true, -- optional
+			},
+			implementationsCodeLens = {
+				enabled = true,
+			},
 			suggest = {
 				autoImports = true,
 				completeFunctionCalls = true,
@@ -22,6 +29,13 @@ return {
 			suggest = {
 				autoImports = true,
 				completeFunctionCalls = true,
+			},
+			referencesCodeLens = {
+				enabled = true,
+				showOnAllFunctions = true, -- optional
+			},
+			implementationsCodeLens = {
+				enabled = true,
 			},
 			inlayHints = {
 				includeInlayParameterNameHints = "all",
