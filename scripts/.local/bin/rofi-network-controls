@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if ! command -v nmcli >/dev/null 2>&1 || ! command -v rofi >/dev/null 2>&1; then
+  notify-send "Network controls unavailable" "Missing nmcli or rofi"
+  exit 1
+fi
+
+wifi_state="$(nmcli -t -f WIFI g 2>/dev/null || echo unknown)"
+net_state="$(nmcli -t -f STATE g 2>/dev/null || echo unknown)"
+bt_state="$(nmcli -t -f BLUETOOTH g 2>/dev/null || echo unknown)"
+
+choice="$(printf '%s\n' \
+  "Full Network Menu" \
+  "Toggle Wi-Fi (now: $wifi_state)" \
+  "Toggle Networking (now: $net_state)" \
+  "Toggle Bluetooth (now: $bt_state)" \
+  "Open Connections Editor" \
+  "Rescan Wi-Fi" \
+  | rofi -dmenu -i -p "Network Controls")"
+
+case "$choice" in
+  "Full Network Menu")
+    uwsm app -- networkmanager_dmenu --config "$HOME/.config/hypr/networkmanager-dmenu.ini"
+    ;;
+  "Toggle Wi-Fi (now: $wifi_state)")
+    if [[ "$wifi_state" == "enabled" ]]; then
+      nmcli radio wifi off
+    else
+      nmcli radio wifi on
+    fi
+    ;;
+  "Toggle Networking (now: $net_state)")
+    if [[ "$net_state" == "connected" || "$net_state" == "connecting" || "$net_state" == "connected (local only)" ]]; then
+      nmcli networking off
+    else
+      nmcli networking on
+    fi
+    ;;
+  "Toggle Bluetooth (now: $bt_state)")
+    if [[ "$bt_state" == "enabled" ]]; then
+      nmcli radio bluetooth off
+    else
+      nmcli radio bluetooth on
+    fi
+    ;;
+  "Open Connections Editor")
+    uwsm app -- nm-connection-editor
+    ;;
+  "Rescan Wi-Fi")
+    nmcli device wifi rescan && notify-send "Wi-Fi" "Rescan requested"
+    ;;
+esac

@@ -109,7 +109,7 @@
       " "
     ],
     "tooltip-format": "Connected to {essid}",
-    "on-click": "kitty --class=Nmtui -e nmtui"
+    "on-click": "~/.local/bin/rofi-wifi-only"
   },
   "hyprland/workspaces": {
     "format": "{icon}",

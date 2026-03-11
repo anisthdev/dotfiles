@@ -1,0 +1,158 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if ! command -v nmcli >/dev/null 2>&1 || ! command -v rofi >/dev/null 2>&1; then
+  notify-send "Wi-Fi menu unavailable" "Missing nmcli or rofi"
+  exit 1
+fi
+
+if [[ "$(nmcli -t -f WIFI g 2>/dev/null)" != "enabled" ]]; then
+  nmcli radio wifi on || {
+    notify-send "Wi-Fi" "Failed to enable Wi-Fi"
+    exit 1
+  }
+fi
+
+notify-send -u low -t 1200 "Wi-Fi" "Scanning networks..."
+
+declare -A best_signal=()
+declare -A is_active=()
+declare -A has_security=()
+
+wifi_icon_for_signal() {
+  local signal="$1"
+  if (( signal >= 55 )); then
+    printf ''
+  elif (( signal >= 35 )); then
+    printf ''
+  elif (( signal >= 15 )); then
+    printf ''
+  elif (( signal >= 0 )); then
+    printf ''
+  else
+    printf ''
+  fi
+}
+
+escape_markup() {
+  local text="$1"
+  text="${text//&/&amp;}"
+  text="${text//</&lt;}"
+  text="${text//>/&gt;}"
+  printf '%s' "$text"
+}
+
+mapfile -t lines < <(nmcli -t -f IN-USE,SSID,SIGNAL,SECURITY device wifi list --rescan yes)
+
+for line in "${lines[@]}"; do
+  inuse="${line%%:*}"
+  rest="${line#*:}"
+  ssid="${rest%%:*}"
+  rest="${rest#*:}"
+  signal="${rest%%:*}"
+  security="${rest#*:}"
+
+  # Trim whitespace in case nmcli emits leading spaces for non-active rows.
+  inuse="${inuse#"${inuse%%[![:space:]]*}"}"
+  inuse="${inuse%"${inuse##*[![:space:]]}"}"
+  ssid="${ssid#"${ssid%%[![:space:]]*}"}"
+  ssid="${ssid%"${ssid##*[![:space:]]}"}"
+
+  # Unescape nmcli terse-field escaping.
+  ssid="${ssid//\\:/:}"
+  security="${security//\\:/:}"
+
+  [[ -z "${ssid// }" ]] && continue
+
+  [[ "$signal" =~ ^[0-9]+$ ]] || signal=0
+  if [[ -z "${best_signal[$ssid]:-}" || "$signal" -gt "${best_signal[$ssid]}" ]]; then
+    best_signal["$ssid"]="$signal"
+  fi
+
+  if [[ "$inuse" == "*" ]]; then
+    is_active["$ssid"]=1
+  fi
+
+  if [[ -n "${security// }" && "$security" != "--" ]]; then
+    has_security["$ssid"]=1
+  fi
+done
+
+if [[ ${#best_signal[@]} -eq 0 ]]; then
+  notify-send "Wi-Fi" "No networks found"
+  exit 0
+fi
+
+mapfile -t sorted_rows < <(
+  for ssid in "${!best_signal[@]}"; do
+    signal="${best_signal[$ssid]}"
+    icon="$(wifi_icon_for_signal "$signal")"
+    ssid_escaped="$(escape_markup "$ssid")"
+    icon_markup="<span font_family='lucide'>$icon</span>"
+    active_prefix=""
+    secure_icon=""
+
+    if [[ "${is_active[$ssid]:-0}" -eq 1 ]]; then
+      active_prefix="󰄬 "
+    fi
+
+    if [[ "${has_security[$ssid]:-0}" -eq 1 ]]; then
+      secure_icon="󰌾"
+    fi
+
+    visible_label="${active_prefix}${icon}  ${ssid}"
+    printf '%03d\t%s\t%s%s  %s\t%d\t%s\n' "$signal" "$ssid" "$active_prefix" "$icon_markup" "$ssid_escaped" "${#visible_label}" "$secure_icon"
+  done | sort -rn
+)
+
+menu_items=()
+ssids=()
+left_labels=()
+left_visible_lens=()
+secure_icons=()
+max_visible_len=0
+
+for row in "${sorted_rows[@]}"; do
+  IFS=$'\t' read -r _ ssid left_label left_visible_len secure_icon <<< "$row"
+  ssids+=("$ssid")
+  left_labels+=("$left_label")
+  left_visible_lens+=("$left_visible_len")
+  secure_icons+=("$secure_icon")
+  if (( left_visible_len > max_visible_len )); then
+    max_visible_len="$left_visible_len"
+  fi
+done
+
+for i in "${!left_labels[@]}"; do
+  right_pad=$((max_visible_len - left_visible_lens[$i] + 2))
+  if [[ -n "${secure_icons[$i]}" ]]; then
+    menu_items+=("$(printf "%s%*s%s" "${left_labels[$i]}" "$right_pad" "" "${secure_icons[$i]}")")
+  else
+    menu_items+=("${left_labels[$i]}")
+  fi
+done
+
+choice_idx="$(printf '%s\n' "${menu_items[@]}" | rofi -dmenu -i -format i -markup-rows -p "" -theme-str 'window { location: northeast; anchor: northeast; x-offset: -10px; y-offset: 10px; } textbox-prompt-colon { str: ""; font: "lucide 13"; } element-text { font: "monospace 13"; }')"
+[[ -z "$choice_idx" ]] && exit 0
+
+ssid="${ssids[$choice_idx]}"
+
+if nmcli -t -f ACTIVE,SSID connection show --active | grep -Fq "yes:$ssid"; then
+  notify-send "Wi-Fi" "Already connected to $ssid"
+  exit 0
+fi
+
+if nmcli device wifi connect "$ssid" >/dev/null 2>&1; then
+  notify-send "Wi-Fi" "Connected to $ssid"
+  exit 0
+fi
+
+password="$(rofi -dmenu -password -p "Password: $ssid")"
+[[ -z "$password" ]] && exit 0
+
+if nmcli device wifi connect "$ssid" password "$password" >/dev/null 2>&1; then
+  notify-send "Wi-Fi" "Connected to $ssid"
+else
+  notify-send "Wi-Fi" "Failed to connect to $ssid"
+  exit 1
+fi
