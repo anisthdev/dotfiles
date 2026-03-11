@@ -12,31 +12,39 @@ return {
 			"tailwindcss",
 			"kotlin_lsp",
 			"jsonls",
+			"copilot",
 		}
 
 		-- define all the keymaps and other settings on lsp attach
-		vim.api.nvim_create_autocmd("LspAttach", {
-			callback = function(args)
-				local bufnr = args.buf
-				local client = vim.lsp.get_client_by_id(args.data.client_id)
-				vim.lsp.document_color.enable(true, bufnr, { style = " 󱓻 " })
+		local function on_attach(args)
+			local bufnr = args.buf
+			local client = assert(vim.lsp.get_client_by_id(args.data.client_id))
+
+			vim.lsp.document_color.enable(true, bufnr, { style = " 󱓻 " })
+
+			if client:supports_method("textDocument/inlineCompletion") then
 				vim.lsp.inline_completion.enable()
-				vim.keymap.set("n", "grd", vim.lsp.buf.definition, { buffer = bufnr, desc = "Go to Definition" })
 				vim.keymap.set("i", "<Tab>", function()
 					if not vim.lsp.inline_completion.get() then
 						return "<Tab>"
 					end
 				end, { buffer = bufnr, expr = true, desc = "Accept the current inline completion" })
+			end
 
-				if client and client:supports_method("textDocument/codeLens") then
-					vim.lsp.codelens.refresh()
-					vim.api.nvim_create_autocmd({ "BufEnter", "CursorHold", "InsertLeave" }, {
-						buffer = bufnr,
-						callback = vim.lsp.codelens.refresh,
-					})
-				end
-			end,
-		})
+			if client:supports_method("textDocument/definition") then
+				vim.keymap.set("n", "grd", vim.lsp.buf.definition, { buffer = bufnr, desc = "Go to Definition" })
+			end
+
+			if client:supports_method("textDocument/codeLens") then
+				vim.lsp.codelens.refresh()
+				vim.api.nvim_create_autocmd({ "BufEnter", "CursorHold", "InsertLeave" }, {
+					buffer = bufnr,
+					callback = vim.lsp.codelens.refresh,
+				})
+			end
+		end
+
+		vim.api.nvim_create_autocmd("LspAttach", { callback = on_attach })
 
 		-- default capabilities and root_markers for all servers
 		vim.lsp.config("*", {
