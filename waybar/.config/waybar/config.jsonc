@@ -46,7 +46,7 @@
     "tooltip-format": "{controller_alias}\t{controller_address}",
     "tooltip-format-connected": "{device_enumerate}",
     "tooltip-format-enumerate-connected": "{device_alias}\t{device_battery_percentage}%",
-    "on-click": "kitty --override font_size=12 --override single_window_padding_width=20 --class=Bluetuith -e bluetuith"
+    "on-click": "~/.local/bin/rofi-bluetooth-only"
   },
   "custom/pacman": {
     "format": "  {}",
