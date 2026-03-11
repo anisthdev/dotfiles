@@ -23,3 +23,6 @@ set -gx VISUAL nvim
 
 # map keybindings
 bind \cg efc
+
+# opencode
+fish_add_path /home/asif/.opencode/bin
