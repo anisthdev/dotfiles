@@ -5,12 +5,7 @@ screenrecording() {
   filename="$HOME/Videos/screenrecording-$(date +'%Y-%m-%d_%H-%M-%S').mp4"
   notify-send "Screen recording starting..." -t 1000 -i /home/asif/.local/share/icons/McMojave-circle/apps/scalable/simplescreenrecorder.svg
   sleep 1
-
-  if lspci | grep -qi 'nvidia'; then
-    wf-recorder -f "$filename" -c libx264 -p crf=23 -p preset=medium -p movflags=+faststart "$@"
-  else
-    wl-screenrec -f "$filename" --ffmpeg-encoder-options="-c:v libx264 -crf 23 -preset medium -movflags +faststart" "$@"
-  fi
+  wl-screenrec -f "$filename" --ffmpeg-encoder-options="-c:v libx264 -crf 23 -preset medium -movflags +faststart" --output HDMI-A-1 "$@" 
 }
 
 launch_rofi() {
