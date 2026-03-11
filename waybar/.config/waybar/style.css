@@ -85,6 +85,24 @@ window#waybar {
     border-radius: 30px;
 }
 
+#custom-wifi-spinner {
+    padding: 0;
+    margin: 0;
+    min-width: 0;
+    background: transparent;
+    color: transparent;
+    font-size: 0;
+}
+
+#custom-wifi-spinner.wifi-loading {
+    background-color: @primary;
+    color: @on_secondary;
+    border-radius: 10px;
+    font-size: 15px;
+    margin: 3px 6px 3px 0;
+    padding: 0px 12px;
+}
+
 #network,
 #battery,
 #bluetooth {
