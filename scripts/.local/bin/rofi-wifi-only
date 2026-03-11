@@ -6,14 +6,24 @@ if ! command -v nmcli >/dev/null 2>&1 || ! command -v rofi >/dev/null 2>&1; then
   exit 1
 fi
 
+theme="$HOME/.config/rofi/wifi-menu.rasi"
+colors_rasi="$HOME/.config/rofi/colors.rasi"
+
+connected_color="#C3CB97"  # fallback if colors.rasi is unavailable
+if [[ -f "$colors_rasi" ]]; then
+  tertiary_line="$(grep -E '^\s*tertiary:\s*rgba' "$colors_rasi" | head -n1)"
+  if [[ "$tertiary_line" =~ rgba\(([0-9]+),\ *([0-9]+),\ *([0-9]+) ]]; then
+    connected_color="$(printf '#%02X%02X%02X' \
+      "${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}" "${BASH_REMATCH[3]}")"
+  fi
+fi
+
 if [[ "$(nmcli -t -f WIFI g 2>/dev/null)" != "enabled" ]]; then
   nmcli radio wifi on || {
     notify-send "Wi-Fi" "Failed to enable Wi-Fi"
     exit 1
   }
 fi
-
-notify-send -u low -t 1200 "Wi-Fi" "Scanning networks..."
 
 declare -A best_signal=()
 declare -A is_active=()
@@ -23,22 +33,22 @@ rofi_menu_cmd() {
   rofi -dmenu -i -format i -markup-rows -p "󰍉" \
     -kb-custom-1 "c" \
     -kb-custom-2 "f" \
-    -theme-str 'window { location: northeast; anchor: northeast; x-offset: -10px; y-offset: 10px; }' \
-    -theme-str 'prompt { font: "monospace 13"; }'
+    -kb-custom-3 "r" \
+    -theme "$theme"
 }
 
 wifi_icon_for_signal() {
   local signal="$1"
   if (( signal >= 55 )); then
-    printf ''
+    printf ''
   elif (( signal >= 35 )); then
-    printf ''
+    printf ''
   elif (( signal >= 15 )); then
-    printf ''
+    printf ''
   elif (( signal >= 0 )); then
-    printf ''
+    printf ''
   else
-    printf ''
+    printf ''
   fi
 }
 
@@ -49,6 +59,10 @@ escape_markup() {
   text="${text//>/&gt;}"
   printf '%s' "$text"
 }
+
+# Fixed column width for right-alignment — same reasoning as bluetooth menu.
+# Tune down if icons show as "...", up if there's too much gap before them.
+menu_cols=26
 
 mapfile -t lines < <(nmcli -t -f IN-USE,SSID,SIGNAL,SECURITY device wifi list --rescan yes)
 
@@ -96,20 +110,21 @@ mapfile -t sorted_rows < <(
     signal="${best_signal[$ssid]}"
     icon="$(wifi_icon_for_signal "$signal")"
     ssid_escaped="$(escape_markup "$ssid")"
-    icon_markup="<span font_family='lucide'>$icon</span>"
-    active_prefix=""
+    icon_markup="<span font_family='lucide'>${icon}</span>"
     secure_icon=""
-
-    if [[ "${is_active[$ssid]:-0}" -eq 1 ]]; then
-      active_prefix="󰄬 "
-    fi
 
     if [[ "${has_security[$ssid]:-0}" -eq 1 ]]; then
       secure_icon="󰌾"
     fi
 
-    visible_label="${active_prefix}${icon}  ${ssid}"
-    printf '%03d\t%s\t%s%s  %s\t%d\t%s\n' "$signal" "$ssid" "$active_prefix" "$icon_markup" "$ssid_escaped" "${#visible_label}" "$secure_icon"
+    if [[ "${is_active[$ssid]:-0}" -eq 1 ]]; then
+      left_label="<span foreground='${connected_color}'>${icon_markup} ${ssid_escaped}</span>"
+    else
+      left_label="${icon_markup} ${ssid_escaped}"
+    fi
+
+    visible_label="${icon} ${ssid}"
+    printf '%03d\t%s\t%s\t%d\t%s\n' "$signal" "$ssid" "$left_label" "${#visible_label}" "$secure_icon"
   done | sort -rn
 )
 
@@ -118,7 +133,6 @@ ssids=()
 left_labels=()
 left_visible_lens=()
 secure_icons=()
-max_visible_len=0
 
 for row in "${sorted_rows[@]}"; do
   IFS=$'\t' read -r _ ssid left_label left_visible_len secure_icon <<< "$row"
@@ -126,13 +140,11 @@ for row in "${sorted_rows[@]}"; do
   left_labels+=("$left_label")
   left_visible_lens+=("$left_visible_len")
   secure_icons+=("$secure_icon")
-  if (( left_visible_len > max_visible_len )); then
-    max_visible_len="$left_visible_len"
-  fi
 done
 
 for i in "${!left_labels[@]}"; do
-  right_pad=$((max_visible_len - left_visible_lens[$i] + 2))
+  right_pad=$((menu_cols - left_visible_lens[$i]))
+  (( right_pad < 1 )) && right_pad=1
   if [[ -n "${secure_icons[$i]}" ]]; then
     menu_items+=("$(printf "%s%*s%s" "${left_labels[$i]}" "$right_pad" "" "${secure_icons[$i]}")")
   else
@@ -147,9 +159,9 @@ connect_to_ssid() {
     return 0
   fi
 
-  password="$(rofi -dmenu -password -p "󰌾" \
-    -theme-str 'prompt { font: "monospace 13"; }' \
-    -theme-str 'entry { placeholder: ""; }')"
+  password="$(rofi -dmenu -password -p "󰌾" -theme "$theme" \
+    -theme-str 'mainbox { children: [ "inputbar" ]; }' \
+    -theme-str 'inputbar { enabled: true; }')"
   [[ -z "$password" ]] && return 1
 
   if nmcli device wifi connect "$target_ssid" password "$password" >/dev/null 2>&1; then
@@ -233,6 +245,9 @@ case "$rofi_status" in
       disconnect_selected_wifi "$ssid" || true
     fi
     forget_ssid_profiles "$ssid" || true
+    ;;
+  12)
+    exec "$0"
     ;;
   *)
     exit 0

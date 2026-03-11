@@ -1,0 +1,48 @@
+@theme "app-launcher-theme.rasi"
+
+window {
+    width: 400px;
+    location: northeast;
+    anchor: northeast;
+    x-offset: -10px;
+    y-offset: 10px;
+}
+
+inputbar {
+    enabled: false;
+}
+
+mainbox {
+    spacing: 0px;
+    children: [ "listview" ];
+}
+
+listview {
+    columns: 1;
+    lines: 10;
+    spacing: 4px;
+    scrollbar: false;
+    fixed-height: false;
+}
+
+element {
+    padding: 10px 12px;
+    children: [ element-text ];
+    orientation: horizontal;
+}
+
+element-text {
+    font: "lucide, SF Mono 13";
+    expand: true;
+    horizontal-align: 0.0;
+    width: 100%;
+}
+
+element-text selected {
+    horizontal-align: 0.0;
+}
+
+textbox {
+    horizontal-align: 0.0;
+    vertical-align: 0.5;
+}
