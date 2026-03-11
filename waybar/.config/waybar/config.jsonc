@@ -15,7 +15,6 @@
   ],
   "modules-right": [
     "battery",
-    "custom/wifi-spinner",
     "network",
     "bluetooth",
     "power-profiles-daemon"
@@ -95,12 +94,6 @@
       ]
     },
     "tooltip-format": "Volume: {volume}%"
-  },
-  "custom/wifi-spinner": {
-    "exec": "~/.local/bin/waybar-wifi-spinner",
-    "return-type": "json",
-    "interval": "once",
-    "signal": 9
   },
   "network": {
     "interface": "wlan0",
