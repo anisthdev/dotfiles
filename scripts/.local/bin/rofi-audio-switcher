@@ -1,0 +1,190 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if ! command -v pactl >/dev/null 2>&1 || ! command -v rofi >/dev/null 2>&1; then
+  notify-send "Audio menu unavailable" "Missing pactl or rofi"
+  exit 1
+fi
+
+theme="$HOME/.config/rofi/audio-menu.rasi"
+colors_rasi="$HOME/.config/rofi/colors.rasi"
+
+connected_color="#C3CB97"  # fallback if colors.rasi is unavailable
+if [[ -f "$colors_rasi" ]]; then
+  tertiary_line="$(grep -E '^\s*tertiary:\s*rgba' "$colors_rasi" | head -n1)"
+  if [[ "$tertiary_line" =~ rgba\(([0-9]+),\ *([0-9]+),\ *([0-9]+) ]]; then
+    connected_color="$(printf '#%02X%02X%02X' \
+      "${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}" "${BASH_REMATCH[3]}")"
+  fi
+fi
+
+mode="${1:-sink}"  # "sink" for output, "source" for input
+
+if [[ "$mode" == "source" ]]; then
+  prompt="󰍬"
+  pa_type="sources"
+  pa_default_cmd="get-default-source"
+  pa_set_cmd="set-default-source"
+else
+  prompt="󰓃"
+  pa_type="sinks"
+  pa_default_cmd="get-default-sink"
+  pa_set_cmd="set-default-sink"
+fi
+
+rofi_menu_cmd() {
+  rofi -dmenu -i -format i -markup-rows -p "$prompt" \
+    -kb-custom-1 "c" \
+    -kb-custom-3 "r" \
+    -theme "$theme"
+}
+
+escape_markup() {
+  local text="$1"
+  text="${text//&/&amp;}"
+  text="${text//</&lt;}"
+  text="${text//>/&gt;}"
+  printf '%s' "$text"
+}
+
+icon_for_node() {
+  local name="$1"
+  local lower="${name,,}"
+  case "$lower" in
+    *headphone*|*headset*)  printf '󰋋 ' ;;
+    *hdmi*|*display*|*dp\ *)  printf '󰡁 ' ;;
+    *speaker*|*analog*)     printf '󰓃 ' ;;
+    *bluetooth*|*bluez*)    printf '󰂯 ' ;;
+    *webcam*|*camera*)      printf '󰄀 ' ;;
+    *microphone*|*mic*)     printf '󰍬 ' ;;
+    *usb*)                  printf '󰗅 ' ;;
+    *)
+      if [[ "$mode" == "source" ]]; then
+        printf '󰍬 '
+      else
+        printf '󰓃 '
+      fi
+      ;;
+  esac
+}
+
+menu_cols=26
+
+default_name="$(pactl "$pa_default_cmd" 2>/dev/null || true)"
+
+declare -a node_names=()
+declare -a node_descs=()
+declare -a node_defaults=()
+declare -a node_volumes=()
+declare -a node_mutes=()
+
+while IFS=$'\t' read -r name desc vol mute; do
+  is_default=0
+  [[ "$name" == "$default_name" ]] && is_default=1
+
+  node_names+=("$name")
+  node_descs+=("$desc")
+  node_defaults+=("$is_default")
+  node_volumes+=("$vol")
+  node_mutes+=("$mute")
+done < <(pactl --format=json list "${pa_type}" 2>/dev/null | python3 -c "
+import json, sys
+for s in json.load(sys.stdin):
+    name = s.get('name', '')
+    desc = s.get('description', '')
+    vol = s.get('volume', {})
+    # Average volume across channels.
+    vals = [ch.get('value_percent', '0%') for ch in vol.values()] if isinstance(vol, dict) else []
+    avg = '0%'
+    if vals:
+        total = sum(int(v.strip('%')) for v in vals)
+        avg = str(total // len(vals)) + '%'
+    mute = 'yes' if s.get('mute', False) else 'no'
+    print(f'{name}\t{desc}\t{avg}\t{mute}')
+")
+
+if [[ ${#node_names[@]} -eq 0 ]]; then
+  notify-send "Audio" "No ${mode}s found"
+  exit 0
+fi
+
+# Build menu items.
+declare -a left_labels=()
+declare -a visible_lens=()
+declare -a right_texts=()
+
+for i in "${!node_names[@]}"; do
+  desc="${node_descs[$i]}"
+  if [[ ${#desc} -gt 18 ]]; then
+    desc="${desc:0:18}…"
+  fi
+  desc_escaped="$(escape_markup "$desc")"
+  icon="$(icon_for_node "${node_names[$i]} ${desc}")"
+  right_text="${node_volumes[$i]}"
+
+  if [[ "${node_mutes[$i]}" == "yes" ]]; then
+    right_text="muted"
+  fi
+
+  if [[ "${node_defaults[$i]}" -eq 1 ]]; then
+    left_label="<span foreground='${connected_color}'>${icon} ${desc_escaped}</span>"
+  else
+    left_label="${icon} ${desc_escaped}"
+  fi
+
+  visible_label="${icon} ${desc}"
+  visible_lens+=("${#visible_label}")
+  left_labels+=("$left_label")
+  right_texts+=("$right_text")
+done
+
+menu_items=()
+for i in "${!left_labels[@]}"; do
+  right_pad=$((menu_cols - visible_lens[$i]))
+  (( right_pad < 1 )) && right_pad=1
+  if [[ -n "${right_texts[$i]}" ]]; then
+    menu_items+=("$(printf "%s%*s%s" "${left_labels[$i]}" "$right_pad" "" "${right_texts[$i]}")")
+  else
+    menu_items+=("${left_labels[$i]}")
+  fi
+done
+
+rofi_status=0
+choice_idx=""
+set +e
+choice_idx="$(printf '%s\n' "${menu_items[@]}" | rofi_menu_cmd)"
+rofi_status=$?
+set -e
+
+[[ -z "$choice_idx" ]] && exit 0
+
+name="${node_names[$choice_idx]}"
+desc="${node_descs[$choice_idx]}"
+
+case "$rofi_status" in
+  0)
+    if [[ "${node_defaults[$choice_idx]}" -eq 1 ]]; then
+      notify-send "Audio" "Already default: $desc"
+      exit 0
+    fi
+    if pactl "$pa_set_cmd" "$name" 2>/dev/null; then
+      notify-send "Audio" "Default ${mode}: $desc"
+    else
+      notify-send "Audio" "Failed to set $desc as default"
+    fi
+    ;;
+  10)
+    # Toggle mute
+    if pactl "set-${mode}-mute" "$name" toggle 2>/dev/null; then
+      notify-send "Audio" "Toggled mute: $desc"
+    else
+      notify-send "Audio" "Failed to toggle mute on $desc"
+    fi
+    ;;
+  12)
+    exec "$0" "$mode"
+    ;;
+  *)
+    exit 0
+    ;;
+esac

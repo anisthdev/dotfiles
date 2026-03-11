@@ -15,6 +15,7 @@
   ],
   "modules-right": [
     "battery",
+    "pulseaudio",
     "network",
     "bluetooth",
     "power-profiles-daemon"
@@ -42,7 +43,6 @@
     "format": "<span font_family='lucide' rise='-4000' size='large'> </span> {num_connections}",
     "format-disabled": " ",
     "format-connected": "<span font_family='lucide' rise='-4000' size='large'> </span> {num_connections}",
-    "tooltip-format": "{device_enumerate}",
     "tooltip-format": "{controller_alias}\t{controller_address}",
     "tooltip-format-connected": "{device_enumerate}",
     "tooltip-format-enumerate-connected": "{device_alias}\t{device_battery_percentage}%",
@@ -73,21 +73,18 @@
     "tooltip-format": "Date: {:%Y-%m-%d}"
   },
   "pulseaudio": {
-    "format": "<span font_family='lucide' rise='-4000' size='large'>{icon}</span> {volume}%",
-    "format-bluetooth": "󰂱 {volume}%",
+    "format": "<span font_family='lucide' rise='-4000' size='large'>{icon}</span>{volume}%",
+    "format-bluetooth": "<span rise='-1000' size='large'>{icon}</span>{volume}%",
     "format-muted": " ",
     "scroll-step": 1,
-    "on-click": "kitty --override font_size=12 --override single_window_padding_width=20 --class=Wiremix -e wiremix -v output",
+    "on-click": "~/.local/bin/rofi-audio-switcher sink",
+    "on-click-right": "~/.local/bin/rofi-audio-switcher source",
     "ignored-sinks": [
       "Easy Effects Sink"
     ],
     "format-icons": {
-      "headphone": "",
-      "hands-free": "",
-      "headset": "󰋎",
-      "phone": "",
-      "portable": "",
-      "car": "",
+      "headphone": "󱡏 ",
+      "headset": "󱡏 ",
       "default": [
         " ",
         " "

@@ -56,7 +56,6 @@ window#waybar {
 }
 
 
-#pulseaudio,
 #backlight,
 #custom-pacman,
 #clock,
@@ -86,6 +85,7 @@ window#waybar {
 }
 
 #network,
+#pulseaudio,
 #battery,
 #bluetooth {
     margin: 0px;
