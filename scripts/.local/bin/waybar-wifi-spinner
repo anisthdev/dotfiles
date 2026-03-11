@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+if [[ -f /tmp/rofi-wifi-loading ]]; then
+  frame="$(cat /tmp/rofi-wifi-frame 2>/dev/null || printf '⠋')"
+  printf '{"text": "%s", "class": "wifi-loading"}\n' "$frame"
+else
+  printf '{"text": "", "class": ""}\n'
+fi

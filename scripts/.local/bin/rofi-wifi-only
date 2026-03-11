@@ -29,6 +29,30 @@ declare -A best_signal=()
 declare -A is_active=()
 declare -A has_security=()
 
+_spinner_pid=""
+_spinner_frames=('⠋' '⠙' '⠹' '⠸' '⠼' '⠴' '⠦' '⠧' '⠇' '⠏')
+
+spinner_start() {
+  local i=0
+  while [[ -f /tmp/rofi-wifi-loading ]]; do
+    printf '%s' "${_spinner_frames[$((i % ${#_spinner_frames[@]}))]}" > /tmp/rofi-wifi-frame
+    pkill -SIGRTMIN+9 waybar 2>/dev/null || true
+    i=$((i + 1))
+    sleep 0.12
+  done &
+  _spinner_pid=$!
+}
+
+spinner_stop() {
+  rm -f /tmp/rofi-wifi-loading /tmp/rofi-wifi-frame
+  [[ -n "$_spinner_pid" ]] && kill "$_spinner_pid" 2>/dev/null || true
+  pkill -SIGRTMIN+9 waybar 2>/dev/null || true
+}
+
+touch /tmp/rofi-wifi-loading
+trap spinner_stop EXIT
+spinner_start
+
 rofi_menu_cmd() {
   rofi -dmenu -i -format i -markup-rows -p "󰍉" \
     -kb-custom-1 "c" \
@@ -213,6 +237,8 @@ forget_ssid_profiles() {
   notify-send "Wi-Fi" "No saved profile for $target_ssid"
   return 1
 }
+
+spinner_stop
 
 rofi_status=0
 choice_idx=""
