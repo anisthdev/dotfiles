@@ -21,7 +21,9 @@ declare -A has_security=()
 
 rofi_menu_cmd() {
   rofi -dmenu -i -format i -markup-rows -p "󰍉" \
-    -theme-str 'window { location: northeast; anchor: northeast; x-offset: -28px; y-offset: 52px; }' \
+    -kb-custom-1 "c" \
+    -kb-custom-2 "f" \
+    -theme-str 'window { location: northeast; anchor: northeast; x-offset: -10px; y-offset: 10px; }' \
     -theme-str 'prompt { font: "monospace 13"; }'
 }
 
@@ -138,29 +140,101 @@ for i in "${!left_labels[@]}"; do
   fi
 done
 
+connect_to_ssid() {
+  local target_ssid="$1"
+  if nmcli device wifi connect "$target_ssid" >/dev/null 2>&1; then
+    notify-send "Wi-Fi" "Connected to $target_ssid"
+    return 0
+  fi
+
+  password="$(rofi -dmenu -password -p "󰌾" \
+    -theme-str 'prompt { font: "monospace 13"; }' \
+    -theme-str 'entry { placeholder: ""; }')"
+  [[ -z "$password" ]] && return 1
+
+  if nmcli device wifi connect "$target_ssid" password "$password" >/dev/null 2>&1; then
+    notify-send "Wi-Fi" "Connected to $target_ssid"
+    return 0
+  fi
+
+  notify-send "Wi-Fi" "Failed to connect to $target_ssid"
+  return 1
+}
+
+disconnect_selected_wifi() {
+  local target_ssid="$1"
+  local wifi_dev
+  if [[ "${is_active[$target_ssid]:-0}" -ne 1 ]]; then
+    return 1
+  fi
+
+  wifi_dev="$(nmcli -t -f DEVICE,TYPE,STATE device | awk -F: '$2=="wifi" && $3 ~ /^connected/ {print $1; exit}')"
+  [[ -z "$wifi_dev" ]] && return 1
+
+  if nmcli device disconnect "$wifi_dev" >/dev/null 2>&1; then
+    notify-send "Wi-Fi" "Disconnected from $target_ssid"
+    return 0
+  fi
+
+  notify-send "Wi-Fi" "Failed to disconnect $target_ssid"
+  return 1
+}
+
+forget_ssid_profiles() {
+  local target_ssid="$1"
+  local deleted=0
+
+  while IFS=: read -r uuid name type; do
+    name="${name//\\:/:}"
+    if [[ "$type" == "802-11-wireless" && "$name" == "$target_ssid" ]]; then
+      if nmcli connection delete uuid "$uuid" >/dev/null 2>&1; then
+        deleted=$((deleted + 1))
+      fi
+    fi
+  done < <(nmcli -t -f UUID,NAME,TYPE connection show)
+
+  if (( deleted > 0 )); then
+    notify-send "Wi-Fi" "Forgot $target_ssid ($deleted profile(s))"
+    return 0
+  fi
+
+  notify-send "Wi-Fi" "No saved profile for $target_ssid"
+  return 1
+}
+
+rofi_status=0
+choice_idx=""
+set +e
 choice_idx="$(printf '%s\n' "${menu_items[@]}" | rofi_menu_cmd)"
+rofi_status=$?
+set -e
+
 [[ -z "$choice_idx" ]] && exit 0
 
 ssid="${ssids[$choice_idx]}"
 
-if nmcli -t -f ACTIVE,SSID connection show --active | grep -Fq "yes:$ssid"; then
-  notify-send "Wi-Fi" "Already connected to $ssid"
-  exit 0
-fi
-
-if nmcli device wifi connect "$ssid" >/dev/null 2>&1; then
-  notify-send "Wi-Fi" "Connected to $ssid"
-  exit 0
-fi
-
-password="$(rofi -dmenu -password -p "󰌾" \
-  -theme-str 'prompt { font: "monospace 13"; }' \
-  -theme-str 'entry { placeholder: ""; }')"
-[[ -z "$password" ]] && exit 0
-
-if nmcli device wifi connect "$ssid" password "$password" >/dev/null 2>&1; then
-  notify-send "Wi-Fi" "Connected to $ssid"
-else
-  notify-send "Wi-Fi" "Failed to connect to $ssid"
-  exit 1
-fi
+case "$rofi_status" in
+  0)
+    if [[ "${is_active[$ssid]:-0}" -eq 1 ]]; then
+      notify-send "Wi-Fi" "Already connected to $ssid"
+      exit 0
+    fi
+    connect_to_ssid "$ssid"
+    ;;
+  10)
+    if [[ "${is_active[$ssid]:-0}" -eq 1 ]]; then
+      disconnect_selected_wifi "$ssid" || true
+    else
+      connect_to_ssid "$ssid" || true
+    fi
+    ;;
+  11)
+    if [[ "${is_active[$ssid]:-0}" -eq 1 ]]; then
+      disconnect_selected_wifi "$ssid" || true
+    fi
+    forget_ssid_profiles "$ssid" || true
+    ;;
+  *)
+    exit 0
+    ;;
+esac
