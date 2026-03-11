@@ -19,6 +19,12 @@ declare -A best_signal=()
 declare -A is_active=()
 declare -A has_security=()
 
+rofi_menu_cmd() {
+  rofi -dmenu -i -format i -markup-rows -p "󰍉" \
+    -theme-str 'window { location: northeast; anchor: northeast; x-offset: -28px; y-offset: 52px; }' \
+    -theme-str 'prompt { font: "monospace 13"; }'
+}
+
 wifi_icon_for_signal() {
   local signal="$1"
   if (( signal >= 55 )); then
@@ -132,7 +138,7 @@ for i in "${!left_labels[@]}"; do
   fi
 done
 
-choice_idx="$(printf '%s\n' "${menu_items[@]}" | rofi -dmenu -i -format i -markup-rows -p "" -theme-str 'window { location: northeast; anchor: northeast; x-offset: -10px; y-offset: 10px; } textbox-prompt-colon { str: ""; font: "lucide 13"; } element-text { font: "monospace 13"; }')"
+choice_idx="$(printf '%s\n' "${menu_items[@]}" | rofi_menu_cmd)"
 [[ -z "$choice_idx" ]] && exit 0
 
 ssid="${ssids[$choice_idx]}"
@@ -147,7 +153,9 @@ if nmcli device wifi connect "$ssid" >/dev/null 2>&1; then
   exit 0
 fi
 
-password="$(rofi -dmenu -password -p "Password: $ssid")"
+password="$(rofi -dmenu -password -p "󰌾" \
+  -theme-str 'prompt { font: "monospace 13"; }' \
+  -theme-str 'entry { placeholder: ""; }')"
 [[ -z "$password" ]] && exit 0
 
 if nmcli device wifi connect "$ssid" password "$password" >/dev/null 2>&1; then
