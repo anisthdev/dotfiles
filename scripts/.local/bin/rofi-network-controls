@@ -21,7 +21,7 @@ choice="$(printf '%s\n' \
 
 case "$choice" in
   "Full Network Menu")
-    uwsm app -- networkmanager_dmenu --config "$HOME/.config/hypr/networkmanager-dmenu.ini"
+    uwsm app -- networkmanager_dmenu --config "$HOME/.local/bin/networkmanager-dmenu.ini"
     ;;
   "Toggle Wi-Fi (now: $wifi_state)")
     if [[ "$wifi_state" == "enabled" ]]; then

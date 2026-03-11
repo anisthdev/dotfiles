@@ -7,3 +7,4 @@ colors.conf
 mako/.config/mako/config
 waybar/.config/waybar/colors.css
 rofi/.config/rofi/colors.rasi
+scripts/.local/bin/claude
