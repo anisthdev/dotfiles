@@ -27,10 +27,10 @@ fi
 
 declare -A best_signal=()
 declare -A is_active=()
-declare -A has_security=()
 
 rofi_menu_cmd() {
   rofi -dmenu -i -format i -markup-rows -p "󰍉" \
+    -mesg "Wi-Fi" \
     -kb-custom-1 "c" \
     -kb-custom-2 "f" \
     -kb-custom-3 "r" \
@@ -39,16 +39,16 @@ rofi_menu_cmd() {
 
 wifi_icon_for_signal() {
   local signal="$1"
-  if (( signal >= 55 )); then
-    printf ''
-  elif (( signal >= 35 )); then
-    printf ''
-  elif (( signal >= 15 )); then
-    printf ''
+  if (( signal >= 70 )); then
+    printf '\ue5fc'
+  elif (( signal >= 40 )); then
+    printf '\ue1ae'
+  elif (( signal >= 20 )); then
+    printf '\ue5fd'
   elif (( signal >= 0 )); then
-    printf ''
+    printf '\ue5fe'
   else
-    printf ''
+    printf '\ue1af'
   fi
 }
 
@@ -59,10 +59,6 @@ escape_markup() {
   text="${text//>/&gt;}"
   printf '%s' "$text"
 }
-
-# Fixed column width for right-alignment — same reasoning as bluetooth menu.
-# Tune down if icons show as "...", up if there's too much gap before them.
-menu_cols=26
 
 mapfile -t lines < <(nmcli -t -f IN-USE,SSID,SIGNAL,SECURITY device wifi list --rescan yes)
 
@@ -95,9 +91,6 @@ for line in "${lines[@]}"; do
     is_active["$ssid"]=1
   fi
 
-  if [[ -n "${security// }" && "$security" != "--" ]]; then
-    has_security["$ssid"]=1
-  fi
 done
 
 if [[ ${#best_signal[@]} -eq 0 ]]; then
@@ -111,45 +104,25 @@ mapfile -t sorted_rows < <(
     icon="$(wifi_icon_for_signal "$signal")"
     ssid_escaped="$(escape_markup "$ssid")"
     icon_markup="<span font_family='lucide'>${icon}</span>"
-    secure_icon=""
-
-    if [[ "${has_security[$ssid]:-0}" -eq 1 ]]; then
-      secure_icon="󰌾"
-    fi
 
     if [[ "${is_active[$ssid]:-0}" -eq 1 ]]; then
-      left_label="<span foreground='${connected_color}'>${icon_markup} ${ssid_escaped}</span>"
+      left_label="<span foreground='${connected_color}'>${icon_markup} <span font_family='SF Pro Display' font_weight='bold'>${ssid_escaped}</span></span>"
     else
-      left_label="${icon_markup} ${ssid_escaped}"
+      left_label="${icon_markup} <span font_family='SF Pro Display' font_weight='bold'>${ssid_escaped}</span>"
     fi
 
     visible_label="${icon} ${ssid}"
-    printf '%03d\t%s\t%s\t%d\t%s\n' "$signal" "$ssid" "$left_label" "${#visible_label}" "$secure_icon"
+    printf '%03d\t%s\t%s\t%d\n' "$signal" "$ssid" "$left_label" "${#visible_label}"
   done | sort -rn
 )
 
 menu_items=()
 ssids=()
-left_labels=()
-left_visible_lens=()
-secure_icons=()
 
 for row in "${sorted_rows[@]}"; do
-  IFS=$'\t' read -r _ ssid left_label left_visible_len secure_icon <<< "$row"
+  IFS=$'\t' read -r _ ssid left_label _ <<< "$row"
   ssids+=("$ssid")
-  left_labels+=("$left_label")
-  left_visible_lens+=("$left_visible_len")
-  secure_icons+=("$secure_icon")
-done
-
-for i in "${!left_labels[@]}"; do
-  right_pad=$((menu_cols - left_visible_lens[$i]))
-  (( right_pad < 1 )) && right_pad=1
-  if [[ -n "${secure_icons[$i]}" ]]; then
-    menu_items+=("$(printf "%s%*s%s" "${left_labels[$i]}" "$right_pad" "" "${secure_icons[$i]}")")
-  else
-    menu_items+=("${left_labels[$i]}")
-  fi
+  menu_items+=("$left_label")
 done
 
 connect_to_ssid() {

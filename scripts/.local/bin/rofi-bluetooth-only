@@ -20,6 +20,7 @@ fi
 
 rofi_menu_cmd() {
   rofi -dmenu -i -format i -markup-rows -p "󰂯" \
+    -mesg "Bluetooth" \
     -kb-custom-1 "c" \
     -kb-custom-2 "f" \
     -kb-custom-3 "r" \
@@ -58,14 +59,6 @@ declare -a paired_flags=()
 declare -a trusted_flags=()
 declare -a device_types=()
 declare -a left_labels=()
-declare -a right_icons=()
-declare -a visible_lens=()
-# Fixed column width for right-alignment.
-# ${#label} undercounts display width because icons render double-wide.
-# Tune down if icons show as "...", up if there's too much gap before them.
-# 350px window, 16px*2 window pad, 12px*2 element pad, SF Mono 13pt ≈ 10px/char → ~29
-# minus ~5 extra cells for double-wide glyphs in the prefix → ~22
-menu_cols=26
 
 icon_for_bt_type() {
   local bt_type="$1"
@@ -79,8 +72,11 @@ icon_for_bt_type() {
     input-gaming|input-gamepad)
       printf '󰊴 '
       ;;
-    audio-headphones|audio-headset)
-      printf '󰥰 '
+    audio-headphones)
+      printf '󰋋 '
+      ;;
+    audio-headset)
+      printf '󱡏 '
       ;;
     audio-card|audio-speaker)
       printf '󰦢 '
@@ -153,33 +149,16 @@ for i in "${!addrs[@]}"; do
   name_escaped="$(escape_markup "${names[$i]}")"
   type_icon="$(icon_for_bt_type "${device_types[$i]}")"
   device_icon="$type_icon"
-  right_icon=""
-
-  if [[ "${paired_flags[$i]}" -eq 1 ]]; then
-    right_icon="󱘖"   # paired
-  fi
 
   if [[ "${connected_flags[$i]}" -eq 1 ]]; then
-    left_label="<span foreground='${connected_color}'>${device_icon} ${name_escaped}</span>"
+    left_label="<span foreground='${connected_color}'>${device_icon} <span font_family='SF Pro Display' font_weight='bold'>${name_escaped}</span></span>"
   else
-    left_label="${device_icon} ${name_escaped}"
+    left_label="${device_icon} <span font_family='SF Pro Display' font_weight='bold'>${name_escaped}</span>"
   fi
-  visible_label="${type_icon} ${names[$i]}"
-  visible_lens+=("${#visible_label}")
   left_labels+=("$left_label")
-  right_icons+=("$right_icon")
 done
 
-menu_items=()
-for i in "${!left_labels[@]}"; do
-  right_pad=$((menu_cols - visible_lens[$i]))
-  (( right_pad < 1 )) && right_pad=1
-  if [[ -n "${right_icons[$i]}" ]]; then
-    menu_items+=("$(printf "%s%*s%s" "${left_labels[$i]}" "$right_pad" "" "${right_icons[$i]}")")
-  else
-    menu_items+=("${left_labels[$i]}")
-  fi
-done
+menu_items=("${left_labels[@]}")
 
 connect_device() {
   local addr="$1"
