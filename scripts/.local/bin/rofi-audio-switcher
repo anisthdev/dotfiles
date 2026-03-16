@@ -32,8 +32,15 @@ else
   pa_set_cmd="set-default-sink"
 fi
 
+if [[ "$mode" == "source" ]]; then
+  menu_title="Input"
+else
+  menu_title="Output"
+fi
+
 rofi_menu_cmd() {
   rofi -dmenu -i -format i -markup-rows -p "$prompt" \
+    -mesg "$menu_title" \
     -kb-custom-1 "c" \
     -kb-custom-3 "r" \
     -theme "$theme"
@@ -67,8 +74,6 @@ icon_for_node() {
       ;;
   esac
 }
-
-menu_cols=26
 
 default_name="$(pactl "$pa_default_cmd" 2>/dev/null || true)"
 
@@ -109,9 +114,7 @@ if [[ ${#node_names[@]} -eq 0 ]]; then
 fi
 
 # Build menu items.
-declare -a left_labels=()
-declare -a visible_lens=()
-declare -a right_texts=()
+menu_items=()
 
 for i in "${!node_names[@]}"; do
   desc="${node_descs[$i]}"
@@ -120,33 +123,14 @@ for i in "${!node_names[@]}"; do
   fi
   desc_escaped="$(escape_markup "$desc")"
   icon="$(icon_for_node "${node_names[$i]} ${desc}")"
-  right_text="${node_volumes[$i]}"
-
-  if [[ "${node_mutes[$i]}" == "yes" ]]; then
-    right_text="muted"
-  fi
 
   if [[ "${node_defaults[$i]}" -eq 1 ]]; then
-    left_label="<span foreground='${connected_color}'>${icon} ${desc_escaped}</span>"
+    left_label="<span foreground='${connected_color}'>${icon} <span font_family='SF Pro Display' font_weight='bold'>${desc_escaped}</span></span>"
   else
-    left_label="${icon} ${desc_escaped}"
+    left_label="${icon} <span font_family='SF Pro Display' font_weight='bold'>${desc_escaped}</span>"
   fi
 
-  visible_label="${icon} ${desc}"
-  visible_lens+=("${#visible_label}")
-  left_labels+=("$left_label")
-  right_texts+=("$right_text")
-done
-
-menu_items=()
-for i in "${!left_labels[@]}"; do
-  right_pad=$((menu_cols - visible_lens[$i]))
-  (( right_pad < 1 )) && right_pad=1
-  if [[ -n "${right_texts[$i]}" ]]; then
-    menu_items+=("$(printf "%s%*s%s" "${left_labels[$i]}" "$right_pad" "" "${right_texts[$i]}")")
-  else
-    menu_items+=("${left_labels[$i]}")
-  fi
+  menu_items+=("$left_label")
 done
 
 rofi_status=0
@@ -168,6 +152,29 @@ case "$rofi_status" in
       exit 0
     fi
     if pactl "$pa_set_cmd" "$name" 2>/dev/null; then
+      # When switching sinks, ensure the card profile includes analog input
+      # so the mic isn't silently dropped (e.g. hdmi-stereo → hdmi-stereo+input:analog-stereo)
+      if [[ "$mode" == "sink" ]]; then
+        IFS=$'\t' read -r _card _duplex < <(_SINK_NAME="$name" pactl --format=json list cards 2>/dev/null \
+          | _SINK_NAME="$name" python3 -c "
+import json, sys, os
+sink_name = os.environ.get('_SINK_NAME', '')
+for c in json.load(sys.stdin):
+    prof = c.get('active_profile', '')
+    cname = c.get('name', '')
+    profiles = c.get('profiles', {})
+    if not sink_name.startswith(cname.replace('alsa_card.', 'alsa_output.')):
+        continue
+    if prof.startswith('output:') and '+input:' not in prof:
+        duplex = prof + '+input:analog-stereo'
+        if duplex in profiles and profiles[duplex].get('available', False):
+            print(f'{cname}\t{duplex}')
+    break
+" 2>/dev/null || true)
+        if [[ -n "${_duplex:-}" && -n "${_card:-}" ]]; then
+          pactl set-card-profile "$_card" "$_duplex" 2>/dev/null || true
+        fi
+      fi
       notify-send "Audio" "Default ${mode}: $desc"
     else
       notify-send "Audio" "Failed to set $desc as default"

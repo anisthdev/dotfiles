@@ -2,10 +2,10 @@
 
 window {
     width: 400px;
-    location: northeast;
-    anchor: northeast;
-    x-offset: -10px;
-    y-offset: 10px;
+    location: center;
+    anchor: center;
+    x-offset: 0px;
+    y-offset: 0px;
 }
 
 inputbar {
@@ -13,8 +13,21 @@ inputbar {
 }
 
 mainbox {
-    spacing: 0px;
-    children: [ "listview" ];
+    spacing: 8px;
+    children: [ "message", "listview" ];
+}
+
+message {
+    background-color: transparent;
+    padding: 8px 12px 4px 12px;
+}
+
+textbox {
+    font: "SF Pro Display Bold 18";
+    color: @primary;
+    background-color: transparent;
+    horizontal-align: 0.0;
+    vertical-align: 0.5;
 }
 
 listview {
@@ -26,13 +39,13 @@ listview {
 }
 
 element {
-    padding: 10px 12px;
+    padding: 14px 12px;
     children: [ element-text ];
     orientation: horizontal;
 }
 
 element-text {
-    font: "lucide, SF Mono 13";
+    font: "lucide, SF Pro Display 15";
     expand: true;
     horizontal-align: 0.0;
     width: 100%;
@@ -40,9 +53,4 @@ element-text {
 
 element-text selected {
     horizontal-align: 0.0;
-}
-
-textbox {
-    horizontal-align: 0.0;
-    vertical-align: 0.5;
 }

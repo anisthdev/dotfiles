@@ -67,7 +67,6 @@ window#waybar {
 #disk,
 #tray,
 #custom-launcher,
-#custom-recording,
 #custom-notification,
 #power-profiles-daemon {
   color: @primary;
@@ -81,7 +80,12 @@ window#waybar {
 }
 
 #custom-recording {
-    border-radius: 30px;
+    border-radius: 10px;
+    background-color: @secondary;
+    color: @on_secondary;
+    margin: 3px 0px;
+    margin-right: 5px;
+    padding: 0px 15px;
 }
 
 #network,
@@ -102,12 +106,6 @@ window#waybar {
 
 #bluetooth {
     border-radius: 0 10px 10px 0;
-}
-
-
-#custom-recording {
-    background-color: @error_container;
-    color: @on_error_container;
 }
 
 

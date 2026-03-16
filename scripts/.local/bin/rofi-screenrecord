@@ -5,22 +5,34 @@ screenrecording() {
   filename="$HOME/Videos/screenrecording-$(date +'%Y-%m-%d_%H-%M-%S').mp4"
   notify-send "Screen recording starting..." -t 1000 -i /home/asif/.local/share/icons/McMojave-circle/apps/scalable/simplescreenrecorder.svg
   sleep 1
-  wl-screenrec -f "$filename" --ffmpeg-encoder-options="-c:v libx264 -crf 23 -preset medium -movflags +faststart" --output HDMI-A-1 "$@" 
+  if [ $# -eq 0 ]; then
+    wl-screenrec -f "$filename" --ffmpeg-encoder-options="-c:v libx264 -crf 23 -preset medium -movflags +faststart" --output HDMI-A-1
+  else
+    wl-screenrec -f "$filename" --ffmpeg-encoder-options="-c:v libx264 -crf 23 -preset medium -movflags +faststart" "$@"
+  fi
 }
 
 launch_rofi() {
-    ICON_SELECT="󰆞"  # nf-fa-crop
-    ICON_OUTPUT=""  # nf-fa-desktop
+    option_1=""
+    option_2=""
+    option_3=""
 
-    options="$ICON_SELECT\n$ICON_OUTPUT"
-    selected_icon=$(echo -e "$options" | rofi -dmenu -p "Screenshot" -theme ~/.config/rofi/screenshot-theme.rasi -theme-str 'window {widht: 15%;}' -no-config)
-    
+    selected_icon=$(printf "%b\n%b\n%b" "$option_1" "$option_2" "$option_3" | rofi -dmenu -p "Screenrecord" \
+        -theme-str "window {width: 300px;}" \
+        -theme-str "listview {columns: 3; lines: 1;}" \
+        -theme-str 'textbox-prompt-colon {str: "";}' \
+        -theme ~/.config/rofi/modern-theme.rasi)
+
     case "$selected_icon" in
-    "$ICON_OUTPUT")
+    "$option_1")
         screenrecording
         ;;
-    "$ICON_SELECT")
+    "$option_2")
         region=$(slurp) || exit 1
+        screenrecording -g "$region"
+        ;;
+    "$option_3")
+        region=$(hyprctl clients -j | jq -r '.[] | "\(.at[0]),\(.at[1]) \(.size[0])x\(.size[1])"' | slurp) || exit 1
         screenrecording -g "$region"
         ;;
     esac

@@ -10,10 +10,10 @@
     "hyprland/workspaces"
   ],
   "modules-center": [
-    "custom/recording",
     "hyprland/window"
   ],
   "modules-right": [
+    "custom/recording",
     "battery",
     "pulseaudio",
     "network",
@@ -32,7 +32,8 @@
     "tooltip-format": "Launch your favorite apps"
   },
   "custom/recording": {
-    "format": "{text}",
+    "format": "{}",
+    "return-type": "json",
     "tooltip": true,
     "tooltip-format": "Screen recording is in progress",
     "exec": "/home/asif/.config/waybar/scripts/get_recording_time.sh",
