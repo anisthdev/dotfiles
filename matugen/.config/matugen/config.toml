@@ -1,6 +1,8 @@
+[config]
+version_check = false
+
 [config.wallpaper]
-command = "swww"
-arguments = ["img", "--transition-type", "center"]
+command = "swww img --transition-type center {{image}}"
 set = true
 
 [templates.waybar]
@@ -8,9 +10,9 @@ input_path = './templates/colors.css'
 output_path = '~/.config/waybar/colors.css'
 post_hook = 'pkill -SIGUSR2 waybar'
 
-# [templates.starship]
-# input_path = './templates/starship.toml'
-# output_path = '~/.config/starship.toml'
+[templates.starship]
+input_path = './templates/starship.toml'
+output_path = '~/.config/starship.toml'
 
 [templates.rofi]
 input_path = './templates/colors.rasi'
@@ -37,3 +39,18 @@ output_path = '~/.config/yazi/theme.toml'
 [templates.cava]
 input_path = './templates/zathurarc'
 output_path = '~/.config/zathura/zathurarc'
+
+[templates.gtk4]
+input_path = './templates/gtk4.css'
+output_path = '~/.config/gtk-4.0/gtk-colors.css'
+post_hook = 'rm -f ~/.config/gtk-4.0/gtk.css && cat ~/.config/gtk-4.0/gtk-base.css ~/.config/gtk-4.0/gtk-colors.css > ~/.config/gtk-4.0/gtk.css'
+
+[templates.gtk3]
+input_path = './templates/gtk3.css'
+output_path = '~/.config/gtk-3.0/gtk-colors.css'
+post_hook = 'cat ~/.config/gtk-3.0/gtk-base.css ~/.config/gtk-3.0/gtk-colors.css > ~/.config/gtk-3.0/gtk.css && systemctl --user restart xdg-desktop-portal-gtk'
+
+[templates.cody]
+input_path = './templates/cody-theme.toml'
+output_path = '~/.config/cody/theme.toml'
+post_hook = "sh -lc 'pgrep -f \"^/home/asif/Projects/lumen/cody/.venv/bin/python -m cody$\" | xargs -r kill -HUP'"
