@@ -65,7 +65,6 @@ window#waybar {
 #cpu,
 #memory,
 #disk,
-#tray,
 #custom-launcher,
 #custom-notification,
 #power-profiles-daemon {
@@ -100,8 +99,17 @@ window#waybar {
     padding: 0px 15px;
 }
 
+#tray {
+    background-color: @tertiary_container;
+    color: @on_tertiary_container;
+    border-radius: 10px;
+    margin: 3px 8px 3px 0px;
+    padding: 0px 15px;
+}
+
 #battery {
     border-radius: 10px 0 0 10px;
+    margin-left: 8px;
 }
 
 #bluetooth {

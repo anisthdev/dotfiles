@@ -13,6 +13,7 @@
     "hyprland/window"
   ],
   "modules-right": [
+    "tray",
     "custom/recording",
     "battery",
     "pulseaudio",
@@ -22,9 +23,38 @@
   ],
   "height": 30,
   "hyprland/window": {
-    "format": "{title}",
+    "format": "{class}",
     "separate-outputs": true,
-    "icon": true
+    "icon": true,
+    "rewrite": {
+      "firefox": "Firefox",
+      "chromium": "Chromium",
+      "org.gnome.Nautilus": "Files",
+      "org.gnome.TextEditor": "Text Editor",
+      "org.gnome.Calculator": "Calculator",
+      "org.gnome.Settings": "Settings",
+      "org.gnome.Terminal": "Terminal",
+      "kitty": "Kitty",
+      "Alacritty": "Alacritty",
+      "foot": "Foot",
+      "code": "VS Code",
+      "Code": "VS Code",
+      "vesktop": "Discord",
+      "discord": "Discord",
+      "telegram-desktop": "Telegram",
+      "Spotify": "Spotify",
+      "spotify": "Spotify",
+      "steam": "Steam",
+      "vlc": "VLC",
+      "mpv": "mpv",
+      "obs": "OBS",
+      "thunar": "Files",
+      "pavucontrol": "Audio",
+      "eog": "Image Viewer",
+      "evince": "Document Viewer",
+      "org.keepassxc.KeePassXC": "KeePass",
+      "qbittorrent": "qBittorrent"
+    }
   },
   "custom/launcher": {
     "format": "",
@@ -148,6 +178,9 @@
     "format": "{}",
     "tooltip": true,
     "interval": 3600
+  },
+  "tray": {
+    "spacing": 8
   },
   "power-profiles-daemon": {
     "format": "{icon}",
