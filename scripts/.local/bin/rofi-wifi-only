@@ -60,7 +60,22 @@ escape_markup() {
   printf '%s' "$text"
 }
 
-mapfile -t lines < <(nmcli -t -f IN-USE,SSID,SIGNAL,SECURITY device wifi list --rescan yes)
+mapfile -t lines < <(nmcli -t -f IN-USE,SSID,SIGNAL,SECURITY device wifi list --rescan no)
+
+# Background: rescan and auto-reload if results changed (only on first launch)
+reload_marker="/tmp/.wifi-reload-$$"
+trap 'rm -f "$reload_marker"' EXIT
+
+if [[ -z "${WIFI_SKIP_RESCAN:-}" ]]; then
+  cached_snapshot=$(printf '%s\n' "${lines[@]}")
+  (
+    fresh=$(nmcli -t -f IN-USE,SSID,SIGNAL,SECURITY device wifi list --rescan yes)
+    if [[ "$cached_snapshot" != "$fresh" ]]; then
+      touch "$reload_marker"
+      pkill -P $$ rofi 2>/dev/null || true
+    fi
+  ) &
+fi
 
 for line in "${lines[@]}"; do
   inuse="${line%%:*}"
@@ -193,6 +208,12 @@ set +e
 choice_idx="$(printf '%s\n' "${menu_items[@]}" | rofi_menu_cmd)"
 rofi_status=$?
 set -e
+
+# If background rescan found changes and killed rofi, re-exec with fresh cached data
+if [[ -f "$reload_marker" ]]; then
+  rm -f "$reload_marker"
+  WIFI_SKIP_RESCAN=1 exec "$0"
+fi
 
 [[ -z "$choice_idx" ]] && exit 0
 
