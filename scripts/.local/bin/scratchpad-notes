@@ -23,7 +23,7 @@ if is_special_open "$WS"; then
     hyprctl dispatch togglespecialworkspace "$WS"
 else
     if ! client_exists "$TITLE"; then
-        uwsm app -- foot --app-id="$TITLE" --title="$TITLE" -e nvim "$HOME/notes/scratchpad.md" &
+        uwsm app -- foot --app-id="$TITLE" --title="$TITLE" -e nvim -u "$HOME/.config/nvim/lean.lua" "$HOME/notes/scratchpad.md" &
         until client_exists "$TITLE"; do sleep 0.1; done
     fi
     hyprctl dispatch togglespecialworkspace "$WS"
