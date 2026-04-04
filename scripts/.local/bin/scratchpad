@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+usage() {
+    echo "Usage: $0 <workspace> <title> <launch_cmd>"
+    echo "  workspace  - name of special workspace"
+    echo "  title      - window initialTitle for detection"
+    echo "  launch_cmd - command to launch (use '-' for none)"
+    exit 1
+}
+
+[[ $# -eq 3 ]] || usage
+[[ -n "$1" && -n "$2" && -n "$3" ]] || usage
+
+WS="$1"
+TITLE="$2"
+LAUNCH_CMD="$3"
+
+client_app_exists() {
+    hyprctl -j clients | jq -e --arg t "$1" 'any(.[]; .initialTitle == $t)' &> /dev/null
+}
+
+if ! client_app_exists "$TITLE"; then
+    eval "$LAUNCH_CMD" &
+fi
+hyprctl dispatch togglespecialworkspace "$WS"
