@@ -53,4 +53,4 @@ post_hook = 'cat ~/.config/gtk-3.0/gtk-base.css ~/.config/gtk-3.0/gtk-colors.css
 [templates.cody]
 input_path = './templates/cody-theme.toml'
 output_path = '~/.config/cody/theme.toml'
-post_hook = "sh -lc 'pgrep -f \"^/home/asif/Projects/lumen/cody/.venv/bin/python -m cody$\" | xargs -r kill -HUP'"
+post_hook = "sh -lc 'pgrep -f \"^/home/asif/Projects/lumen/cody/.venv/bin/python -m cody$\" | xargs -r kill -USR1'"
