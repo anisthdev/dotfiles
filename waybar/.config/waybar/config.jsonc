@@ -18,7 +18,7 @@
     "battery",
     "pulseaudio",
     "network",
-    "bluetooth",
+    "bluetooth"
     // "power-profiles-daemon"
   ],
   "height": 30,
