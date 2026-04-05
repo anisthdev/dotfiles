@@ -19,7 +19,12 @@ client_app_exists() {
     hyprctl -j clients | jq -e --arg t "$1" 'any(.[]; .initialTitle == $t)' &> /dev/null
 }
 
-if ! client_app_exists "$TITLE"; then
+if client_app_exists "$TITLE"; then
+    # App already running - just toggle workspace
+    hyprctl dispatch togglespecialworkspace "$WS"
+else
+    # Fresh launch - window rule handles workspace show
     eval "$LAUNCH_CMD" &
+    sleep 0.3
+    hyprctl dispatch focuswindow "initial_title:$TITLE"
 fi
-hyprctl dispatch togglespecialworkspace "$WS"
