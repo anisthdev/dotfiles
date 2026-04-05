@@ -1,7 +1,7 @@
 @import url("/home/asif/.config/waybar/colors.css");
 
 * {
-  font-family:  "lucide", "SF Pro Display", sans-serif;
+  font-family: "lucide", "SF Pro Display", sans-serif;
   font-size: 15px;
   font-weight: bold;
 }
@@ -28,6 +28,8 @@ window#waybar {
   color: @outline;
   transition: margin 150ms ease-in-out;
   transition: background-color 0.3s ease, color 0.3s ease, padding 0.2s ease;
+  border: none;
+  /* padding: 0px 20px; */
 }
 
 #workspaces button:hover {
@@ -72,65 +74,57 @@ window#waybar {
   background-color: @primary_container_low;
   padding: 0 15px 0 15px;
   margin-left: 12px;
-}
+} 
 
 #custom-launcher {
-    font-size: 22px;
+  font-size: 22px;
 }
 
 #custom-recording {
-    border-radius: 10px;
-    background-color: @secondary;
-    color: @on_secondary;
-    margin: 3px 0px;
-    margin-right: 5px;
-    padding: 0px 15px;
+  border-radius: 10px;
+  background-color: @secondary;
+  color: @on_secondary;
+  margin: 3px 0px;
+  margin-right: 5px;
+  padding: 0px 15px;
 }
 
 #network,
 #pulseaudio,
 #battery,
 #bluetooth {
-    margin: 0px;
-    border-radius: 0px;
-    background-color: @primary;
-    color: @on_secondary;
-    margin: 3px 0px;
-    padding: 0px 15px;
+  background-color: @primary;
+  color: @on_secondary;
+  margin: 3px 0px;
+  padding: 0px 15px;
 }
 
 #tray {
-    background-color: @tertiary_container;
-    color: @on_tertiary_container;
-    border-radius: 10px;
-    margin: 3px 8px 3px 0px;
-    padding: 0px 15px;
+  background-color: @tertiary_container;
+  color: @on_tertiary_container;
+  border-radius: 10px;
+  margin: 3px 8px;
+  padding: 0px 15px;
 }
 
 #battery {
-    border-radius: 10px 0 0 10px;
-    margin-left: 8px;
+  border-radius: 10px 0 0 10px;
 }
 
 #bluetooth {
-    border-radius: 0 10px 10px 0;
+  border-radius: 0 10px 10px 0;
 }
 
 
-/* #custom-launcher { */
-/*     margin: 5px 0; */
-/* } */
-
 #window.hidden {
-    opacity: 0;
-    min-width: 0;
-    min-height: 0;
-    padding: 0;
-    margin: 0;
-    border: none;
+  opacity: 0;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+  border: none;
 }
 
 window#waybar.empty #window {
-    background-color: transparent;
+  background-color: transparent;
 }
-

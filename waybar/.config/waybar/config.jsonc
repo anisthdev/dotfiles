@@ -19,7 +19,7 @@
     "pulseaudio",
     "network",
     "bluetooth",
-    "power-profiles-daemon"
+    // "power-profiles-daemon"
   ],
   "height": 30,
   "hyprland/window": {
