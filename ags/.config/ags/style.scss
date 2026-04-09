@@ -1,0 +1,360 @@
+@use './colors' as *;
+
+* {
+  all: unset;
+  font-family: "Geist";
+  font-size: 14px;
+}
+
+window.Bar {
+  // background: $secondary;
+
+  >centerbox {
+    // background: rgba($background, 0.45);
+    border-radius: 10px;
+    margin: 6px;
+    margin-bottom: 0;
+  }
+}
+
+
+.Workspaces {
+  margin: 0 5px;
+  background: rgba($background, 0.65);
+  border-radius: 15px;
+  padding: 6px;
+
+  button {
+    color: rgba($on-background, 0.6);
+    padding: 4px 14px;
+    border-radius: 12px;
+    transition: all 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    font-weight: bolder;
+    margin: 0px 4px;
+    background: transparent;
+
+    &.active {
+      color: $on-primary;
+      background: rgba($primary, 0.9);
+      padding: 6px 22px;
+      // box-shadow: 0 0 6px rgba($primary, 0.4);
+    }
+
+    &.occupied {
+      color: rgba($on-background, 0.9);
+      background: rgba($surface-variant, 0.9);
+    }
+  }
+}
+
+.Controls {
+  background: rgba($background, 0.65);
+  border-radius: 15px;
+  margin-left: 5px;
+  padding: 6px;
+
+  .controls-btn {
+    background: rgba($primary, 0.9);
+    border-radius: 12px;
+    padding: 4px 14px;
+    margin: 0 3px;
+    transition: all 200ms ease;
+    color: $on-primary;
+
+    &:hover {
+      background: rgba($primary-container, 0.9);
+    }
+
+    .controls-icon {
+      min-width: 18px;
+      min-height: 18px;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      // margin-right: 0px;
+
+      &.controls-icon-bat {
+        font-family: "lucide";
+        font-size: 20px;
+        font-weight: 700;
+        background: none;
+        color: $on-surface;
+        margin-right: -6px;
+      }
+
+      &.controls-icon-wifi {
+        font-family: "lucide";
+        font-size: 19px;
+        font-weight: 700;
+        background: none;
+        color: $on-primary;
+      }
+
+      &.controls-icon-bt {
+        font-family: "lucide";
+        font-size: 19px;
+        font-weight: 700;
+        background: none;
+        color: $on-primary;
+      }
+
+      &.controls-icon-audio {
+        font-family: "lucide";
+        font-size: 19px;
+        font-weight: 700;
+        background: none;
+        color: $on-primary;
+      }
+    }
+
+    .controls-label {
+      margin-left: 8px;
+      color: $on-primary;
+      font-weight: bold;
+    }
+
+    .controls-label-audio-volume {
+      margin-left: 6px;
+    }
+
+    .controls-label-bat {
+      margin-top: 6px;
+    }
+
+    &.controls-btn-battery {
+      background: transparent;
+      color: $on-surface;
+      padding: 0;
+      margin: 0px 10px;
+
+      &:hover {
+        background: transparent;
+      }
+
+      .controls-label {
+        color: $on-surface;
+      }
+
+    }
+
+  }
+}
+
+.FocusedClient {
+  background: rgba($background, 0.65);
+  border-radius: 15px;
+  padding: 6px 16px;
+
+  .focused-icon {
+    margin-right: 8px;
+    min-width: 16px;
+    min-height: 16px;
+  }
+
+  .focused-title {
+    color: $on-surface;
+    font-weight: bold;
+  }
+}
+
+.Clock {
+  background: rgba($background, 0.65);
+  border-radius: 15px;
+  margin: 0px 5px;
+  transition: all 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  font-weight: bold;
+  color: $on-surface;
+  padding: 6px 16px;
+
+  .clock-label {
+    transition: opacity 150ms ease;
+    opacity: 1;
+
+    &.fading {
+      opacity: 0;
+    }
+  }
+}
+
+.Logo {
+  background: rgba($background, 0.65);
+  border-radius: 15px;
+  margin-right: 5px;
+  transition: all 200ms ease;
+  padding: 0px 12px;
+
+  &:hover {
+    opacity: 0.7;
+  }
+}
+
+.logo-icon {
+  background-image: url('/usr/share/pixmaps/archlinux-logo.svg');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  min-width: 25px;
+  // min-height: 40px;
+  // margin: 8px 12px;
+}
+
+
+window.Notifications {
+  margin-top: 10px;
+  margin-right: 10px;
+
+  .notif-card {
+    background: rgba($background, 0.65);
+    border-radius: 16px;
+    padding: 14px 16px;
+    min-width: 360px;
+
+    &.urgent {
+      border: 1px solid rgba($error, 0.6);
+    }
+
+    &.low {
+      opacity: 0.85;
+    }
+
+    .notif-header {
+      .notif-app-icon {
+        min-width: 16px;
+        min-height: 16px;
+        color: $primary;
+      }
+
+      .notif-app-name {
+        font-size: 12px;
+        font-weight: bold;
+        color: $primary;
+      }
+
+      .notif-close {
+        border-radius: 9999px;
+        padding: 2px 6px;
+        color: rgba($on-surface-variant, 0.6);
+        font-family: "feather";
+        font-size: 12px;
+        transition: all 150ms ease;
+
+        &:hover {
+          background: rgba($background, 0.6);
+          color: $on-surface-variant;
+        }
+      }
+    }
+
+    &.osd {
+      padding: 6px 16px;
+      min-width: 360px;
+      border-radius: 16px;
+      border: 2px solid rgba(18, 20, 13, 0.8);
+
+      .notif-osd-icon {
+        font-family: "lucide";
+        font-size: 28px;
+        padding: 10px;
+        color: $on-primary;
+      }
+
+      .notif-osd-value {
+        font-size: 18px;
+        font-weight: bold;
+        color: $on-surface;
+      }
+    }
+
+    .notif-image {
+      border-radius: 8px;
+      font-size: 48px;
+    }
+
+    .notif-summary {
+      font-size: 16px;
+      font-weight: bold;
+      color: $on-surface;
+    }
+
+
+
+    .notif-body {
+      font-size: 14px;
+      color: rgba($on-surface-variant, 0.9);
+    }
+
+    .notif-actions {
+      margin-top: 4px;
+
+      .notif-action-btn {
+        background: rgba($primary-container, 0.5);
+        border-radius: 8px;
+        padding: 6px 12px;
+        color: $on-primary-container;
+        font-size: 13px;
+        font-weight: bold;
+        transition: all 150ms ease;
+
+        &:hover {
+          background: rgba($primary-container, 0.8);
+        }
+      }
+    }
+  }
+}
+
+window.PowerMenu {
+  background-color: rgba($background, 0.65);
+  border-radius: 30px;
+
+  .power-menu-container {
+    padding: 20px 10px;
+
+    .power-btn {
+      background: rgba($surface-variant, 0.9);
+      color: rgba($on-surface-variant, 0.9);
+      border-radius: 9999px;
+      padding: 0;
+      min-width: 85px;
+      min-height: 85px;
+      margin: 0 10px;
+      transition: background 300ms ease, padding 400ms cubic-bezier(0.34, 1.56, 0.64, 1), color 200ms ease;
+
+      &:hover,
+      &.active {
+        background: rgba($primary, 0.85);
+        color: rgba($on-primary, 0.85);
+        padding: 0 18px;
+      }
+
+      &.danger {
+        background: rgba($error, 0.95);
+        color: rgba($on-error, 0.55);
+
+        &:hover,
+        &.active {
+          background: rgba($error, 0.85);
+          color: $on-error;
+        }
+      }
+    }
+
+    .power-icon {
+      font-family: "lucide";
+      font-size: 38px;
+    }
+
+    .power-label {
+      font-size: 0px;
+      opacity: 0;
+      font-weight: bold;
+      transition: font-size 300ms ease, opacity 300ms ease;
+    }
+
+    .power-btn:hover .power-label,
+    .power-btn.active .power-label {
+      font-size: 14px;
+      opacity: 1;
+    }
+  }
+}
