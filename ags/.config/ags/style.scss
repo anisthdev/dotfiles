@@ -140,6 +140,63 @@ window.Bar {
   }
 }
 
+.AudioSwitcher {
+  .audio-switcher-stage {
+    padding-right: 10px;
+  }
+
+  .audio-switcher-shell {
+    min-width: 360px;
+    padding: 8px;
+    border-radius: 18px;
+    background: rgba($background, 0.75);
+    border: 1px solid rgba($outline-variant, 0.38);
+  }
+
+  .audio-switcher-card {
+    border-radius: 12px;
+    padding: 10px 12px;
+    transition: background 150ms ease;
+
+    &:hover {
+      background: rgba($surface-variant, 0.2);
+    }
+
+    &.active {
+      .audio-switcher-card-title {
+        color: $primary;
+      }
+
+      .audio-switcher-card-icon {
+        color: $primary;
+      }
+    }
+
+    &.selected {
+      background: rgba($surface-variant, 0.25);
+    }
+
+    .audio-switcher-card-icon {
+      font-family: "lucide";
+      font-size: 24px;
+      font-weight: 700;
+      color: $on-surface;
+    }
+
+    .audio-switcher-card-title {
+      font-size: 14px;
+      font-weight: bold;
+      color: $on-surface;
+    }
+
+    .audio-switcher-card-volume {
+      font-size: 18px;
+      font-weight: bold;
+      color: $primary-fixed-dim;
+    }
+  }
+}
+
 .FocusedClient {
   background: rgba($background, 0.65);
   border-radius: 15px;
