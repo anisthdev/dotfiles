@@ -14,12 +14,10 @@
   ],
   "modules-right": [
     "tray",
-    "custom/recording",
-    "battery",
-    "pulseaudio",
     "network",
-    "bluetooth"
-    // "power-profiles-daemon"
+    "bluetooth",
+    "pulseaudio",
+    "battery"
   ],
   "height": 30,
   "hyprland/window": {
@@ -53,11 +51,11 @@
       "eog": "Image Viewer",
       "evince": "Document Viewer",
       "org.keepassxc.KeePassXC": "KeePass",
-      "qbittorrent": "qBittorrent"
+      "com.mitchellh.ghostty": "Ghostty"
     }
   },
   "custom/launcher": {
-    "format": "",
+    "format": " ",
     "on-click": "rofi -show drun",
     "tooltip-format": "Launch your favorite apps"
   },

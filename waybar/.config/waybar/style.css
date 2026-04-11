@@ -1,39 +1,41 @@
 @import url("/home/asif/.config/waybar/colors.css");
 
 * {
-  font-family: "lucide", "SF Pro Display", sans-serif;
+  font-family: "SF Pro Display", "lucide", sans-serif;
   font-size: 15px;
   font-weight: bold;
 }
 
 window#waybar {
   border-radius: 10px;
-  background-color: @surface_container;
-  color: @foreground;
+  background-color: transparent;
 }
 
 .modules-right {
-  margin-right: 12px;
+  background: @background;
+  padding: 5px;
+  border-radius: 10px;
 }
 
 #workspaces {
-  background-color: transparent;
-  margin: 2px;
-  border-radius: 30px;
-  margin-left: 12px;
+  background-color: @background;
+  border-radius: 10px;
+  margin: 0px 10px;
+  padding: 5px;
 }
 
 #workspaces button {
-  background-color: transparent;
-  color: @outline;
+  background-color: @surface_container_highest;
+  margin: 0px 5px;
+  color: @inverse_surface;
   transition: margin 150ms ease-in-out;
   transition: background-color 0.3s ease, color 0.3s ease, padding 0.2s ease;
   border: none;
-  /* padding: 0px 20px; */
 }
 
 #workspaces button:hover {
-  background: @surface_container_high;
+  background: @inverse_surface_container;
+  padding: 5px;
 }
 
 #workspaces button.urgent {
@@ -41,39 +43,35 @@ window#waybar {
   color: @on_error;
 }
 
+#workspaces button.empty {
+  background: transparent;
+  color: @surface_bright;
+}
+
+#workspaces button.empty:hover {
+  box-shadow: none;
+}
+
 #workspaces button.active {
   background-color: @primary;
-  color: @on_secondary;
-  padding: 0px 20px;
-  border-radius: 20px;
+  color: @on_primary;
+  padding: 0px 15px;
+  border-radius: 10px;
 }
 
 #workspaces button.active:hover {
-  color: @primary_fixed_dim;
-  background: inherit;
+  color: @on_inverse_primary;
+  background: @inverse_primary;
+  box-shadow: none;
 }
 
-#workspaces button.empty {
-  color: @outline_variant;
-}
-
-
-#backlight,
-#custom-pacman,
 #clock,
-#custom-weather,
-#custom-media,
-#window,
-#cpu,
-#memory,
-#disk,
-#custom-launcher,
-#custom-notification,
-#power-profiles-daemon {
+#custom-launcher {
+  background: @background;
   color: @primary;
-  background-color: @primary_container_low;
-  padding: 0 15px 0 15px;
-  margin-left: 12px;
+  margin: 0px 10px;
+  padding: 0px 10px;
+  border-radius: 10px;
 } 
 
 #custom-launcher {
@@ -89,14 +87,26 @@ window#waybar {
   padding: 0px 15px;
 }
 
-#network,
 #pulseaudio,
-#battery,
+#network,
 #bluetooth {
   background-color: @primary;
-  color: @on_secondary;
-  margin: 3px 0px;
+  color: @on_primary;
   padding: 0px 15px;
+}
+
+#network {
+  border-radius: 10px 0 0 10px;
+}
+
+#pulseaudio {
+  border-radius: 0 10px 10px 0;
+}
+
+#battery {
+  margin-left: 10px;
+  color: @on_background;
+  margin-right: 5px;
 }
 
 #tray {
@@ -107,14 +117,11 @@ window#waybar {
   padding: 0px 15px;
 }
 
-#battery {
-  border-radius: 10px 0 0 10px;
+#window {
+  background: @background;
+  padding: 0px 20px;
+  border-radius: 10px;
 }
-
-#bluetooth {
-  border-radius: 0 10px 10px 0;
-}
-
 
 #window.hidden {
   opacity: 0;
