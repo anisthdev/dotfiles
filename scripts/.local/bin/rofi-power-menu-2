@@ -7,27 +7,24 @@ theme=$HOME/.config/rofi/modern-theme.rasi
 prompt="`hostname`"
 mesg="Uptime : `uptime -p | sed -e 's/up //g'`"
 
-list_col='6'
+list_col='5'
 list_row='1'
-win_width='600px'
-position='center'
-anchor='center'
+win_width='490px'
 
 # Options
-option_1=""
-option_2=""
-option_3=""
-option_4=""
-option_5=""
-option_6=""
+option_1=""
+option_2=""
+option_3=""
+option_4=""
+option_5=""
 
 # Rofi CMD
 rofi_cmd() {
 	rofi -theme-str "listview {columns: $list_col; lines: $list_row;}" \
-        -theme-str "window {width: $win_width; location: $position; anchor: $anchor; }" \
+        -theme-str "window {width: $win_width; location: south; anchor: south; y-offset: -16px; border-radius: 20px;}" \
 		-theme-str 'textbox-prompt-colon {str: "";}' \
 		-dmenu \
-    -u 5 \
+    -u 4 \
 		-p "$prompt" \
 		-mesg "$mesg" \
 		-markup-rows \
@@ -36,7 +33,11 @@ rofi_cmd() {
 
 # Pass variables to rofi dmenu
 run_rofi() {
-	echo -e "$option_1\n$option_2\n$option_3\n$option_4\n$option_5\n$option_6" | rofi_cmd
+	echo -e "$option_1
+$option_2
+$option_3
+$option_4
+$option_5" | rofi_cmd
 }
 
 # Confirmation CMD
@@ -56,14 +57,12 @@ run_cmd() {
 	if [[ "$1" == '--opt1' ]]; then
 		hyprlock
 	elif [[ "$1" == '--opt2' ]]; then
-		uwsm stop
-	elif [[ "$1" == '--opt3' ]]; then
 		mpc -q pause && systemctl suspend
-	elif [[ "$1" == '--opt4' ]]; then
+	elif [[ "$1" == '--opt3' ]]; then
 		systemctl hibernate
-	elif [[ "$1" == '--opt5' ]]; then
+	elif [[ "$1" == '--opt4' ]]; then
 		systemctl reboot
-	elif [[ "$1" == '--opt6' ]]; then
+	elif [[ "$1" == '--opt5' ]]; then
 		systemctl poweroff
 	fi
 }
@@ -85,9 +84,6 @@ case ${chosen} in
         ;;
     $option_5)
 		run_cmd --opt5
-        ;;
-    $option_6)
-		run_cmd --opt6
         ;;
 esac
 

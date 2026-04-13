@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Toggle Nightlight/Redshift
+
+if pgrep -x "wlsunset" > /dev/null; then
+    pkill wlsunset
+    notify-send "Nightlight" "Disabled" -i brightnesssettings
+else
+    nohup wlsunset -S 06:30 -s 18:30 -t 4000 -g 0.95 > /dev/null 2>&1 &
+    notify-send "Nightlight" "Enabled (4000K)" -i brightnesssettings
+fi

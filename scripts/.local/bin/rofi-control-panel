@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# Control panel to launch system applets
+
+SCRIPT_DIR="$(dirname "$0")"
+
+labels=(  "Audio"  "Wifi"  "Bluetooth"  "Wallpaper"  "Screenshot"  "Screenrecord"  "Power"  "DND"  "Nightlight"  "Airplane"  )
+icons=(   "󰝟"  "󰤨"  "󰂯"  "󰏅"  "󰑭"  "󰡦"  "󰐥"  "󰂞"  "󰛩"  "󰜐"  )
+scripts=( "rofi-audio-switcher" "rofi-wifi-only" "rofi-bluetooth-only" "rofi-wallpaper-picker" "rofi-screenshot" "rofi-screenrecord" "rofi-power-menu-2" "rofi-dnd" "rofi-nightlight" "rofi-airplane" )
+
+choice=$(
+    for i in "${!labels[@]}"; do
+        echo "${icons[$i]}  ${labels[$i]}"
+    done | rofi -dmenu -i -p "System Controls" \
+        -theme ~/.config/rofi/control-panel-bluetooth-style.rasi \
+        -markup-rows
+)
+
+[[ -z "$choice" ]] && exit 0
+
+# Trim whitespace
+choice="${choice#"${choice%%[![:space:]]*}"}"
+choice="${choice%"${choice##*[![:space:]]}"}"
+
+for i in "${!labels[@]}"; do
+    if [[ "$choice" == *"${labels[$i]}" ]]; then
+        exec "$SCRIPT_DIR/${scripts[$i]}"
+    fi
+done

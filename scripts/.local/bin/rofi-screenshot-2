@@ -12,20 +12,19 @@ theme=$HOME/.config/rofi/modern-theme.rasi
 prompt='Screenshot'
 mesg="DIR: `xdg-user-dir PICTURES`/Screenshots"
 
-list_col='5'
+list_col='4'
 list_row='1'
-win_width='500px'
+win_width='400px'
 
 # Options
-option_1=""
-option_2=""
-option_3=""
-option_4=""
-option_5=""
+option_1=""
+option_2=""
+option_3=""
+option_4=""
 
 # Rofi CMD
 rofi_cmd() {
-	rofi -theme-str "window {width: $win_width;}" \
+	rofi -theme-str "window {width: $win_width; location: south; anchor: south; y-offset: -16px; border-radius: 12px;}" \
 		-theme-str "listview {columns: $list_col; lines: $list_row;}" \
 		-theme-str 'textbox-prompt-colon {str: "";}' \
 		-dmenu \
@@ -37,7 +36,7 @@ rofi_cmd() {
 
 # Pass variables to rofi dmenu
 run_rofi() {
-	echo -e "$option_1\n$option_2\n$option_3\n$option_4\n$option_5" | rofi_cmd
+	echo -e "$option_1\n$option_2\n$option_3\n$option_4" | rofi_cmd
 }
 
 # countdown
@@ -52,26 +51,25 @@ countdown () {
     makoctl dismiss
 }
 
+# Play shutter sound
+play_shutter() {
+    pw-play ~/.local/share/sounds/macos/camera-shutter.ogg &
+}
+
 # Actions
 chosen="$(run_rofi)"
 case ${chosen} in
     $option_1)
-		hyprshot -m output
+		hyprshot -m output; play_shutter
         ;;
     $option_2)
-		hyprshot -m region
+		hyprshot -m region; play_shutter
         ;;
     $option_3)
-        hyprshot -m window
+        hyprshot -m window; play_shutter
         ;;
     $option_4)
         countdown '5'
-        hyprshot -m output
-        ;;
-    $option_5)
-        countdown '10'
-        hyprshot -m output
+        hyprshot -m output; play_shutter
         ;;
 esac
-
-

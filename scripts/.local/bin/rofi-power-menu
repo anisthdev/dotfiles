@@ -7,7 +7,7 @@ show_power_menu() {
 \u200D Relaunch
 \u2060󰜉 Restart
 \u2063󰐥 Shutdown"
-  local selection=$(echo -e "$menu_options" | rofi -dmenu -font 'SF Mono 16' -theme-str 'window listview {lines: 5;} inputbar { enabled: false;}')
+  local selection=$(echo -e "$menu_options" | rofi -dmenu -font 'SF Mono 16' -u 4 -theme-str 'window listview {lines: 5;} inputbar { enabled: false;} element.urgent { background-color: #93000a80; text-color: #ffb4ab; } element.urgent.selected { background-color: #93000a; text-color: #ffb4ab; }')
 
   case "$selection" in
   *Lock*) hyprlock ;;

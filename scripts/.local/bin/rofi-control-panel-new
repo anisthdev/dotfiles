@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(dirname "$0")"
+theme="$HOME/.config/rofi/bluetooth-menu.rasi"
+
+rofi_menu_cmd() {
+    rofi -dmenu -i -format i -markup-rows -p "System Controls" \
+        -mesg "Quick Actions" \
+        -theme "$theme"
+}
+
+escape_markup() {
+    local text="$1"
+    text="${text//&/&amp;}"
+    text="${text//</&lt;}"
+    text="${text//>/&gt;}"
+    printf '%s' "$text"
+}
+
+declare -a actions=()
+declare -a scripts=()
+declare -a menu_items=()
+
+actions+=("Audio")
+scripts+=("rofi-audio-switcher")
+menu_items+=("<span font_family='lucide' size='larger'></span>   <span font_family='SF Pro Display' font_weight='bold'>Audio</span>")
+
+actions+=("Wifi")
+scripts+=("rofi-wifi-only")
+menu_items+=("<span font_family='lucide' size='larger'></span>   <span font_family='SF Pro Display' font_weight='bold'>Wifi</span>")
+
+actions+=("Bluetooth")
+scripts+=("rofi-bluetooth-only")
+menu_items+=("<span font_family='lucide' size='larger'></span>   <span font_family='SF Pro Display' font_weight='bold'>Bluetooth</span>")
+
+actions+=("Wallpaper")
+scripts+=("rofi-wallpaper-picker")
+menu_items+=("<span font_family='lucide' size='larger'></span>   <span font_family='SF Pro Display' font_weight='bold'>Wallpaper</span>")
+
+actions+=("Screenshot")
+scripts+=("rofi-screenshot-2")
+menu_items+=("<span font_family='lucide' size='larger'></span>   <span font_family='SF Pro Display' font_weight='bold'>Screenshot</span>")
+
+actions+=("Screenrecord")
+scripts+=("rofi-screenrecord")
+menu_items+=("<span font_family='lucide' size='larger'></span>   <span font_family='SF Pro Display' font_weight='bold'>Screenrecord</span>")
+
+actions+=("Power")
+scripts+=("rofi-power-menu-2")
+menu_items+=("<span font_family='lucide' size='larger'></span>   <span font_family='SF Pro Display' font_weight='bold'>Power</span>")
+
+actions+=("Nightlight")
+scripts+=("rofi-nightlight")
+menu_items+=("<span font_family='lucide' size='larger'></span>   <span font_family='SF Pro Display' font_weight='bold'>Nightlight</span>")
+
+rofi_status=0
+choice_idx=""
+set +e
+choice_idx="$(printf '%s\n' "${menu_items[@]}" | rofi_menu_cmd)"
+rofi_status=$?
+set -e
+
+[[ -z "$choice_idx" ]] && exit 0
+
+script="${scripts[$choice_idx]}"
+exec "$SCRIPT_DIR/$script"

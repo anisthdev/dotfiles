@@ -26,7 +26,7 @@ if [[ "$mode" == "source" ]]; then
   pa_default_cmd="get-default-source"
   pa_set_cmd="set-default-source"
 else
-  prompt="󰓃"
+  prompt=" "
   pa_type="sinks"
   pa_default_cmd="get-default-sink"
   pa_set_cmd="set-default-sink"
@@ -59,8 +59,8 @@ icon_for_node() {
   local lower="${name,,}"
   case "$lower" in
     *headphone*|*headset*)  printf '󰋋 ' ;;
-    *hdmi*|*display*|*dp\ *)  printf '󰡁 ' ;;
-    *speaker*|*analog*)     printf '󰓃 ' ;;
+    *hdmi*|*display*|*monitor*|*dp\ *)  printf '  ' ;;
+    *speaker*|*analog*)     printf '  ' ;;
     *bluetooth*|*bluez*)    printf '󰂯 ' ;;
     *webcam*|*camera*)      printf '󰄀 ' ;;
     *microphone*|*mic*)     printf '󰍬 ' ;;

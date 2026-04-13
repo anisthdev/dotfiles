@@ -64,19 +64,19 @@ icon_for_bt_type() {
   local bt_type="$1"
   case "$bt_type" in
     input-mouse)
-      printf '󰦋 '
+      printf '  '
       ;;
     input-keyboard)
-      printf '󰥻 '
+      printf '  '
       ;;
     input-gaming|input-gamepad)
       printf '󰊴 '
       ;;
     audio-headphones)
-      printf '󰋋 '
+      printf '  '
       ;;
     audio-headset)
-      printf '󱡏 '
+      printf '  '
       ;;
     audio-card|audio-speaker)
       printf '󰦢 '
@@ -85,16 +85,16 @@ icon_for_bt_type() {
       printf '󰄜 '
       ;;
     computer)
-      printf '󰌢 '
+      printf '  '
       ;;
     camera-photo|camera-video)
-      printf '󰄀 '
+      printf '  '
       ;;
     printer)
-      printf '󰐪 '
+      printf '  '
       ;;
     *)
-      printf '󰀀 '
+      printf '  '
       ;;
   esac
 }
@@ -164,7 +164,6 @@ connect_device() {
   local addr="$1"
   local name="$2"
   if bluetoothctl connect "$addr" >/dev/null 2>&1; then
-    notify-send "Bluetooth" "Connected to $name"
     return 0
   fi
   notify-send "Bluetooth" "Failed to connect $name"
@@ -175,7 +174,6 @@ disconnect_device() {
   local addr="$1"
   local name="$2"
   if bluetoothctl disconnect "$addr" >/dev/null 2>&1; then
-    notify-send "Bluetooth" "Disconnected $name"
     return 0
   fi
   notify-send "Bluetooth" "Failed to disconnect $name"

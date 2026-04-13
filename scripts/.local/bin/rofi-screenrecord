@@ -1,24 +1,32 @@
 #!/bin/bash
 
-# Set recorder based on GPU
+TRAY_ID="screenrecord"
+NOTIFICATION_START_ICON="/usr/share/icons/Papirus-Dark/128x128/apps/com.github.mohelm97.screenrecorder.svg"
+NOTIFICATION_STOP_ICON="/usr/share/icons/Papirus-Dark/128x128/apps/com.github.mohelm97.screenrecorder.svg"
+TRAY_ICON="record"
+
 screenrecording() {
   filename="$HOME/Videos/screenrecording-$(date +'%Y-%m-%d_%H-%M-%S').mp4"
-  notify-send "Screen recording starting..." -t 1000 -i /home/asif/.local/share/icons/McMojave-circle/apps/scalable/simplescreenrecorder.svg
+  notify-send "Screen recording starting..." -t 1000 -i "$NOTIFICATION_START_ICON"
   sleep 1
+
   if [ $# -eq 0 ]; then
-    wl-screenrec -f "$filename" --ffmpeg-encoder-options="-c:v libx264 -crf 23 -preset medium -movflags +faststart" --output HDMI-A-1
+    /home/asif/.local/bin/tray run --id "$TRAY_ID" --icon "$TRAY_ICON" --tooltip "Recording screen" --on-click "pkill -x wl-screenrec; pkill -x wf-recorder" --duration -- wl-screenrec -f "$filename" --ffmpeg-encoder-options="-c:v libx264 -crf 23 -preset medium -movflags +faststart" --output HDMI-A-1
   else
-    wl-screenrec -f "$filename" --ffmpeg-encoder-options="-c:v libx264 -crf 23 -preset medium -movflags +faststart" "$@"
+    /home/asif/.local/bin/tray run --id "$TRAY_ID" --icon "$TRAY_ICON" --tooltip "Recording screen" --on-click "pkill -x wl-screenrec; pkill -x wf-recorder" --duration -- wl-screenrec -f "$filename" --ffmpeg-encoder-options="-c:v libx264 -crf 23 -preset medium -movflags +faststart" "$@"
   fi
+
+  tray hide --id "$TRAY_ID"
+  notify-send "Screen recording saved to ~/Videos" -t 2000 -i "$NOTIFICATION_STOP_ICON"
 }
 
 launch_rofi() {
-    option_1=""
-    option_2=""
-    option_3=""
+    option_1=""
+    option_2=""
+    option_3=""
 
     selected_icon=$(printf "%b\n%b\n%b" "$option_1" "$option_2" "$option_3" | rofi -dmenu -p "Screenrecord" \
-        -theme-str "window {width: 300px;}" \
+        -theme-str "window {width: 300px; location: south; anchor: south; y-offset: -16px; border-radius: 12px;}" \
         -theme-str "listview {columns: 3; lines: 1;}" \
         -theme-str 'textbox-prompt-colon {str: "";}' \
         -theme ~/.config/rofi/modern-theme.rasi)
@@ -32,7 +40,7 @@ launch_rofi() {
         screenrecording -g "$region"
         ;;
     "$option_3")
-        region=$(hyprctl clients -j | jq -r '.[] | "\(.at[0]),\(.at[1]) \(.size[0])x\(.size[1])"' | slurp) || exit 1
+        region=$(hyprctl clients -j | jq -r --arg workspace "$(hyprctl activeworkspace -j | jq -r '.id')" '.[] | select(.workspace.id == ($workspace | tonumber)) | "\(.at[0]),\(.at[1]) \(.size[0])x\(.size[1])"' | slurp) || exit 1
         screenrecording -g "$region"
         ;;
     esac
@@ -41,7 +49,6 @@ launch_rofi() {
 if pgrep -x wl-screenrec >/dev/null || pgrep -x wf-recorder >/dev/null; then
   pkill -x wl-screenrec
   pkill -x wf-recorder
-  notify-send "Screen recording saved to ~/Videos" -t 2000 -i /home/asif/.local/share/icons/McMojave-circle/apps/scalable/simplescreenrecorder.svg
 else
-    launch_rofi
+  launch_rofi
 fi

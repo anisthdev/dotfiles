@@ -143,7 +143,6 @@ done
 connect_to_ssid() {
   local target_ssid="$1"
   if nmcli device wifi connect "$target_ssid" >/dev/null 2>&1; then
-    notify-send "Wi-Fi" "Connected to $target_ssid"
     return 0
   fi
 
@@ -153,7 +152,6 @@ connect_to_ssid() {
   [[ -z "$password" ]] && return 1
 
   if nmcli device wifi connect "$target_ssid" password "$password" >/dev/null 2>&1; then
-    notify-send "Wi-Fi" "Connected to $target_ssid"
     return 0
   fi
 
@@ -172,7 +170,6 @@ disconnect_selected_wifi() {
   [[ -z "$wifi_dev" ]] && return 1
 
   if nmcli device disconnect "$wifi_dev" >/dev/null 2>&1; then
-    notify-send "Wi-Fi" "Disconnected from $target_ssid"
     return 0
   fi
 
