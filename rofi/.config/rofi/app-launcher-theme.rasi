@@ -6,7 +6,7 @@ configuration {
 }
 /* The main Rofi window */
 window {
-    width:              35%;
+    width:              22%;
     padding:            16px;
     border:             0px;
     border-radius:      16px;
@@ -20,9 +20,9 @@ window {
 
 /* The list of all elements */
 listview {
-    lines:              4;
-    columns:            5;
-    spacing:            15px;
+    lines:              8;
+    columns:            1;
+    spacing:            6px;
     fixed-height:       true;
     layout:             vertical;
     background-color:   transparent;
@@ -32,19 +32,19 @@ mainbox {
     background-color: transparent;
 }
 
-/* Each entry in the grid */
+/* Each entry in the list */
 element {
-    padding:            12px 10px;
+    padding:            10px 12px;
     border-radius:      12px;
-    orientation:        vertical;
+    orientation:        horizontal;
     background-color:   transparent;
 }
 
 element-icon {
-    size:               2.5em;
+    size:               2em;
     horizontal-align:   0.5;
     vertical-align:     0.5;
-    margin:             0px 0px 4px 0px;
+    margin:             0px 10px 0px 0px;
     background-color:   transparent;
 }
 
@@ -53,11 +53,11 @@ element-icon.selected {
 }
 
 element-text {
-    horizontal-align:   0.5;
+    horizontal-align:   0;
     vertical-align:     0.5;
     background-color:   transparent;
     color:              @on-background;
-    font:               "SF Pro Display Medium 12";
+    font:               "SF Pro Display Medium 13";
 }
 
 element-text.selected {
