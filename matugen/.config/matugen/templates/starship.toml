@@ -16,7 +16,7 @@ $golang\
 $php\
 $dart\
 $lua\
-[](fg:#32302f bg:#282828)\
+[](fg:#32302f bg:background)\
 \n~> """
 
 
@@ -32,6 +32,7 @@ on_secondary = '{{colors.on_secondary.default.hex}}'
 tertiary = '{{colors.tertiary.default.hex}}'
 on_tertiary = '{{colors.on_tertiary.default.hex}}'
 surface = '{{colors.surface.default.hex}}'
+background = '{{colors.background.default.hex}}'
 
 
 
