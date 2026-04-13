@@ -1,68 +1,81 @@
 @import "./colors.rasi"
 
+configuration {
+    kb-cancel: "Escape,MousePrimary";
+    hover-select: true;
+}
 /* The main Rofi window */
 window {
-    width:              20%; /* Adjust width as needed */
+    width:              35%;
     padding:            16px;
     border:             0px;
-    border-radius:      16px; /* Key for rounded corners */
-    background-color:   @surface-container;
+    border-radius:      16px;
+    background-color:   @background;
+    anchor:             south;
+    location:           south;
+    y-offset:           -16px;
+    grab-mouse:         true;
+    click-to-exit:       true;
 }
 
 /* The list of all elements */
 listview {
-    lines:              8; /* Number of visible entries */
-    columns:            1;
-    spacing:            8px; /* Space between entries */
-    fixed-height:       false;
+    lines:              4;
+    columns:            5;
+    spacing:            15px;
+    fixed-height:       true;
     layout:             vertical;
-    background-color: transparent;
+    background-color:   transparent;
 }
 
 mainbox {
     background-color: transparent;
 }
 
-/* Each entry in the list */
+/* Each entry in the grid */
 element {
-    padding:            8px 12px;
+    padding:            12px 10px;
     border-radius:      12px;
-    orientation:        horizontal;
-    background-color: transparent;
+    orientation:        vertical;
+    background-color:   transparent;
 }
 
 element-icon {
-    size:               1.7em;
+    size:               2.5em;
+    horizontal-align:   0.5;
     vertical-align:     0.5;
-    margin:             0px 10px 0px 0px;
-    background-color: transparent;
+    margin:             0px 0px 4px 0px;
+    background-color:   transparent;
 }
+
 element-icon.selected {
-    background-color: transparent;
+    background-color:   transparent;
 }
 
 element-text {
+    horizontal-align:   0.5;
     vertical-align:     0.5;
-    background-color: transparent;
-    color: @on-background;
+    background-color:   transparent;
+    color:              @on-background;
+    font:               "SF Pro Display Medium 12";
 }
 
 element-text.selected {
-    background-color: transparent;
-    color: @on-primary-container;
+    background-color:   transparent;
+    color:              white;
 }
 
 /* Style for the selected entry */
 element.selected {
-    background-color:   @primary-container;
+    background-color:   @inverse-primary;
     text-color:         @background; /* Dark text on light background */
 }
 
 /* The top input bar */
 inputbar {
     padding:            12px;
-    margin:             0px 0px 10px 0px; /* Margin below the input bar */
-    border-radius:      32px;
+    margin:             0px 0px 20px 0px; /* Margin below the input bar */
+    border-radius:      12px;
     background-color: @surface-variant;
     children:           [ prompt, entry ];
 }
@@ -71,12 +84,12 @@ prompt {
     enabled:            true;
     padding:            0px 8px 0px 0px;
     background-color:   transparent;
-    text-color:         @primary;
+    text-color:         @outline;
 }
 
 entry {
-    placeholder:        "Search...";
+    placeholder:        "Search your apps...";
     placeholder-color:  inherit;
     background-color:   transparent;
-    text-color:         @primary;
+    text-color:         @outline;
 }

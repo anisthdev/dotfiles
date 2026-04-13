@@ -1,6 +1,8 @@
 /*****----- Configuration -----*****/
 configuration {
     show-icons:                 false;
+    kb-cancel: "Escape,MousePrimary";
+    hover-select: true;
 }
 
 @import                          "./colors.rasi"
@@ -25,7 +27,7 @@ window {
     border-radius:               100%;
     border-color:                @primary;
     cursor:                      "default";
-    background-color:            @surface-container;
+    background-color:            @background;
 }
 
 /*****----- Main Box -----*****/
@@ -104,14 +106,14 @@ element {
     enabled:                     true;
     padding:                     18px 0px 28px 0px;
     border:                      0px solid;
-    border-radius:               100%;
+    border-radius:               12px;
     border-color:                @primary;
     background-color:            transparent;
     text-color:                  @on-background;
     cursor:                      pointer;
 }
 element-text {
-    font:                        "feather 24";
+    font:                        "lucide 24";
     background-color:            transparent;
     text-color:                  inherit;
     cursor:                      inherit;
@@ -121,22 +123,29 @@ element-text {
 
 element normal.normal,
 element alternate.normal {
-    background-color:            var(surface-variant);
+    background-color:            var(surface-container-highest);
     text-color:                  var(on-background);
 }
 element normal.urgent,
-element alternate.urgent,
-element selected.active {
+element alternate.urgent {
+    background-color:            var(error-container);
+    text-color:                  var(on-error-container);
+}
+element selected.urgent {
     background-color:            var(error);
-    text-color:                  var(background);
+    text-color:                  var(on-error);
 }
 element normal.active,
-element alternate.active,
-element selected.urgent {
+element alternate.active {
+    background-color:            var(primary-container);
+    text-color:                  var(background);
+}
+element selected.active {
     background-color:            var(primary-container);
     text-color:                  var(background);
 }
 element selected.normal {
-    background-color:            var(primary);
-    text-color:                  var(background);
+    background-color:            var(inverse-primary);
+    text-color:                  var(inverse-on-primary);
+    border-radius:               100%;
 }

@@ -1,0 +1,72 @@
+@theme "app-launcher-theme.rasi"
+
+window {
+    width: 650px;
+    location: center;
+    anchor: center;
+    x-offset: 0px;
+    y-offset: 0px;
+}
+
+mainbox {
+    spacing: 0px;
+    children: [ "inputbar", "listview" ];
+}
+
+inputbar {
+    enabled: true;
+    border: 0 0 2px 0;
+    border-color: @primary;
+    border-radius: 0;
+    padding: 12px 16px;
+    margin: 0px 0px 8px 0px;
+    background-color: transparent;
+}
+
+prompt {
+    font: "SF Mono 16";
+    color: @primary;
+    background-color: transparent;
+}
+
+entry {
+    font: "SF Mono 16";
+    color: @on-surface;
+    background-color: transparent;
+    placeholder-color: @outline;
+    expand: true;
+    horizontal-align: 0.0;
+}
+
+listview {
+    columns: 1;
+    lines: 15;
+    spacing: 4px;
+    scrollbar: false;
+    fixed-height: false;
+}
+
+element {
+    padding: 8px 12px;
+    border: 0 0 1px 0;
+    border-color: @outline;
+    border-radius: 0;
+    background-color: transparent;
+    children: [ element-text ];
+    orientation: horizontal;
+}
+
+element selected {
+    background-color: transparent;
+}
+
+element-text {
+    font: "SF Mono 14";
+    expand: true;
+    color: @on-surface;
+    ellipsis: false;
+}
+
+element-text selected {
+    color: @on-surface;
+}

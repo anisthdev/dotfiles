@@ -1,11 +1,11 @@
 @theme "app-launcher-theme.rasi"
 
 window {
-    width: 400px;
-    location: center;
+    width: 500px;
+    location: south;
     anchor: center;
     x-offset: 0px;
-    y-offset: 0px;
+    y-offset: -16px;
 }
 
 inputbar {
@@ -23,7 +23,7 @@ message {
 }
 
 textbox {
-    font: "SF Pro Display Bold 18";
+    font: "SF Pro Display Bold 20";
     color: @primary;
     background-color: transparent;
     horizontal-align: 0.0;
@@ -45,7 +45,7 @@ element {
 }
 
 element-text {
-    font: "lucide, SF Pro Display 15";
+    font: "lucide, SF Pro Display 16";
     expand: true;
     horizontal-align: 0.0;
     width: 100%;

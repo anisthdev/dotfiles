@@ -1,0 +1,71 @@
+@import "./colors.rasi"
+
+configuration {
+    kb-cancel: "Escape,MousePrimary";
+    hover-select: true;
+}
+
+window {
+    width:              500px;
+    padding:            16px;
+    border:             0px;
+    border-radius:      16px;
+    background-color:   @background;
+    anchor:             south;
+    location:           south;
+    y-offset:           -16px;
+    grab-mouse:         true;
+    click-to-exit:       true;
+}
+
+inputbar {
+    enabled: false;
+}
+
+mainbox {
+    spacing: 8px;
+    children: [ "message", "listview" ];
+    background-color: transparent;
+}
+
+message {
+    background-color: transparent;
+    padding: 8px 12px 4px 12px;
+}
+
+textbox {
+    font: "SF Pro Display Bold 20";
+    color: @primary;
+    background-color: transparent;
+    horizontal-align: 0.0;
+    vertical-align: 0.5;
+}
+
+listview {
+    columns:            1;
+    lines:              10;
+    spacing:            4px;
+    scrollbar:          false;
+    fixed-height:       false;
+    background-color:   transparent;
+}
+
+element {
+    padding:            14px 12px;
+    children:           [ element-text ];
+    orientation:        horizontal;
+    background-color:   transparent;
+}
+
+element-text {
+    font:               "SF Pro Display 16";
+    expand:             true;
+    horizontal-align:   0.0;
+    width:              100%;
+    background-color:   transparent;
+    color:              @on-background;
+}
+
+element-text selected {
+    horizontal-align: 0.0;
+}

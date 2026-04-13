@@ -2,8 +2,10 @@
 configuration {
     modi: "drun,run,window";
     show-icons: true;
-    icon-theme: "Fluent Dark"; 
+    icon-theme: "Papirus-Dark"; 
     display-drun: " ";
     font: "SF Pro Display Medium 14"; 
     drun-display-format: "{name}";
+    drun-match-fields: ["name"];
+    click-to-exit: true;
 }

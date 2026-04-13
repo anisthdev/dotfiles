@@ -1,17 +1,13 @@
 @import "./colors.rasi"
 
-* {
-    font: 'SF Mono 26';
-}
-
 window {
-    location: north;
-    anchor: north;
-    y-offset: 10px;
-    width: 20%;
+    location: south;
+    anchor: center;
+    y-offset: -16px;
+    width: 500px;
     padding: 16px;
     border: 0px;
-    border-radius: 16px;
+    border-radius: 12px;
     background-color: @background;
 }
 
@@ -25,14 +21,14 @@ listview {
 
 element {
     color: @on-background;
-    border-radius: 16px;
-    padding: 4px;
+    border-radius: 12px;
+    padding: 14px 12px;
     background-color: @background;
 }
 
 element.selected {
-    padding: 8px 8px;
-    background-color: @primary-container;
+    padding: 14px 12px;
+    background-color: @inverse-primary;
 }
 
 element-text {
@@ -43,8 +39,8 @@ element-text {
 }
 
 element-text.selected {
-    color: @on-primary-container;
-    background-color: @primary-container;
+    color: @background;
+    background-color: @inverse-primary;
 }
 
 inputbar {
