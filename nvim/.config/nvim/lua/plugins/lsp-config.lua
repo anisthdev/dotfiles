@@ -18,11 +18,13 @@ return {
 		-- define all the keymaps and other settings on lsp attach
 		local function on_attach(args)
 			local bufnr = args.buf
-			local client = assert(vim.lsp.get_client_by_id(args.data.client_id))
+			local client = vim.lsp.get_client_by_id(args.data.client_id)
 
-			vim.lsp.document_color.enable(true, bufnr, { style = " 󱓻 " })
+			if vim.lsp.document_color and client:supports_method("textDocument/documentColor") then
+				vim.lsp.document_color.enable(true, { bufnr = bufnr }, { style = " 󱓻 " })
+			end
 
-			if client:supports_method("textDocument/inlineCompletion") then
+			if vim.lsp.inline_completion and client:supports_method("textDocument/inlineCompletion") then
 				vim.lsp.inline_completion.enable()
 				vim.keymap.set("i", "<Tab>", function()
 					if not vim.lsp.inline_completion.get() then

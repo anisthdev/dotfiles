@@ -44,6 +44,13 @@ map("n", "<leader>Q", ":qa<CR>", { desc = "quit neovim" })
 map("n", "<leader>bd", ":bd<CR>", { desc = "close buffer" })
 -- map("n", "gf", ":lua OpenFile()<cr>", { desc = "Open or create file under cursor" })
 
+-- toggle diagnostics
+map("n", "<leader>td", function()
+	local enabled = vim.diagnostic.is_enabled()
+	vim.diagnostic.enable(not enabled)
+	vim.notify("Diagnostics " .. (enabled and "disabled" or "enabled"), vim.log.levels.INFO)
+end, { desc = "toggle diagnostics" })
+
 -- others
 map("t", "<Esc><Esc>", "<C-\\><C-n>", { desc = "Exit terminal mode" })
 map("n", "<leader><leader>S", ":source %<CR>", { desc = "source buffer" })
