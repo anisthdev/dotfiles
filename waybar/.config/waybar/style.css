@@ -7,7 +7,6 @@
 }
 
 window#waybar {
-  border-radius: 10px;
   background-color: transparent;
 }
 
@@ -20,7 +19,7 @@ window#waybar {
 #workspaces {
   background-color: @background;
   border-radius: 10px;
-  margin: 0px 10px;
+  margin-right: 10px;
   padding: 5px;
 }
 
@@ -34,8 +33,7 @@ window#waybar {
 }
 
 #workspaces button:hover {
-  background: @inverse_surface_container;
-  padding: 5px;
+  background: @surface_container;
 }
 
 #workspaces button.urgent {
@@ -45,7 +43,7 @@ window#waybar {
 
 #workspaces button.empty {
   background: transparent;
-  color: @surface_bright;
+  color: @outline;
 }
 
 #workspaces button.empty:hover {
@@ -53,54 +51,53 @@ window#waybar {
 }
 
 #workspaces button.active {
-  background-color: @primary;
-  color: @on_primary;
+  background-color: @inverse_primary;
+  color: @on_surface;
   padding: 0px 15px;
   border-radius: 10px;
 }
 
 #workspaces button.active:hover {
-  color: @on_inverse_primary;
+  color: @on_background;
   background: @inverse_primary;
   box-shadow: none;
 }
 
 #clock,
 #custom-launcher {
+  font-weight: bolder;
   background: @background;
-  color: @primary;
-  margin: 0px 10px;
-  padding: 0px 10px;
+  color: @on_background;
+  padding: 0px 8px;
   border-radius: 10px;
-} 
+}
 
 #custom-launcher {
   font-size: 22px;
+  color: #4b91bb;
+  padding-left: 15px;
+  margin-right: 10px;
 }
 
-#custom-recording {
-  border-radius: 10px;
-  background-color: @secondary;
-  color: @on_secondary;
-  margin: 3px 0px;
-  margin-right: 5px;
-  padding: 0px 15px;
+#clock {
+  margin-right: 10px;
 }
+
 
 #pulseaudio,
 #network,
 #bluetooth {
-  background-color: @primary;
-  color: @on_primary;
+  background-color: @inverse_primary;
+  color: @on_surface;
   padding: 0px 15px;
 }
 
 #network {
-  border-radius: 10px 0 0 10px;
+  border-radius: 8px 0 0 8px;
 }
 
 #pulseaudio {
-  border-radius: 0 10px 10px 0;
+  border-radius: 0 8px 8px 0;
 }
 
 #battery {
@@ -112,8 +109,8 @@ window#waybar {
 #tray {
   background-color: @tertiary_container;
   color: @on_tertiary_container;
-  border-radius: 10px;
-  margin: 3px 8px;
+  border-radius: 8px;
+  margin-right: 5px;
   padding: 0px 15px;
 }
 
@@ -134,4 +131,16 @@ window#waybar {
 
 window#waybar.empty #window {
   background-color: transparent;
+}
+
+#mpd {
+  background-color: @background;
+  color: @on_background;
+  padding: 0px 15px;
+  border-radius: 10px;
+}
+
+#mpd.playing {
+  background-color: @inverse_primary;
+  color: @on_surface;
 }

@@ -1,13 +1,15 @@
 {
   "layer": "top",
   "position": "top",
+  "reload_style_on_change": true,
   "margin-top": 5,
   "margin-left": 5,
   "margin-right": 5,
   "modules-left": [
     "custom/launcher",
     "clock",
-    "hyprland/workspaces"
+    "hyprland/workspaces",
+    "mpd"
   ],
   "modules-center": [
     "hyprland/window"
@@ -20,6 +22,22 @@
     "battery"
   ],
   "height": 30,
+  "mpd": {
+    "format": "{stateIcon}    {title} - {artist}",
+    "format-disconnected": "Disconnected ",
+    "format-stopped": " ",
+    "on-click": "mpc toggle",
+    "interval": 10,
+    "album-len": 5,
+    "title-len": 10,
+    "max-length": 25,
+    "state-icons": {
+      "paused": "",
+      "playing": ""
+    },
+    "tooltip-format": "{artist}\n{title}",
+    "tooltip-format-disconnected": "MPD (disconnected)"
+  },
   "hyprland/window": {
     "format": "{class}",
     "separate-outputs": true,
@@ -59,15 +77,6 @@
     "on-click": "rofi -show drun",
     "tooltip-format": "Launch your favorite apps"
   },
-  "custom/recording": {
-    "format": "{}",
-    "return-type": "json",
-    "tooltip": true,
-    "tooltip-format": "Screen recording is in progress",
-    "exec": "/home/asif/.config/waybar/scripts/get_recording_time.sh",
-    "exec-if": "pgrep -x wl-screenrec",
-    "interval": 1
-  },
   "bluetooth": {
     "format": "<span font_family='lucide' rise='-4000' size='large'> </span> {num_connections}",
     "format-disabled": " ",
@@ -102,8 +111,8 @@
     "tooltip-format": "Date: {:%Y-%m-%d}"
   },
   "pulseaudio": {
-    "format": "<span font_family='lucide' rise='-4000' size='large'>{icon}</span>{volume}%",
-    "format-bluetooth": "<span rise='-1000' size='large'>{icon}</span>{volume}%",
+    "format": "<span font_family='lucide' rise='-4000' size='large'>{icon}</span> {desc} · {volume}%",
+    "format-bluetooth": "<span font_family='lucide' rise='-4000' size='large'>{icon}</span> {desc} · {volume}%",
     "format-muted": " ",
     "scroll-step": 1,
     "on-click": "~/.local/bin/rofi-audio-switcher sink",
@@ -112,14 +121,16 @@
       "Easy Effects Sink"
     ],
     "format-icons": {
-      "headphone": "󱡏 ",
-      "headset": "󱡏 ",
+      "headphone": " ",
+      "headset": " ",
+      "alsa_output.pci-0000_00_1f.3.pro-output-3": " ",
+      "alsa_output.pci-0000_00_1f.3.pro-output-0": "  ",
       "default": [
         " ",
         " "
       ]
     },
-    "tooltip-format": "Volume: {volume}%"
+    "tooltip-format": "{desc} · Volume: {volume}%"
   },
   "network": {
     "interface": "wlan0",
