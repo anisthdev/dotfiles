@@ -50,3 +50,8 @@ input_path = './templates/ghostty-colors.conf'
 output_path = '~/.config/ghostty/colors.conf'
 post_hook = 'pkill -USR2 ghostty'
 
+[templates.foot]
+input_path = './templates/foot.ini'
+output_path = '~/.config/foot/colors.ini'
+post_hook = 'killall -USR2 foot'
+
