@@ -21,11 +21,11 @@ send_notification() {
 case $1 in
     raise)
         brightnessctl set 5%+
-        send_notification
+        # send_notification
         ;;
     lower)
         brightnessctl set 5%-
-        send_notification
+        # send_notification
         ;;
     *)
         echo "Usage: $0 {raise|lower}"
