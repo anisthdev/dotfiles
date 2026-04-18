@@ -23,35 +23,35 @@ declare -a scripts=()
 declare -a menu_items=()
 
 actions+=("Audio")
-scripts+=("rofi-audio-switcher")
+scripts+=("audio-switcher")
 menu_items+=("<span font_family='lucide' size='larger'></span>   <span font_family='SF Pro Display' font_weight='bold'>Audio</span>")
 
 actions+=("Wifi")
-scripts+=("rofi-wifi-only")
+scripts+=("wifi")
 menu_items+=("<span font_family='lucide' size='larger'></span>   <span font_family='SF Pro Display' font_weight='bold'>Wifi</span>")
 
 actions+=("Bluetooth")
-scripts+=("rofi-bluetooth-only")
+scripts+=("bluetooth")
 menu_items+=("<span font_family='lucide' size='larger'></span>   <span font_family='SF Pro Display' font_weight='bold'>Bluetooth</span>")
 
 actions+=("Wallpaper")
-scripts+=("rofi-wallpaper-picker")
+scripts+=("wallpaper-picker")
 menu_items+=("<span font_family='lucide' size='larger'></span>   <span font_family='SF Pro Display' font_weight='bold'>Wallpaper</span>")
 
 actions+=("Screenshot")
-scripts+=("rofi-screenshot-2")
+scripts+=("screenshot")
 menu_items+=("<span font_family='lucide' size='larger'></span>   <span font_family='SF Pro Display' font_weight='bold'>Screenshot</span>")
 
 actions+=("Screenrecord")
-scripts+=("rofi-screenrecord")
+scripts+=("screenrecord")
 menu_items+=("<span font_family='lucide' size='larger'></span>   <span font_family='SF Pro Display' font_weight='bold'>Screenrecord</span>")
 
 actions+=("Power")
-scripts+=("rofi-power-menu-2")
+scripts+=("power-menu")
 menu_items+=("<span font_family='lucide' size='larger'></span>   <span font_family='SF Pro Display' font_weight='bold'>Power</span>")
 
 actions+=("Nightlight")
-scripts+=("rofi-nightlight")
+scripts+=("toggle-nightlight")
 menu_items+=("<span font_family='lucide' size='larger'></span>   <span font_family='SF Pro Display' font_weight='bold'>Nightlight</span>")
 
 rofi_status=0
@@ -64,4 +64,9 @@ set -e
 [[ -z "$choice_idx" ]] && exit 0
 
 script="${scripts[$choice_idx]}"
-exec "$SCRIPT_DIR/$script"
+# Check parent dir for toggles (toggle-*)
+if [[ "$script" == toggle-* ]]; then
+    exec "$SCRIPT_DIR/../$script"
+else
+    exec "$SCRIPT_DIR/$script"
+fi
