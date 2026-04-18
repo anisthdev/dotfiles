@@ -33,6 +33,6 @@ echo "$wall_selection"
 
 # Set the wallpaper
 [[ -n "$wall_selection" ]] || exit 1
-matugen image ${wall_dir}/${wall_selection} --source-color-index 0
+matugen --type scheme-expressive image ${wall_dir}/${wall_selection} --source-color-index 0
 exit 0
 

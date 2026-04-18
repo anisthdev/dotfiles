@@ -1,0 +1,10 @@
+#!/bin/bash
+# Toggle Do Not Disturb via mako
+STATE=$(makoctl mode 2>/dev/null | grep -q "dnd" && echo "on" || echo "off")
+if [ "$STATE" = "on" ]; then
+    makoctl mode default
+    notify-send "DND" "Disabled"
+else
+    makoctl mode dnd
+    notify-send "DND" "Enabled"
+fi

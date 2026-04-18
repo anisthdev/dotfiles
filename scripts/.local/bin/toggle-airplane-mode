@@ -1,0 +1,9 @@
+#!/bin/bash
+STATE=$(nmcli radio wifi)
+if [ "$STATE" = "disabled" ]; then
+    nmcli radio wifi on
+    notify-send "Airplane Mode" "Disabled"
+else
+    nmcli radio wifi off
+    notify-send "Airplane Mode" "Enabled"
+fi
