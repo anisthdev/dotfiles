@@ -1,4 +1,5 @@
 @import url("/home/asif/.config/waybar/colors.css");
+@import url("/home/asif/.config/waybar/weather/waybar-weather.css");
 
 * {
   font-family: "SF Pro Display", "lucide", sans-serif;
@@ -90,6 +91,12 @@ window#waybar {
   background-color: @inverse_primary;
   color: @on_surface;
   padding: 0px 15px;
+}
+
+#custom-weather {
+  border-radius: 8px;
+  background-color: @background;
+  margin-right: 10px;
 }
 
 #network {

@@ -9,7 +9,7 @@
     "custom/launcher",
     "clock",
     "hyprland/workspaces",
-    "mpd"
+    "custom/weather",
   ],
   "modules-center": [
     "hyprland/window"
@@ -30,7 +30,7 @@
     "interval": 10,
     "album-len": 5,
     "title-len": 10,
-    "max-length": 25,
+    "max-length": 20,
     "state-icons": {
       "paused": "",
       "playing": ""
@@ -182,11 +182,11 @@
     ]
   },
   "custom/weather": {
-    "exec": "${HOME}/.config/waybar/scripts/get_weather.sh Bangalore+India",
+    "exec": "/home/asif/.config/waybar/weather/waybar-weather",
     "return-type": "json",
     "format": "{}",
     "tooltip": true,
-    "interval": 3600
+    "interval": 900
   },
   "tray": {
     "spacing": 8
