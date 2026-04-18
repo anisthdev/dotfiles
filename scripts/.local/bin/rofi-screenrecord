@@ -8,12 +8,14 @@ TRAY_ICON="record"
 screenrecording() {
   filename="$HOME/Videos/screenrecording-$(date +'%Y-%m-%d_%H-%M-%S').mp4"
   notify-send "Screen recording starting..." -t 1000 -i "$NOTIFICATION_START_ICON"
+  encoder_options="-c:v libx264 -crf 23 -preset medium -movflags +faststart"
+  kill_command="pkill -x wl-screenrec; pkill -x wf-recorder"
   sleep 1
 
   if [ $# -eq 0 ]; then
-    /home/asif/.local/bin/tray run --id "$TRAY_ID" --icon "$TRAY_ICON" --tooltip "Recording screen" --on-click "pkill -x wl-screenrec; pkill -x wf-recorder" --duration -- wl-screenrec -f "$filename" --ffmpeg-encoder-options="-c:v libx264 -crf 23 -preset medium -movflags +faststart" --output HDMI-A-1
+    tray run --id "$TRAY_ID" --icon "$TRAY_ICON" --tooltip "Recording screen" --on-click "$kill_command" --duration -- wl-screenrec -f "$filename" --ffmpeg-encoder-options="$encoder_options" --output HDMI-A-1
   else
-    /home/asif/.local/bin/tray run --id "$TRAY_ID" --icon "$TRAY_ICON" --tooltip "Recording screen" --on-click "pkill -x wl-screenrec; pkill -x wf-recorder" --duration -- wl-screenrec -f "$filename" --ffmpeg-encoder-options="-c:v libx264 -crf 23 -preset medium -movflags +faststart" "$@"
+    tray run --id "$TRAY_ID" --icon "$TRAY_ICON" --tooltip "Recording screen" --on-click "$kill_command" --duration -- wl-screenrec -f "$filename" --ffmpeg-encoder-options="$encoder_options" "$@"
   fi
 
   tray hide --id "$TRAY_ID"
