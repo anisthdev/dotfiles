@@ -17,14 +17,18 @@ b64dec() {
 declare -a ROW_LABELS=()
 declare -a ROW_INFOS=()
 declare -a ROW_ICONS=()
+declare -a ROW_EXTRAS=()
 declare -a ACTIVE_ROWS=()
+declare -a URGENT_ROWS=()
 ROW_INDEX=0
 
 begin_page() {
   ROW_LABELS=()
   ROW_INFOS=()
   ROW_ICONS=()
+  ROW_EXTRAS=()
   ACTIVE_ROWS=()
+  URGENT_ROWS=()
   ROW_INDEX=0
 }
 
@@ -33,11 +37,14 @@ row() {
   local info="$2"
   local state="${3:-}"
   local icon="${4:-}"
+  local extras="${5:-}"
 
   ROW_LABELS+=("$label")
   ROW_INFOS+=("$info")
   ROW_ICONS+=("$icon")
+  ROW_EXTRAS+=("$extras")
   [[ "$state" == "active" ]] && ACTIVE_ROWS+=("$ROW_INDEX")
+  [[ "$state" == "urgent" ]] && URGENT_ROWS+=("$ROW_INDEX")
   ROW_INDEX=$((ROW_INDEX + 1))
 }
 
@@ -56,12 +63,18 @@ emit_page() {
   if [[ ${#ACTIVE_ROWS[@]} -gt 0 ]]; then
     printf '\0active\x1f%s\n' "$(IFS=,; echo "${ACTIVE_ROWS[*]}")"
   fi
+  if [[ ${#URGENT_ROWS[@]} -gt 0 ]]; then
+    printf '\0urgent\x1f%s\n' "$(IFS=,; echo "${URGENT_ROWS[*]}")"
+  fi
 
   local i
   for i in "${!ROW_LABELS[@]}"; do
     printf '%s\0info\x1f%s' "${ROW_LABELS[$i]}" "${ROW_INFOS[$i]}"
     if [[ -n "${ROW_ICONS[$i]}" ]]; then
       printf '\x1ficon\x1f%s' "${ROW_ICONS[$i]}"
+    fi
+    if [[ -n "${ROW_EXTRAS[$i]}" ]]; then
+      printf '\x1f%s' "${ROW_EXTRAS[$i]}"
     fi
     printf '\n'
   done

@@ -24,7 +24,10 @@ if [[ -z "${ROFI_RETV:-}" ]]; then
     -modi "control-panel-script:$0" \
     -kb-custom-1 "Control+r" \
     -theme "$THEME" \
-    -theme-str "entry {placeholder: 'Search...';}"
+    -theme-str "entry {placeholder: 'Search...';}" \
+    -theme-str 'element urgent { background-color: transparent; text-color: #9aa0a6; }' \
+    -theme-str 'element urgent.selected { background-color: transparent; text-color: #ffb3b3; }' \
+    -theme-str 'element selected.urgent { background-color: transparent; text-color: #ffb3b3; }'
 fi
 
 page="${ROFI_DATA:-${CONTROL_PANEL_START_PAGE:-root}}"

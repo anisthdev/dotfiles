@@ -3,7 +3,8 @@ render_root() {
 
   row "<span font_family='SF Pro Display' font_weight='bold'>Wifi</span>" "nav:wifi" "" "network-wireless"
   row "<span font_family='SF Pro Display' font_weight='bold'>Bluetooth</span>" "nav:bluetooth" "" "bluetooth"
-  row "<span font_family='SF Pro Display' font_weight='bold'>Audio</span>" "nav:audio" "" "audio-volume-high"
+  row "<span font_family='SF Pro Display' font_weight='bold'>Audio Sinks</span>" "nav:audio:outputs" "" "audio-speakers"
+  row "<span font_family='SF Pro Display' font_weight='bold'>Audio Sources</span>" "nav:audio:inputs" "" "audio-input-microphone"
   row "<span font_family='SF Pro Display' font_weight='bold'>Power</span>" "cmd:power" "" "system-shutdown"
   row "<span font_family='SF Pro Display' font_weight='bold'>Wallpaper</span>" "cmd:wallpaper" "" "preferences-desktop-wallpaper"
   row "<span font_family='SF Pro Display' font_weight='bold'>Screenshot</span>" "cmd:screenshot" "" "applets-screenshooter"
@@ -14,17 +15,25 @@ render_root() {
 
 render_audio() {
   begin_page
+  row "<span font_family='SF Pro Display' font_weight='bold'>Audio Sinks</span>" "nav:audio:outputs" "" "audio-speakers"
+  row "<span font_family='SF Pro Display' font_weight='bold'>Audio Sources</span>" "nav:audio:inputs" "" "audio-input-microphone"
+  emit_page "audio" " " "Audio"
+}
+
+render_audio_outputs() {
+  begin_page
   row "<span font_family='SF Pro Display' font_weight='bold'>Back</span>" "nav:root" "" "go-previous"
 
   if ! command -v pactl >/dev/null 2>&1; then
     row "<span font_family='SF Pro Display' font_weight='bold'>pactl not found</span>" "noop" "" "dialog-information"
-    emit_page "audio" " " "Output"
+    emit_page "audio-outputs" " " "Audio Sinks"
     return
   fi
 
-  default_name="$(pactl get-default-sink 2>/dev/null || true)"
+  local default_sink
+  default_sink="$(pactl get-default-sink 2>/dev/null || true)"
 
-  mapfile -t lines < <(pactl --format=json list sinks 2>/dev/null | python3 -c '
+  mapfile -t sink_lines < <(pactl --format=json list sinks 2>/dev/null | python3 -c '
 import json, sys
 for s in json.load(sys.stdin):
     name = s.get("name", "")
@@ -32,33 +41,95 @@ for s in json.load(sys.stdin):
     print(f"{name}\t{desc}")
 ' 2>/dev/null || true)
 
-  if [[ ${#lines[@]} -eq 0 ]]; then
+  mapfile -t source_lines < <(pactl --format=json list sources 2>/dev/null | python3 -c '
+import json, sys
+for s in json.load(sys.stdin):
+    name = s.get("name", "")
+    if name.endswith(".monitor"):
+        continue
+    if s.get("monitor_of_sink_name"):
+        continue
+    desc = s.get("description", "")
+    print(f"{name}\t{desc}")
+' 2>/dev/null || true)
+
+  local line name desc icon label
+  if [[ ${#sink_lines[@]} -eq 0 ]]; then
     row "<span font_family='SF Pro Display' font_weight='bold'>No sinks found</span>" "noop" "" "dialog-information"
-    emit_page "audio" " " "Output"
+  else
+    for line in "${sink_lines[@]}"; do
+      IFS=$'\t' read -r name desc <<<"$line"
+      [[ -z "$name" ]] && continue
+
+      icon="audio-card"
+      case "${name,,} ${desc,,}" in
+        *headphone*|*headset*) icon="audio-headphones" ;;
+        *hdmi*|*display*|*monitor*|*dp\ *) icon="video-display" ;;
+        *bluetooth*|*bluez*) icon="bluetooth" ;;
+        *speaker*|*analog*) icon="audio-speakers" ;;
+      esac
+
+      label="<span font_family='SF Pro Display' font_weight='bold'>$(escape_markup "$desc")</span>"
+      if [[ "$name" == "$default_sink" ]]; then
+        row "$label" "audio:sink:set:$(b64enc "$name")" "active" "$icon"
+      else
+        row "$label" "audio:sink:set:$(b64enc "$name")" "" "$icon"
+      fi
+    done
+  fi
+  emit_page "audio-outputs" " " "Audio Sinks"
+}
+
+render_audio_inputs() {
+  begin_page
+  row "<span font_family='SF Pro Display' font_weight='bold'>Back</span>" "nav:root" "" "go-previous"
+
+  if ! command -v pactl >/dev/null 2>&1; then
+    row "<span font_family='SF Pro Display' font_weight='bold'>pactl not found</span>" "noop" "" "dialog-information"
+    emit_page "audio-inputs" " " "Audio Sources"
     return
   fi
 
+  local default_source
+  default_source="$(pactl get-default-source 2>/dev/null || true)"
+
+  mapfile -t source_lines < <(pactl --format=json list sources 2>/dev/null | python3 -c '
+import json, sys
+for s in json.load(sys.stdin):
+    name = s.get("name", "")
+    if name.endswith(".monitor"):
+        continue
+    if s.get("monitor_of_sink_name"):
+        continue
+    desc = s.get("description", "")
+    print(f"{name}\t{desc}")
+' 2>/dev/null || true)
+
   local line name desc icon label
-  for line in "${lines[@]}"; do
-    IFS=$'\t' read -r name desc <<<"$line"
-    [[ -z "$name" ]] && continue
+  if [[ ${#source_lines[@]} -eq 0 ]]; then
+    row "<span font_family='SF Pro Display' font_weight='bold'>No sources found</span>" "noop" "" "dialog-information"
+  else
+    for line in "${source_lines[@]}"; do
+      IFS=$'\t' read -r name desc <<<"$line"
+      [[ -z "$name" ]] && continue
 
-    icon="audio-card"
-    case "${name,,} ${desc,,}" in
-      *headphone*|*headset*) icon="audio-headphones" ;;
-      *hdmi*|*display*|*monitor*|*dp\ *) icon="video-display" ;;
-      *bluetooth*|*bluez*) icon="bluetooth" ;;
-      *speaker*|*analog*) icon="audio-speakers" ;;
-    esac
+      icon="audio-input-microphone"
+      case "${name,,} ${desc,,}" in
+        *headphone*|*headset*) icon="audio-headset" ;;
+        *bluetooth*|*bluez*) icon="bluetooth" ;;
+        *microphone*|*mic*) icon="audio-input-microphone" ;;
+        *speaker*) icon="audio-speakers" ;;
+      esac
 
-    label="<span font_family='SF Pro Display' font_weight='bold'>$(escape_markup "$desc")</span>"
-    if [[ "$name" == "$default_name" ]]; then
-      row "$label" "audio:set:$(b64enc "$name")" "active" "$icon"
-    else
-      row "$label" "audio:set:$(b64enc "$name")" "" "$icon"
-    fi
-  done
-  emit_page "audio" " " "Output"
+      label="<span font_family='SF Pro Display' font_weight='bold'>$(escape_markup "$desc")</span>"
+      if [[ "$name" == "$default_source" ]]; then
+        row "$label" "audio:source:set:$(b64enc "$name")" "active" "$icon"
+      else
+        row "$label" "audio:source:set:$(b64enc "$name")" "" "$icon"
+      fi
+    done
+  fi
+  emit_page "audio-inputs" " " "Audio Sources"
 }
 
 wifi_icon_for_signal() {
@@ -218,6 +289,8 @@ render_page() {
   case "$1" in
     root) render_root ;;
     audio) render_audio ;;
+    audio-outputs) render_audio_outputs ;;
+    audio-inputs) render_audio_inputs ;;
     wifi) render_wifi ;;
     bluetooth) render_bluetooth ;;
     *) render_root ;;
