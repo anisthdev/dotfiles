@@ -10,3 +10,7 @@ rofi/.config/rofi/colors.rasi
 scripts/.local/bin/claude
 node_modules/
 package-lock.json
+
+# AI assistant cache dirs (nested)
+**/.claude/
+**/.codex
