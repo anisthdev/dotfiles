@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+lang="${OCR_LANG:-eng}"
+psm="${OCR_PSM:-6}"
+
+geom="$(slurp -d)" || exit 1
+
+tmpdir="$(mktemp -d)"
+trap 'rm -rf "$tmpdir"' EXIT
+img="$tmpdir/ocr.png"
+
+grim -g "$geom" "$img"
+
+text="$(tesseract "$img" stdout -l "$lang" --psm "$psm" 2>/dev/null | sed '/^[[:space:]]*$/d')"
+
+if [ -z "$text" ]; then
+  text="[no text detected]"
+fi
+
+printf '%s\n' "$text" | wl-copy
+notify-send "OCR complete" "$text"
