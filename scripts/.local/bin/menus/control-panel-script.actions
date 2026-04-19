@@ -129,7 +129,7 @@ handle_action() {
       ;;
     audio:set:*)
       audio_set_default "$(b64dec "${action#audio:set:}")"
-      render_audio
+      exit 0
       ;;
     wifi:toggle:*)
       wifi_payload="${action#wifi:toggle:}"
@@ -138,15 +138,12 @@ handle_action() {
       if [[ "$wifi_payload" == "$ssid_b64" ]]; then
         security_b64=""
       fi
-      if wifi_handle_selection "$(b64dec "$ssid_b64")" "$(b64dec "$security_b64")"; then
-        render_wifi
-      else
-        exit 0
-      fi
+      wifi_handle_selection "$(b64dec "$ssid_b64")" "$(b64dec "$security_b64")"
+      exit 0
       ;;
     bt:toggle:*)
       bluetooth_toggle_async "$(b64dec "${action#bt:toggle:}")"
-      render_bluetooth
+      exit 0
       ;;
     noop|"")
       render_page "$page"
