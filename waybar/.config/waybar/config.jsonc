@@ -107,8 +107,8 @@
     "tooltip-format": "Battery is at {capacity}%"
   },
   "clock": {
-    "format": "<span rise='-4000' size='large'> </span> {:%I:%M %p}",
-    "format-alt": "<span rise='-4000' size='large'> </span> {:%a, %d. %b  %I:%M %p}",
+    "format": "{:%I:%M %p}",
+    "format-alt": "{:%a, %d. %b  %I:%M %p}",
     "tooltip-format": "Date: {:%Y-%m-%d}"
   },
   "pulseaudio": {
