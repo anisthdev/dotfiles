@@ -47,6 +47,8 @@ emit_page() {
   local message="$3"
 
   printf '\0markup-rows\x1ftrue\n'
+  printf '\0use-hot-keys\x1ftrue\n'
+  printf '\0kb-custom-1\x1fControl+r\n'
   printf '\0prompt\x1f%s\n' "$prompt_icon"
   printf '\0message\x1f%s\n' "$message"
   printf '\0data\x1f%s\n' "$page"
