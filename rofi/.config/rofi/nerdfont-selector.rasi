@@ -14,6 +14,8 @@ window {
     border:             0px;
     border-radius:      16px; /* Key for rounded corners */
     background-color:   @surface-container;
+  location: south;
+  anchor: south;
 }
 
 mainbox {

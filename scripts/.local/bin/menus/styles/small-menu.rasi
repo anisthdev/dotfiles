@@ -1,0 +1,75 @@
+@import  "~/.config/rofi/colors.rasi"
+configuration {
+  show-icons:                 false;
+  kb-cancel: "Escape,MousePrimary";
+  hover-select: true;
+}
+
+window {
+  anchor: south;
+  location: south;
+  y-offset: -16px;
+  border-radius: 20px;
+  background-color: @background;
+}
+
+mainbox {
+  padding: 15px;
+  background-color: transparent;
+  spacing: 10px;
+}
+
+message {
+  background-color: transparent;
+}
+
+textbox {
+  background-color: transparent;
+  text-color: @on-background;
+  font: "SF Pro Display Bold 16";
+  horizontal-align: 0.5;
+}
+
+inputbar {
+  enabled: false;
+}
+
+listview {
+  lines: 1;
+  spacing: 15px;
+  background-color: transparent;
+}
+
+element {
+  padding: 18px 0px 28px 0px;
+  border-radius: 12px;
+  background-color: transparent;
+  text-color: @on-surface;
+}
+
+element-text {
+  font: "lucide 24";
+  background-color: transparent;
+  text-color: inherit;
+  vertical-align: 0.5;
+  horizontal-align: 0.5;
+}
+
+element normal.normal, element alternate.normal {
+  background-color: @surface-container-highest;
+  text-color: @on-surface;
+}
+element selected.normal {
+  background-color: @inverse-primary;
+  text-color: @on-surface;
+  border-radius: 100%;
+}
+element normal.urgent, element alternate.urgent {
+  background-color: @error;
+  text-color: @on-error;
+}
+element selected.urgent {
+  background-color: @error-container;
+  text-color: @on-error-container;
+  border-radius: 100%;
+}

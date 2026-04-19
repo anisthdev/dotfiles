@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+THEME="$SCRIPT_DIR/styles/common-menu.rasi"
+
+source "$SCRIPT_DIR/control-panel-script.lib"
+source "$SCRIPT_DIR/control-panel-script.pages"
+source "$SCRIPT_DIR/control-panel-script.actions"
+
+if [[ "${1:-}" == "--wifi-connect" && -n "${2:-}" ]]; then
+  wifi_connect_worker "${2}" "${3:-}"
+  exit 0
+fi
+
+if [[ -z "${ROFI_RETV:-}" ]]; then
+  start_page="root"
+  if [[ "${1:-}" == "--page" && -n "${2:-}" ]]; then
+    start_page="$2"
+  fi
+
+  CONTROL_PANEL_START_PAGE="$start_page" exec rofi \
+    -show control-panel-script \
+    -modi "control-panel-script:$0" \
+    -theme "$THEME" \
+    -theme-str "entry {placeholder: 'Search...';}"
+fi
+
+page="${ROFI_DATA:-${CONTROL_PANEL_START_PAGE:-root}}"
+retv="${ROFI_RETV:-0}"
+action="${ROFI_INFO:-}"
+
+case "$retv" in
+  0)
+    render_page "$page"
+    ;;
+  1)
+    handle_action "$action" "$page"
+    ;;
+  *)
+    render_page "$page"
+    ;;
+esac

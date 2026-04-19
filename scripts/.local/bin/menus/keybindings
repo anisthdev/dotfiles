@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 # Display Hyprland keybindings with rofi search
 
+SCRIPT_DIR="$(dirname "$0")"
+theme="$SCRIPT_DIR/styles/common-menu.rasi"
+
 # Get binds from hyprctl as JSON
 BIND_OUTPUT=$(hyprctl binds -j 2>/dev/null)
 
@@ -8,8 +11,6 @@ if [[ -z "$BIND_OUTPUT" ]]; then
     echo "Error: Could not get binds from hyprctl"
     exit 1
 fi
-
-theme="$HOME/.config/rofi/binds-menu.rasi"
 
 # Keycode to number mapping
 get_keycode_num() {
@@ -33,7 +34,7 @@ format_key() {
     local key=$1
     local code=$2
     local has_super=$3
-    
+
     if [[ -z "$key" || "$key" == "null" ]]; then
         [[ "$has_super" == "1" ]] && echo "$(get_keycode_num $code)" || echo "KC$code"
     else
@@ -75,7 +76,7 @@ pad_mod() {
 get_mods() {
     local mask=$1
     local mods=""
-    
+
     if [[ $((mask & 64)) -eq 64 ]]; then
         mods+="$(pad_mod ) + "
     fi
@@ -88,7 +89,7 @@ get_mods() {
     if [[ $((mask & 4)) -eq 4 ]]; then
         mods+="$(pad_mod 󰘳) + "
     fi
-    
+
     echo -n "${mods}"
 }
 
@@ -96,7 +97,7 @@ get_mods() {
 format_category() {
     local disp=$1
     local arg=$2
-    
+
     case "$disp" in
         "exec") echo "launch" ;;
         "workspace") echo "workspace" ;;
@@ -115,10 +116,10 @@ format_category() {
 }
 
 # Collect binds into arrays
-binds_data=()
+bind_rows=()
 while IFS= read -r bind; do
-    binds_data+=("$bind")
-done < <(echo "$BIND_OUTPUT" | jq -c '.[]' 2>/dev/null)
+    bind_rows+=("$bind")
+done < <(echo "$BIND_OUTPUT" | jq -r '.[] | [.modmask, (.key // ""), (.keycode // 0), (.description // ""), .dispatcher, (.arg // "")] | @tsv' 2>/dev/null)
 
 # Process binds and find max widths
 keybinds=()
@@ -126,24 +127,28 @@ categories=()
 descs=()
 max_keybind=0
 max_cat=0
+skipped_mouse=0
+skipped_media=0
 
-for bind in "${binds_data[@]}"; do
-    modmask=$(echo "$bind" | jq -r '.modmask')
-    key=$(echo "$bind" | jq -r '.key')
-    keycode=$(echo "$bind" | jq -r '.keycode // 0')
-    desc=$(echo "$bind" | jq -r '.description // empty')
-    disp=$(echo "$bind" | jq -r '.dispatcher')
-    arg=$(echo "$bind" | jq -r '.arg // empty')
-    
+for bind in "${bind_rows[@]}"; do
+    IFS=$'\t' read -r modmask key keycode desc disp arg <<< "$bind"
+
     # Skip mouse move/resize and media keys
-    [[ "$disp" == "mouse" ]] && continue
-    [[ "$key" == "XF86"* ]] && continue
-    
+    if [[ "$disp" == "mouse" ]]; then
+        skipped_mouse=$((skipped_mouse + 1))
+        continue
+    fi
+    if [[ "$key" == "XF86"* ]]; then
+        skipped_media=$((skipped_media + 1))
+        continue
+    fi
+
     # Generate description if missing
     if [[ -z "$desc" || "$desc" == "null" || "$desc" == '""' ]]; then
         case "$disp" in
-            "exec") 
-                cmd=$(echo "$arg" | awk '{print $1}' | xargs basename 2>/dev/null)
+            "exec")
+                cmd="${arg%% *}"
+                cmd="${cmd##*/}"
                 desc="${cmd:0:25}"
                 ;;
             "workspace") desc="switch workspace" ;;
@@ -161,18 +166,18 @@ for bind in "${binds_data[@]}"; do
         esac
     fi
     desc="${desc//\"/}"
-    
+
     mods=$(get_mods "$modmask")
     has_super=0
     [[ "$mods" == *""* ]] && has_super=1
     keyname=$(format_key "$key" "$keycode" "$has_super")
     category=$(format_category "$disp" "$arg")
-    
+
     keybind="${mods}${keyname}"
     keybinds+=("$keybind")
     categories+=("$category")
     descs+=("$desc")
-    
+
     [[ ${#keybind} -gt $max_keybind ]] && max_keybind=${#keybind}
     [[ ${#category} -gt $max_cat ]] && max_cat=${#category}
 done
@@ -189,4 +194,7 @@ for ((i=0; i<${#keybinds[@]}; i++)); do
 done
 
 # Run rofi
-printf '%s\n' "${output[@]}" | rofi -dmenu -i -p " " -theme "$theme"
+font="'SF Mono 14'"
+printf '%s\n' "${output[@]}" | rofi -dmenu -i -p " " -mesg "Keybindings" \
+  -theme-str "configuration { show-icons: false; } element { children: [ element-text ]; } element-text { font: $font;} window {width: 650px;} inputbar {enabled: true;} entry {placeholder: 'Search...';}" \
+  -theme "$theme"

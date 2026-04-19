@@ -2,7 +2,8 @@
 # Set some variables
 wall_dir="${HOME}/Wallpapers"
 cacheDir="${HOME}/.cache/jp/${theme}"
-rofi_command="rofi -dmenu -theme $HOME/.config/rofi/wallpaper-picker-theme.rasi -theme-str ${rofi_override}"
+SCRIPT_DIR="$(dirname "$0")"
+rofi_command="rofi -dmenu -theme $SCRIPT_DIR/styles/wallpaper-picker.rasi -theme-str ${rofi_override}"
 
 # Create cache dir if not exists
 if [ ! -d "${cacheDir}" ] ; then

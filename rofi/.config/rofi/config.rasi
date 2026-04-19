@@ -1,4 +1,4 @@
-@theme "app-launcher-theme.rasi"
+@theme "launcher.rasi"
 configuration {
     modi: "drun,run,window";
     show-icons: true;

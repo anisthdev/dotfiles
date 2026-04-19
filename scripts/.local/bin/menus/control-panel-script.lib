@@ -1,0 +1,66 @@
+escape_markup() {
+  local text="$1"
+  text="${text//&/&amp;}"
+  text="${text//</&lt;}"
+  text="${text//>/&gt;}"
+  printf '%s' "$text"
+}
+
+b64enc() {
+  printf '%s' "$1" | base64 | tr -d '\n'
+}
+
+b64dec() {
+  printf '%s' "$1" | base64 -d
+}
+
+declare -a ROW_LABELS=()
+declare -a ROW_INFOS=()
+declare -a ROW_ICONS=()
+declare -a ACTIVE_ROWS=()
+ROW_INDEX=0
+
+begin_page() {
+  ROW_LABELS=()
+  ROW_INFOS=()
+  ROW_ICONS=()
+  ACTIVE_ROWS=()
+  ROW_INDEX=0
+}
+
+row() {
+  local label="$1"
+  local info="$2"
+  local state="${3:-}"
+  local icon="${4:-}"
+
+  ROW_LABELS+=("$label")
+  ROW_INFOS+=("$info")
+  ROW_ICONS+=("$icon")
+  [[ "$state" == "active" ]] && ACTIVE_ROWS+=("$ROW_INDEX")
+  ROW_INDEX=$((ROW_INDEX + 1))
+}
+
+emit_page() {
+  local page="$1"
+  local prompt_icon="$2"
+  local message="$3"
+
+  printf '\0markup-rows\x1ftrue\n'
+  printf '\0prompt\x1f%s\n' "$prompt_icon"
+  printf '\0message\x1f%s\n' "$message"
+  printf '\0data\x1f%s\n' "$page"
+  printf '\0no-custom\x1ftrue\n'
+  if [[ ${#ACTIVE_ROWS[@]} -gt 0 ]]; then
+    printf '\0active\x1f%s\n' "$(IFS=,; echo "${ACTIVE_ROWS[*]}")"
+  fi
+
+  local i
+  for i in "${!ROW_LABELS[@]}"; do
+    printf '%s\0info\x1f%s' "${ROW_LABELS[$i]}" "${ROW_INFOS[$i]}"
+    if [[ -n "${ROW_ICONS[$i]}" ]]; then
+      printf '\x1ficon\x1f%s' "${ROW_ICONS[$i]}"
+    fi
+    printf '\n'
+  done
+}

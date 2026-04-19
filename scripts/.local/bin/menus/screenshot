@@ -1,19 +1,12 @@
 #!/usr/bin/env bash
 
-## Author  : Aditya Shakya (adi1090x)
-## Github  : @adi1090x
-#
-## Applets : Screenshot
-
-# Import Current Theme
-theme=$HOME/.config/rofi/modern-theme.rasi
+SCRIPT_DIR="$(dirname "$0")"
+theme="$SCRIPT_DIR/styles/small-menu.rasi"
 
 # Theme Elements
 prompt='Screenshot'
-mesg="DIR: `xdg-user-dir PICTURES`/Screenshots"
 
 list_col='4'
-list_row='1'
 win_width='400px'
 
 # Options
@@ -24,12 +17,8 @@ option_4=""
 
 # Rofi CMD
 rofi_cmd() {
-	rofi -theme-str "window {width: $win_width; location: south; anchor: south; y-offset: -16px; border-radius: 12px;}" \
-		-theme-str "listview {columns: $list_col; lines: $list_row;}" \
-		-theme-str 'textbox-prompt-colon {str: "";}' \
+	rofi -theme-str "window {width: $win_width;} listview {columns: $list_col;}" \
 		-dmenu \
-		-p "$prompt" \
-		-mesg "$mesg" \
 		-markup-rows \
 		-theme ${theme}
 }
@@ -48,7 +37,7 @@ countdown () {
             "Taking shot in : $sec"
         sleep 1
 	done
-    makoctl dismiss
+   makoctl dismiss
 }
 
 # Play shutter sound

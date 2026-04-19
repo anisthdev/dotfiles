@@ -28,10 +28,9 @@ launch_rofi() {
     option_3=""
 
     selected_icon=$(printf "%b\n%b\n%b" "$option_1" "$option_2" "$option_3" | rofi -dmenu -p "Screenrecord" \
-        -theme-str "window {width: 300px; location: south; anchor: south; y-offset: -16px; border-radius: 12px;}" \
-        -theme-str "listview {columns: 3; lines: 1;}" \
-        -theme-str 'textbox-prompt-colon {str: "";}' \
-        -theme ~/.config/rofi/modern-theme.rasi)
+        -theme-str "window {width: 300px; }" \
+        -theme-str "listview {columns: 3;}" \
+        -theme "$(dirname "$0")/styles/small-menu.rasi")
 
     case "$selected_icon" in
     "$option_1")

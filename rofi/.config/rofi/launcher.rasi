@@ -3,12 +3,14 @@
 configuration {
     kb-cancel: "Escape,MousePrimary";
     hover-select: true;
+    display-drun: " ";
+    display-dmenu: " ";
+    prompt: " ";
 }
-/* The main Rofi window */
+
 window {
-    width:              22%;
+  width: 22%;
     padding:            16px;
-    border:             0px;
     border-radius:      16px;
     background-color:   @background;
     anchor:             south;
@@ -18,9 +20,12 @@ window {
     click-to-exit:       true;
 }
 
-/* The list of all elements */
+mainbox {
+    background-color: transparent;
+}
+
 listview {
-    lines:              8;
+    lines: 6;
     columns:            1;
     spacing:            6px;
     fixed-height:       true;
@@ -28,50 +33,49 @@ listview {
     background-color:   transparent;
 }
 
-mainbox {
-    background-color: transparent;
-}
 
 /* Each entry in the list */
 element {
     padding:            10px 12px;
     border-radius:      12px;
-    orientation:        horizontal;
     background-color:   transparent;
 }
 
 element-icon {
-    size:               2em;
+    size:               1.5em;
     horizontal-align:   0.5;
     vertical-align:     0.5;
-    margin:             0px 10px 0px 0px;
-    background-color:   transparent;
-}
-
-element-icon.selected {
+    margin:             0px 15px 0px 0px;
     background-color:   transparent;
 }
 
 element-text {
-    horizontal-align:   0;
     vertical-align:     0.5;
     background-color:   transparent;
     color:              @on-background;
-    font:               "SF Pro Display Medium 13";
+    font:               "SF Pro Display Medium 14";
 }
 
 element-text.selected {
     background-color:   transparent;
-    color:              white;
+    color: @inverse-surface;
 }
 
-/* Style for the selected entry */
 element.selected {
     background-color:   @inverse-primary;
-    text-color:         @background; /* Dark text on light background */
 }
 
-/* The top input bar */
+element.active {
+    text-color: @secondary-container;
+}
+element-text.active {
+    color: @primary;
+}
+
+element-text.selected.active {
+    color: white;
+}
+
 inputbar {
     padding:            12px;
     margin:             0px 0px 20px 0px; /* Margin below the input bar */
@@ -81,7 +85,6 @@ inputbar {
 }
 
 prompt {
-    enabled:            true;
     padding:            0px 8px 0px 0px;
     background-color:   transparent;
     text-color:         @outline;

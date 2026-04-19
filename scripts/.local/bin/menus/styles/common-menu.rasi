@@ -1,0 +1,43 @@
+@theme "launcher"
+window {
+  width: 500px;
+}
+
+configuration {
+  show-icons: true;
+}
+
+mainbox {
+  children: [ message, inputbar, listview ];
+}
+
+message {
+  background-color: transparent;
+  padding: 8px 12px 4px 12px;
+  margin: 0px 0px 12px 0px;
+}
+
+textbox {
+  font: "SF Pro Display Bold 20";
+  color: @primary;
+  background-color: transparent;
+  horizontal-align: 0.0;
+  vertical-align: 0.5;
+}
+
+listview {
+  fixed-height: false;
+}
+
+element {
+  padding: 14px 12px;
+  children: [ element-icon, element-text ];
+  orientation: horizontal;
+}
+
+element-icon {
+  size: 34px;
+  vertical-align: 0.5;
+  horizontal-align: 0.5;
+  background-color: transparent;
+}

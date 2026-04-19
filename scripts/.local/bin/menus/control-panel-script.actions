@@ -1,0 +1,158 @@
+run_external_cmd() {
+  local cmd="$1"
+  ( sleep 0.05; "$cmd" ) >/dev/null 2>&1 &
+}
+
+dispatch_external_action() {
+  case "$1" in
+    wallpaper) run_external_cmd "$SCRIPT_DIR/wallpaper-picker" ;;
+    power) run_external_cmd "$SCRIPT_DIR/power-menu" ;;
+    screenshot) run_external_cmd "$SCRIPT_DIR/screenshot" ;;
+    screenrecord) run_external_cmd "$SCRIPT_DIR/screenrecord" ;;
+    nightlight) run_external_cmd "$SCRIPT_DIR/../toggle-nightlight" ;;
+    *) ;;
+  esac
+  exit 0
+}
+
+audio_set_default() {
+  local sink_name="$1"
+  pactl set-default-sink "$sink_name" >/dev/null 2>&1 || true
+}
+
+wifi_toggle() {
+  local target_ssid="$1"
+  local is_active=0
+  local active_line
+
+  active_line="$(nmcli -t -f ACTIVE,SSID dev wifi list 2>/dev/null | grep '^yes:' | head -n1 || true)"
+  if [[ "${active_line#yes:}" == "$target_ssid" ]]; then
+    is_active=1
+  fi
+
+  if [[ "$is_active" -eq 1 ]]; then
+    local wifi_dev
+    wifi_dev="$(nmcli -t -f DEVICE,TYPE,STATE device | awk -F: '$2=="wifi" && $3 ~ /^connected/ {print $1; exit}')"
+    [[ -n "$wifi_dev" ]] && nmcli device disconnect "$wifi_dev" >/dev/null 2>&1 || true
+    return
+  fi
+
+  if nmcli device wifi connect "$target_ssid" >/dev/null 2>&1; then
+    return
+  fi
+
+  local password
+  password="$(rofi -dmenu -password -p "󰌾" -theme "$THEME" -theme-str 'mainbox { children: [ "inputbar" ]; }' -theme-str 'inputbar { enabled: true; }')"
+  [[ -z "$password" ]] && return
+
+  nmcli device wifi connect "$target_ssid" password "$password" >/dev/null 2>&1 || true
+}
+
+wifi_connect_detached() {
+  local target_ssid="$1"
+  local security="$2"
+  nohup "$0" --wifi-connect "$target_ssid" "$security" >/dev/null 2>&1 </dev/null &
+}
+
+wifi_disconnect_async() {
+  local wifi_dev
+  wifi_dev="$(nmcli -t -f DEVICE,TYPE,STATE device | awk -F: '$2=="wifi" && $3 ~ /^connected/ {print $1; exit}')"
+  [[ -n "$wifi_dev" ]] && nmcli device disconnect "$wifi_dev" >/dev/null 2>&1 || true
+}
+
+wifi_handle_selection() {
+  local target_ssid="$1"
+  local security="$2"
+  local active_line is_active=0
+
+  active_line="$(nmcli -t -f ACTIVE,SSID dev wifi list 2>/dev/null | grep '^yes:' | head -n1 || true)"
+  if [[ "${active_line#yes:}" == "$target_ssid" ]]; then
+    is_active=1
+  fi
+
+  if [[ "$is_active" -eq 1 ]]; then
+    wifi_disconnect_async "$target_ssid"
+    return 0
+  fi
+
+  wifi_connect_detached "$target_ssid" "$security"
+  return 42
+}
+
+wifi_connect_worker() {
+  local target_ssid="$1"
+  local security="$2"
+
+  if [[ -z "${security// }" || "$security" == -- ]]; then
+    nmcli device wifi connect "$target_ssid" >/dev/null 2>&1 || true
+    return 0
+  fi
+
+  local password
+  password="$(rofi -dmenu -password -p "󰌾" -theme "$THEME" -theme-str 'mainbox { children: [ "inputbar" ]; }' -theme-str 'inputbar { enabled: true; }')"
+  [[ -z "$password" ]] && return 0
+
+  nmcli device wifi connect "$target_ssid" password "$password" >/dev/null 2>&1 || true
+}
+
+bluetooth_toggle() {
+  local addr="$1"
+  local name info
+
+  info="$(bluetoothctl info "$addr" 2>/dev/null || true)"
+  name="$(printf '%s\n' "$info" | sed -n 's/^[[:space:]]*Name:[[:space:]]*//p' | head -n1)"
+  [[ -z "${name// }" ]] && name="$addr"
+
+  if printf '%s\n' "$info" | grep -qE '^[[:space:]]*Connected:[[:space:]]+yes$'; then
+    bluetoothctl disconnect "$addr" >/dev/null 2>&1 || true
+  else
+    bluetoothctl connect "$addr" >/dev/null 2>&1 || true
+  fi
+}
+
+bluetooth_toggle_async() {
+  local addr="$1"
+  bluetooth_toggle "$addr" >/dev/null 2>&1 &
+}
+
+handle_action() {
+  local action="$1"
+  local page="$2"
+
+  case "$action" in
+    nav:root) render_root ;;
+    nav:audio) render_audio ;;
+    nav:wifi) render_wifi ;;
+    nav:bluetooth) render_bluetooth ;;
+    cmd:*)
+      dispatch_external_action "${action#cmd:}"
+      ;;
+    audio:set:*)
+      audio_set_default "$(b64dec "${action#audio:set:}")"
+      render_audio
+      ;;
+    wifi:toggle:*)
+      wifi_payload="${action#wifi:toggle:}"
+      ssid_b64="${wifi_payload%%:*}"
+      security_b64="${wifi_payload#*:}"
+      if [[ "$wifi_payload" == "$ssid_b64" ]]; then
+        security_b64=""
+      fi
+      if wifi_handle_selection "$(b64dec "$ssid_b64")" "$(b64dec "$security_b64")"; then
+        render_wifi
+      else
+        exit 0
+      fi
+      ;;
+    bt:toggle:*)
+      bluetooth_toggle_async "$(b64dec "${action#bt:toggle:}")"
+      render_bluetooth
+      ;;
+    noop|"")
+      render_page "$page"
+      ;;
+    *)
+      render_page "$page"
+      ;;
+  esac
+}

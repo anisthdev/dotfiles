@@ -1,0 +1,225 @@
+render_root() {
+  begin_page
+
+  row "<span font_family='SF Pro Display' font_weight='bold'>Wifi</span>" "nav:wifi" "" "network-wireless"
+  row "<span font_family='SF Pro Display' font_weight='bold'>Bluetooth</span>" "nav:bluetooth" "" "bluetooth"
+  row "<span font_family='SF Pro Display' font_weight='bold'>Audio</span>" "nav:audio" "" "audio-volume-high"
+  row "<span font_family='SF Pro Display' font_weight='bold'>Power</span>" "cmd:power" "" "system-shutdown"
+  row "<span font_family='SF Pro Display' font_weight='bold'>Wallpaper</span>" "cmd:wallpaper" "" "preferences-desktop-wallpaper"
+  row "<span font_family='SF Pro Display' font_weight='bold'>Screenshot</span>" "cmd:screenshot" "" "applets-screenshooter"
+  row "<span font_family='SF Pro Display' font_weight='bold'>Screenrecord</span>" "cmd:screenrecord" "" "media-record"
+  row "<span font_family='SF Pro Display' font_weight='bold'>Nightlight</span>" "cmd:nightlight" "" "weather-clear-night"
+  emit_page "root" " " "Quick Actions"
+}
+
+render_audio() {
+  begin_page
+  row "<span font_family='SF Pro Display' font_weight='bold'>Back</span>" "nav:root" "" "go-previous"
+
+  if ! command -v pactl >/dev/null 2>&1; then
+    row "<span font_family='SF Pro Display' font_weight='bold'>pactl not found</span>" "noop" "" "dialog-information"
+    emit_page "audio" " " "Output"
+    return
+  fi
+
+  default_name="$(pactl get-default-sink 2>/dev/null || true)"
+
+  mapfile -t lines < <(pactl --format=json list sinks 2>/dev/null | python3 -c '
+import json, sys
+for s in json.load(sys.stdin):
+    name = s.get("name", "")
+    desc = s.get("description", "")
+    print(f"{name}\t{desc}")
+' 2>/dev/null || true)
+
+  if [[ ${#lines[@]} -eq 0 ]]; then
+    row "<span font_family='SF Pro Display' font_weight='bold'>No sinks found</span>" "noop" "" "dialog-information"
+    emit_page "audio" " " "Output"
+    return
+  fi
+
+  local line name desc icon label
+  for line in "${lines[@]}"; do
+    IFS=$'\t' read -r name desc <<<"$line"
+    [[ -z "$name" ]] && continue
+
+    icon="audio-card"
+    case "${name,,} ${desc,,}" in
+      *headphone*|*headset*) icon="audio-headphones" ;;
+      *hdmi*|*display*|*monitor*|*dp\ *) icon="video-display" ;;
+      *bluetooth*|*bluez*) icon="bluetooth" ;;
+      *speaker*|*analog*) icon="audio-speakers" ;;
+    esac
+
+    label="<span font_family='SF Pro Display' font_weight='bold'>$(escape_markup "$desc")</span>"
+    if [[ "$name" == "$default_name" ]]; then
+      row "$label" "audio:set:$(b64enc "$name")" "active" "$icon"
+    else
+      row "$label" "audio:set:$(b64enc "$name")" "" "$icon"
+    fi
+  done
+  emit_page "audio" " " "Output"
+}
+
+wifi_icon_for_signal() {
+  local signal="$1"
+  if (( signal >= 70 )); then
+    printf '\ue5fc'
+  elif (( signal >= 40 )); then
+    printf '\ue1ae'
+  elif (( signal >= 20 )); then
+    printf '\ue5fd'
+  elif (( signal >= 0 )); then
+    printf '\ue5fe'
+  else
+    printf '\ue1af'
+  fi
+}
+
+render_wifi() {
+  begin_page
+  row "<span font_family='SF Pro Display' font_weight='bold'>Back</span>" "nav:root" "" "go-previous"
+
+  if ! command -v nmcli >/dev/null 2>&1; then
+    row "<span font_family='SF Pro Display' font_weight='bold'>nmcli not found</span>" "noop"
+    return
+  fi
+
+  declare -A best_signal=()
+  declare -A active_ssid=()
+  declare -A ssid_security=()
+
+  mapfile -t lines < <(nmcli -t -f IN-USE,SSID,SIGNAL,SECURITY device wifi list --rescan no 2>/dev/null || true)
+
+  local line inuse rest ssid signal security
+  for line in "${lines[@]}"; do
+    inuse="${line%%:*}"
+    rest="${line#*:}"
+    ssid="${rest%%:*}"
+    rest="${rest#*:}"
+    signal="${rest%%:*}"
+    security="${rest#*:}"
+
+    inuse="${inuse#"${inuse%%[![:space:]]*}"}"
+    inuse="${inuse%"${inuse##*[![:space:]]}"}"
+    ssid="${ssid#"${ssid%%[![:space:]]*}"}"
+    ssid="${ssid%"${ssid##*[![:space:]]}"}"
+
+    ssid="${ssid//\\:/:}"
+    security="${security//\\:/:}"
+    [[ -z "${ssid// }" ]] && continue
+
+    [[ "$signal" =~ ^[0-9]+$ ]] || signal=0
+    signal=$((10#$signal))
+
+    if [[ -z "${best_signal[$ssid]:-}" || "$signal" -gt "${best_signal[$ssid]}" ]]; then
+      best_signal["$ssid"]="$signal"
+    fi
+
+    if [[ "$inuse" == "*" ]]; then
+      active_ssid["$ssid"]=1
+    fi
+
+    if [[ -z "${ssid_security[$ssid]:-}" ]]; then
+      ssid_security["$ssid"]="$security"
+    fi
+  done
+
+  if [[ ${#best_signal[@]} -eq 0 ]]; then
+    row "<span font_family='SF Pro Display' font_weight='bold'>No networks found</span>" "noop" "" "dialog-information"
+    emit_page "wifi" " " "Wi-Fi"
+    return
+  fi
+
+  mapfile -t sorted < <(
+    for ssid in "${!best_signal[@]}"; do
+      printf '%03d\t%s\n' "${best_signal[$ssid]}" "$ssid"
+    done | sort -rn
+  )
+
+  local item icon label active signal_num bssid security
+  for item in "${sorted[@]}"; do
+    IFS=$'\t' read -r signal_num bssid <<<"$item"
+    signal_num=$((10#$signal_num))
+    icon="network-wireless-signal-weak"
+    if (( signal_num >= 70 )); then
+      icon="network-wireless-signal-excellent"
+    elif (( signal_num >= 40 )); then
+      icon="network-wireless-signal-good"
+    elif (( signal_num >= 20 )); then
+      icon="network-wireless-signal-ok"
+    fi
+
+    label="<span font_family='SF Pro Display' font_weight='bold'>$(escape_markup "$bssid")</span>"
+    security="${ssid_security[$bssid]:-}"
+    if [[ "${active_ssid[$bssid]:-0}" -eq 1 ]]; then
+      row "$label" "wifi:toggle:$(b64enc "$bssid"):$(b64enc "$security")" "active" "$icon"
+    else
+      row "$label" "wifi:toggle:$(b64enc "$bssid"):$(b64enc "$security")" "" "$icon"
+    fi
+  done
+  emit_page "wifi" " " "Wi-Fi"
+}
+
+render_bluetooth() {
+  begin_page
+  row "<span font_family='SF Pro Display' font_weight='bold'>Back</span>" "nav:root" "" "go-previous"
+
+  if ! command -v bluetoothctl >/dev/null 2>&1; then
+    row "<span font_family='SF Pro Display' font_weight='bold'>bluetoothctl not found</span>" "noop"
+    return
+  fi
+
+  mapfile -t devices < <(bluetoothctl devices 2>/dev/null || true)
+  if [[ ${#devices[@]} -eq 0 ]]; then
+    row "<span font_family='SF Pro Display' font_weight='bold'>No devices found</span>" "noop" "" "dialog-information"
+    emit_page "bluetooth" " " "Bluetooth"
+    return
+  fi
+
+  local line rest addr name info connected icon label
+  for line in "${devices[@]}"; do
+    [[ "$line" == Device\ * ]] || continue
+    rest="${line#Device }"
+    addr="${rest%% *}"
+    name="${rest#* }"
+    name="${name//$'\r'/}"
+
+    info="$(bluetoothctl info "$addr" 2>/dev/null || true)"
+    connected=0
+    if printf '%s\n' "$info" | grep -qE '^[[:space:]]*Connected:[[:space:]]+yes$'; then
+      connected=1
+    fi
+
+    icon="bluetooth"
+    case "${name,,} $(printf '%s\n' "$info" | tr '[:upper:]' '[:lower:]')" in
+      *mouse*) icon="input-mouse" ;;
+      *keyboard*) icon="input-keyboard" ;;
+      *gamepad*|*controller*) icon="input-gaming" ;;
+      *headphone*|*headset*) icon="audio-headphones" ;;
+      *speaker*) icon="audio-speakers" ;;
+      *phone*) icon="phone" ;;
+      *computer*|*laptop*) icon="computer" ;;
+      *camera*) icon="camera-photo" ;;
+      *printer*) icon="printer" ;;
+    esac
+
+    label="<span font_family='SF Pro Display' font_weight='bold'>$(escape_markup "$name")</span>"
+    if [[ "$connected" -eq 1 ]]; then
+      row "$label" "bt:toggle:$(b64enc "$addr")" "active" "$icon"
+    else
+      row "$label" "bt:toggle:$(b64enc "$addr")" "" "$icon"
+    fi
+  done
+  emit_page "bluetooth" " " "Bluetooth"
+}
+
+render_page() {
+  case "$1" in
+    root) render_root ;;
+    audio) render_audio ;;
+    wifi) render_wifi ;;
+    bluetooth) render_bluetooth ;;
+    *) render_root ;;
+  esac
+}
