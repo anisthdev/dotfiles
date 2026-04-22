@@ -1,3 +1,8 @@
+# start hyprland
+if status is-interactive; and test "$XDG_VTNR" = 1; and test -z "$WAYLAND_DISPLAY"; and uwsm check may-start
+  exec uwsm start -e -D Hyprland hyprland.desktop
+end
+
 fish_add_path $HOME/.local/bin
 fish_add_path $HOME/.sdks/flutter/bin
 set -x TMUX_CONF $HOME/.config/tmux/.tmux.conf

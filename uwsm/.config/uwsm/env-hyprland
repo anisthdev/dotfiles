@@ -1,0 +1,2 @@
+# Hyprland-specific environment for UWSM.
+export HYPRCURSOR_SIZE=24

@@ -1,0 +1,12 @@
+# Common graphical session environment for UWSM-managed sessions.
+export XCURSOR_THEME=Bibata-Modern-Classic
+export XCURSOR_SIZE=24
+export GDK_BACKEND='wayland,x11,*'
+export GDK_SCALE=1
+export QT_QPA_PLATFORM='wayland;xcb'
+export QT_STYLE_OVERRIDE=kvantum
+export SDL_VIDEODRIVER=wayland
+export MOZ_ENABLE_WAYLAND=1
+export ELECTRON_OZONE_PLATFORM_HINT=wayland
+export OZONE_PLATFORM=wayland
+export XCOMPOSEFILE="$HOME/.XCompose"
