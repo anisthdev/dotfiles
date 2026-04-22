@@ -2,7 +2,7 @@
 version_check = false
 
 [config.wallpaper]
-command = "awww img --transition-type center {{image}}"
+command = "awww img --transition-type random {{image}}"
 set = true
 
 [templates.waybar]
