@@ -147,7 +147,8 @@ wifi_icon_for_signal() {
   fi
 }
 
-render_wifi() {
+render_wifi_page() {
+  local rescan="${1:-no}"
   begin_page
   row "<span font_family='SF Pro Display' font_weight='bold'>Back</span>" "nav:root" "" "go-previous"
 
@@ -160,7 +161,7 @@ render_wifi() {
   declare -A active_ssid=()
   declare -A ssid_security=()
 
-  mapfile -t lines < <(nmcli -t -f IN-USE,SSID,SIGNAL,SECURITY device wifi list --rescan no 2>/dev/null || true)
+  mapfile -t lines < <(nmcli -t -f IN-USE,SSID,SIGNAL,SECURITY device wifi list --rescan "$rescan" 2>/dev/null || true)
 
   local line inuse rest ssid signal security
   for line in "${lines[@]}"; do
@@ -224,12 +225,20 @@ render_wifi() {
     label="<span font_family='SF Pro Display' font_weight='bold'>$(escape_markup "$bssid")</span>"
     security="${ssid_security[$bssid]:-}"
     if [[ "${active_ssid[$bssid]:-0}" -eq 1 ]]; then
-      row "$label" "wifi:toggle:$(b64enc "$bssid"):$(b64enc "$security")" "active" "$icon"
+      row "$label" "wifi:toggle:$(b64enc "$bssid"):$(b64enc "$security"):1" "active" "$icon"
     else
-      row "$label" "wifi:toggle:$(b64enc "$bssid"):$(b64enc "$security")" "" "$icon"
+      row "$label" "wifi:toggle:$(b64enc "$bssid"):$(b64enc "$security"):0" "" "$icon"
     fi
   done
   emit_page "wifi" " " "Wi-Fi"
+}
+
+render_wifi() {
+  render_wifi_page "no"
+}
+
+render_wifi_refresh() {
+  render_wifi_page "yes"
 }
 
 render_bluetooth() {
@@ -293,6 +302,14 @@ render_page() {
     audio-inputs) render_audio_inputs ;;
     wifi) render_wifi ;;
     bluetooth) render_bluetooth ;;
+    *) render_root ;;
+  esac
+}
+
+render_refresh_page() {
+  case "$1" in
+    wifi) render_wifi_refresh ;;
+    root|audio|audio-outputs|audio-inputs|bluetooth) render_page "$1" ;;
     *) render_root ;;
   esac
 }

@@ -41,6 +41,9 @@ case "$retv" in
   1)
     handle_action "$action" "$page"
     ;;
+  10)
+    render_refresh_page "$page"
+    ;;
   *)
     render_page "$page"
     ;;
