@@ -96,6 +96,7 @@ window#waybar {
 #custom-weather {
   border-radius: 8px;
   background-color: @background;
+  color: @on_background;
   margin-right: 10px;
 }
 
@@ -123,6 +124,7 @@ window#waybar {
 
 #window {
   background: @background;
+  color: @on_background;
   padding: 0px 20px;
   border-radius: 10px;
 }
