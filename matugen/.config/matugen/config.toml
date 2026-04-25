@@ -45,6 +45,10 @@ input_path = './templates/cody-theme.toml'
 output_path = '~/.config/cody/theme.toml'
 post_hook = "sh -lc 'pgrep -f \"^/home/asif/Projects/lumen/cody/.venv/bin/python -m cody$\" | xargs -r kill -USR1'"
 
+[templates.clipse]
+input_path = './templates/clipse-colors.json'
+output_path = '~/.config/clipse/custom_theme.json'
+
 [templates.ghostty]
 input_path = './templates/ghostty-colors.conf'
 output_path = '~/.config/ghostty/colors.conf'
@@ -54,4 +58,3 @@ post_hook = 'pkill -USR2 ghostty'
 input_path = './templates/foot.ini'
 output_path = '~/.config/foot/colors.ini'
 post_hook = 'killall -USR2 foot'
-
