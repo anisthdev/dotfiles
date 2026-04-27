@@ -1,0 +1,19 @@
+@import "common-menu.rasi"
+
+window {
+  width: 640px;
+  anchor: center;
+  location: center;
+}
+
+mainbox {
+  children: [ message, inputbar ];
+}
+
+listview {
+  enabled: false;
+}
+
+entry {
+  placeholder: "Paste video URL...";
+}

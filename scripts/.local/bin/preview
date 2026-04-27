@@ -1,0 +1,246 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+path="${1-}"
+
+if [ -z "$path" ]; then
+    exit 0
+fi
+
+if [ -d "$path" ]; then
+    if command -v kitten >/dev/null 2>&1; then
+        printf '\033_Ga=d,d=A,q=1\033\\'
+    fi
+    if command -v eza >/dev/null 2>&1; then
+        exec eza -la --group-directories-first --icons=always --color=always -- "$path"
+    fi
+
+    exec ls -la --color=always -- "$path"
+fi
+
+if [ ! -e "$path" ]; then
+    if command -v kitten >/dev/null 2>&1; then
+        printf '\033_Ga=d,d=A,q=1\033\\'
+    fi
+    printf '%s\n' "$path"
+    exit 0
+fi
+
+mime="$(file --dereference --brief --mime-type -- "$path")"
+tmpfile=""
+preview_cols="${FZF_PREVIEW_COLUMNS:-80}"
+preview_lines="${FZF_PREVIEW_LINES:-40}"
+path_lower="$(printf '%s' "$path" | tr '[:upper:]' '[:lower:]')"
+sixel_width_px=$((preview_cols * 8))
+sixel_height_px=$((preview_lines * 16))
+
+cleanup() {
+    if [ -n "$tmpfile" ] && [ -e "$tmpfile" ]; then
+        rm -f -- "$tmpfile"
+    fi
+}
+
+trap cleanup EXIT
+
+clear_graphics() {
+    if supports_kitty_graphics; then
+        # Kitty graphics protocol delete-all with q=1 to suppress terminal responses.
+        printf '\033_Ga=d,d=A,q=1\033\\'
+    fi
+}
+
+show_text() {
+    clear_graphics
+    if command -v bat >/dev/null 2>&1; then
+        exec bat --color=always --style=numbers --line-range=:400 -- "$1"
+    fi
+
+    exec sed -n '1,400p' -- "$1"
+}
+
+supports_kitty_graphics() {
+    command -v kitten >/dev/null 2>&1 || return 1
+
+    case "${TERM_PROGRAM:-}" in
+        ghostty)
+            return 0
+            ;;
+    esac
+
+    case "${TERM:-}" in
+        xterm-kitty)
+            return 0
+            ;;
+    esac
+
+    [ -n "${KITTY_WINDOW_ID:-}" ]
+}
+
+supports_sixel() {
+    command -v img2sixel >/dev/null 2>&1 || return 1
+
+    case "${TERM:-}" in
+        foot|foot-*|xterm*|mlterm*|yaft*|contour*)
+            return 0
+            ;;
+    esac
+
+    case "${TERM_PROGRAM:-}" in
+        foot|wezterm)
+            return 0
+            ;;
+    esac
+
+    return 1
+}
+
+render_image() {
+    if supports_kitty_graphics; then
+        kitten icat --stdin=no --transfer-mode=stream --clear --place="${preview_cols}x${preview_lines}@0x0" -- "$1"
+        return 0
+    fi
+
+    if supports_sixel; then
+        if command -v chafa >/dev/null 2>&1; then
+            chafa --format=sixel --size="${preview_cols}x${preview_lines}" --animate=off --polite=on -- "$1"
+            return 0
+        fi
+
+        img2sixel -w "${sixel_width_px}px" -h "${sixel_height_px}px" "$1"
+        return 0
+    fi
+
+    return 1
+}
+
+show_markdown() {
+    clear_graphics
+    if command -v glow >/dev/null 2>&1; then
+        exec env FORCE_COLOR=1 CLICOLOR_FORCE=1 COLORTERM=truecolor glow -s dark -w "$preview_cols" -- "$1"
+    fi
+
+    show_text "$1"
+}
+
+show_csv() {
+    clear_graphics
+    if command -v xsv >/dev/null 2>&1; then
+        exec xsv table "$1"
+    fi
+
+    show_text "$1"
+}
+
+show_file_info() {
+    clear_graphics
+    file --dereference --brief -- "$1"
+}
+
+show_media_info() {
+    clear_graphics
+    ffprobe -v error \
+        -show_entries format=format_name,duration,size:stream=codec_name,width,height,sample_rate,channels \
+        -of default=noprint_wrappers=1 \
+        -- "$1" 2>/dev/null | sed -n '1,40p'
+}
+
+show_image() {
+    if render_image "$1"; then
+        exit 0
+    fi
+
+    show_file_info "$1"
+}
+
+show_video() {
+    if command -v ffmpegthumbnailer >/dev/null 2>&1; then
+        tmpfile="$(mktemp --suffix=.png)"
+        if ffmpegthumbnailer -i "$1" -o "$tmpfile" -s 0 -q 8 >/dev/null 2>&1; then
+            if render_image "$tmpfile"; then
+                printf '\n'
+            fi
+        fi
+    fi
+
+    show_media_info "$1"
+}
+
+show_audio() {
+    show_media_info "$1"
+}
+
+show_pdf() {
+    if command -v pdftotext >/dev/null 2>&1; then
+        pdftotext -l 10 -nopgbrk -- "$1" - 2>/dev/null | sed -n '1,200p'
+        exit 0
+    fi
+
+    show_file_info "$1"
+}
+
+show_archive() {
+    case "$mime" in
+        application/zip)
+            if command -v unzip >/dev/null 2>&1; then
+                unzip -l -- "$1" | sed -n '1,200p'
+                exit 0
+            fi
+            ;;
+        application/x-tar|application/gzip|application/x-gzip|application/x-bzip2|application/x-xz|application/x-7z-compressed|application/vnd.rar)
+            if command -v bsdtar >/dev/null 2>&1; then
+                bsdtar -tf -- "$1" | sed -n '1,200p'
+                exit 0
+            fi
+            if command -v tar >/dev/null 2>&1; then
+                tar -tf -- "$1" | sed -n '1,200p'
+                exit 0
+            fi
+            ;;
+    esac
+
+    show_file_info "$1"
+}
+
+case "$path_lower" in
+    *.csv)
+        show_csv "$path"
+        ;;
+    *.md|*.markdown|*.mdown|*.mkd)
+        show_markdown "$path"
+        ;;
+esac
+
+case "$mime" in
+    text/csv|application/csv|application/vnd.ms-excel)
+        show_csv "$path"
+        ;;
+    text/markdown)
+        show_markdown "$path"
+        ;;
+    text/*|*/xml|application/json|application/javascript|application/x-sh|application/x-empty)
+        show_text "$path"
+        ;;
+    image/*)
+        show_image "$path"
+        ;;
+    video/*)
+        show_video "$path"
+        ;;
+    audio/*)
+        show_audio "$path"
+        ;;
+    application/pdf)
+        show_pdf "$path"
+        ;;
+    application/zip|application/x-tar|application/gzip|application/x-gzip|application/x-bzip2|application/x-xz|application/x-7z-compressed|application/vnd.rar)
+        show_archive "$path"
+        ;;
+    *)
+        if file --dereference --brief --mime -- "$path" | grep -q 'charset=binary'; then
+            show_file_info "$path"
+            exit 0
+        fi
+
+        show_text "$path"
+        ;;
+esac
