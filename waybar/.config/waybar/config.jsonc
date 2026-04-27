@@ -22,7 +22,7 @@
     "pulseaudio",
     "battery"
   ],
-  "height": 30,
+  "height": 27,
   "mpd": {
     "format": "{stateIcon}    {title} - {artist}",
     "format-disconnected": "Disconnected ",
