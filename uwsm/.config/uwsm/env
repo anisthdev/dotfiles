@@ -1,5 +1,5 @@
 # Common graphical session environment for UWSM-managed sessions.
-export XCURSOR_THEME=Bibata-Modern-Classic
+export XCURSOR_THEME=Totoro
 export XCURSOR_SIZE=24
 export GDK_BACKEND='wayland,x11,*'
 export GDK_SCALE=1
