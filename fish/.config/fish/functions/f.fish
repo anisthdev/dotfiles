@@ -1,7 +1,7 @@
-# quickly find and edit a file in neovim
-function f -d "Search and open files in Neovim"
-    set -l file (rg --files --hidden --follow --glob "!.git/*" --glob "!**/node_modules/*"| fzf --tmux --preview "bat --color=always --style=numbers {}")
+# quickly find and open a non-hidden file
+function f -d "Search and open non-hidden files"
+    set -l file (rg --files --follow --glob "!.git/*" --glob "!**/node_modules/*" | fzf --ansi --tmux --preview "$HOME/.local/bin/preview {}")
     if test -n "$file"
-        nvim "$file"
+        open "$file"
     end
 end
