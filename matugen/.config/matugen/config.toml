@@ -58,3 +58,24 @@ post_hook = 'pkill -USR2 ghostty'
 input_path = './templates/foot.ini'
 output_path = '~/.config/foot/colors.ini'
 post_hook = 'killall -USR2 foot'
+
+[templates.glow_style]
+input_path = './templates/glow-style.json'
+output_path = '~/.config/glow/matugen-style.json'
+
+[templates.gtk3]
+input_path = './templates/gtk.css'
+output_path = '~/.config/gtk-3.0/gtk.css'
+post_hook = 'systemctl --user restart xdg-desktop-portal.service xdg-desktop-portal-gtk.service xdg-desktop-portal-hyprland.service'
+
+[templates.gtk3_dark]
+input_path = './templates/gtk-dark.css'
+output_path = '~/.config/gtk-3.0/gtk-dark.css'
+
+[templates.gtk4]
+input_path = './templates/gtk.css'
+output_path = '~/.config/gtk-4.0/gtk.css'
+
+[templates.gtk4_dark]
+input_path = './templates/gtk-dark.css'
+output_path = '~/.config/gtk-4.0/gtk-dark.css'

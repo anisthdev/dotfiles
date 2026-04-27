@@ -1,0 +1,415 @@
+<* for name, value in colors *>
+@define-color {{name}} {{value.default.rgba | set_alpha: 1.0}};
+<* endfor *>
+
+@define-color accent_bg_color {{colors.inverse_primary.default.rgba}};
+@define-color accent_fg_color {{colors.on_surface.default.rgba}};
+@define-color accent_color {{colors.inverse_primary.default.rgba}};
+@define-color theme_selected_bg_color {{colors.inverse_primary.default.rgba}};
+@define-color theme_selected_fg_color {{colors.on_surface.default.rgba}};
+
+:root {
+  --accent-bg-color: {{colors.inverse_primary.default.rgba}};
+  --accent-fg-color: {{colors.on_surface.default.rgba}};
+  --accent-color: {{colors.inverse_primary.default.rgba}};
+}
+
+headerbar,
+.titlebar,
+window > titlebar,
+window.nautilus-window headerbar,
+window.nautilus-window .titlebar,
+.nautilus-window headerbar,
+.nautilus-window .titlebar {
+  background-color: {{colors.surface_container_high.default.rgba}};
+  color: {{colors.on_surface.default.rgba}};
+  margin: 0;
+  padding: 0;
+  border-width: 0;
+  border-style: none;
+  box-shadow: none;
+}
+
+window.nautilus-window windowhandle,
+window.nautilus-window windowhandle > box,
+window.nautilus-window toolbarview,
+window.nautilus-window toolbarview > box,
+window.nautilus-window .top-bar,
+window.nautilus-window .toolbar,
+window.nautilus-window headerbar + separator,
+window.nautilus-window headerbar separator,
+window.nautilus-window .titlebar + separator,
+.nautilus-window windowhandle,
+.nautilus-window windowhandle > box,
+.nautilus-window toolbarview,
+.nautilus-window toolbarview > box,
+.nautilus-window .top-bar,
+.nautilus-window .toolbar,
+.nautilus-window headerbar + separator,
+.nautilus-window headerbar separator,
+.nautilus-window .titlebar + separator {
+  background-color: {{colors.surface_container_high.default.rgba}};
+  color: {{colors.on_surface.default.rgba}};
+  border-color: {{colors.surface_container_high.default.rgba}};
+  border-top-color: {{colors.surface_container_high.default.rgba}};
+  border-bottom-color: {{colors.surface_container_high.default.rgba}};
+  box-shadow: none;
+}
+
+window,
+.background,
+scrolledwindow,
+viewport,
+view,
+listview,
+columnview,
+gridview,
+window.nautilus-window,
+.nautilus-window,
+window.nautilus-window scrolledwindow,
+.nautilus-window scrolledwindow,
+window.nautilus-window viewport,
+.nautilus-window viewport,
+window.nautilus-window view,
+.nautilus-window view,
+window.nautilus-window listview,
+.nautilus-window listview,
+window.nautilus-window columnview,
+.nautilus-window columnview,
+window.nautilus-window gridview,
+.nautilus-window gridview {
+  background-color: {{colors.surface_container_lowest.default.rgba}};
+  color: {{colors.on_surface.default.rgba}};
+}
+
+
+popover > contents,
+popover.background > contents,
+popover.menu > contents,
+window.nautilus-window popover > contents,
+window.nautilus-window popover.background > contents,
+window.nautilus-window popover.menu > contents,
+.nautilus-window popover > contents,
+.nautilus-window popover.background > contents,
+.nautilus-window popover.menu > contents {
+  background-color: {{colors.surface_container.default.rgba | set_alpha: 0.7}};
+  color: {{colors.on_surface.default.rgba}};
+  border-radius: 14px;
+  padding: 2px;
+  border-width: 0;
+  border-style: none;
+  box-shadow: none;
+}
+
+popover.background {
+  background-color: {{colors.surface_container.default.rgba | set_alpha: 0.7}};
+  background-image: none;
+  border-radius: 14px;
+  padding: 0;
+  margin: 0;
+  border-width: 0;
+  border-style: none;
+  box-shadow: none;
+}
+
+filechooser popover > box,
+window.filechooser popover > box,
+.filechooser popover > box {
+  background-color: transparent;
+  color: {{colors.on_surface.default.rgba}};
+  border-radius: 14px;
+  padding: 2px;
+  border-width: 0;
+  border-style: none;
+  box-shadow: none;
+}
+
+filechooser popover > box > modelbutton,
+filechooser popover > box > button,
+filechooser popover > box > row,
+window.filechooser popover > box > modelbutton,
+window.filechooser popover > box > button,
+window.filechooser popover > box > row,
+.filechooser popover > box > modelbutton,
+.filechooser popover > box > button,
+.filechooser popover > box > row {
+  background-color: transparent;
+  color: {{colors.on_surface.default.rgba}};
+}
+
+filechooser,
+filechooser *,
+window.filechooser,
+window.filechooser *,
+.filechooser,
+.filechooser *,
+.filechooser headerbar,
+.filechooser .titlebar,
+.filechooser popover,
+.filechooser listview,
+.filechooser treeview,
+.filechooser gridview,
+.filechooser scrolledwindow,
+.filechooser viewport,
+.filechooser row:selected,
+.filechooser view:selected,
+.filechooser selection,
+.filechooser button:checked,
+.filechooser button:active,
+.filechooser label,
+.filechooser button,
+.filechooser entry {
+  color: {{colors.on_surface.default.rgba}};
+}
+
+filechooser,
+window.filechooser,
+.filechooser {
+  background-color: {{colors.surface_container.default.rgba}};
+  color: {{colors.on_surface.default.rgba}};
+}
+
+sidebar,
+placessidebar,
+.sidebar,
+.navigation-sidebar,
+listview.navigation-sidebar,
+columnview.navigation-sidebar,
+filechooser sidebar,
+window.filechooser sidebar,
+.filechooser sidebar,
+filechooser placessidebar,
+window.filechooser placessidebar,
+.filechooser placessidebar {
+  background-color: {{colors.surface_container_low.default.rgba}};
+  color: {{colors.on_surface.default.rgba}};
+  border-color: {{colors.outline_variant.default.rgba}};
+}
+
+sidebar row,
+placessidebar row,
+.sidebar row,
+.navigation-sidebar row,
+listview.navigation-sidebar row,
+columnview.navigation-sidebar row,
+filechooser sidebar row,
+window.filechooser sidebar row,
+.filechooser sidebar row,
+filechooser placessidebar row,
+window.filechooser placessidebar row,
+.filechooser placessidebar row {
+  background-color: transparent;
+  color: {{colors.on_surface.default.rgba}};
+}
+
+sidebar row:selected,
+placessidebar row:selected,
+.sidebar row:selected,
+.navigation-sidebar row:selected,
+listview.navigation-sidebar row:selected,
+columnview.navigation-sidebar row:selected,
+filechooser sidebar row:selected,
+window.filechooser sidebar row:selected,
+.filechooser sidebar row:selected,
+filechooser placessidebar row:selected,
+window.filechooser placessidebar row:selected,
+.filechooser placessidebar row:selected,
+window.nautilus-window .navigation-sidebar row:selected,
+.nautilus-window .navigation-sidebar row:selected,
+window.nautilus-window .sidebar row:selected,
+.nautilus-window .sidebar row:selected {
+  background-color: {{colors.inverse_primary.default.rgba}};
+  color: {{colors.on_surface.default.rgba}};
+}
+
+sidebar row:selected:hover,
+placessidebar row:selected:hover,
+.sidebar row:selected:hover,
+.navigation-sidebar row:selected:hover,
+listview.navigation-sidebar row:selected:hover,
+columnview.navigation-sidebar row:selected:hover,
+filechooser sidebar row:selected:hover,
+window.filechooser sidebar row:selected:hover,
+.filechooser sidebar row:selected:hover,
+filechooser placessidebar row:selected:hover,
+window.filechooser placessidebar row:selected:hover,
+.filechooser placessidebar row:selected:hover,
+window.nautilus-window .navigation-sidebar row:selected:hover,
+.nautilus-window .navigation-sidebar row:selected:hover,
+window.nautilus-window .sidebar row:selected:hover,
+.nautilus-window .sidebar row:selected:hover {
+  background-color: {{colors.inverse_primary.default.rgba}};
+  color: {{colors.on_surface.default.rgba}};
+}
+
+sidebar row:hover,
+placessidebar row:hover,
+.sidebar row:hover,
+.navigation-sidebar row:hover,
+listview.navigation-sidebar row:hover,
+columnview.navigation-sidebar row:hover,
+filechooser sidebar row:hover,
+window.filechooser sidebar row:hover,
+.filechooser sidebar row:hover,
+filechooser placessidebar row:hover,
+window.filechooser placessidebar row:hover,
+.filechooser placessidebar row:hover,
+window.nautilus-window .navigation-sidebar row:hover,
+.nautilus-window .navigation-sidebar row:hover,
+window.nautilus-window .sidebar row:hover,
+.nautilus-window .sidebar row:hover {
+  background-color: {{colors.surface_container.default.rgba}};
+}
+
+filechooser headerbar,
+window.filechooser headerbar,
+.filechooser headerbar,
+.filechooser .titlebar,
+filechooser headerbar button.suggested-action,
+window.filechooser headerbar button.suggested-action,
+.filechooser headerbar button.suggested-action,
+filechooser headerbar button.default,
+window.filechooser headerbar button.default,
+.filechooser headerbar button.default,
+filechooser headerbar .suggested-action,
+window.filechooser headerbar .suggested-action,
+.filechooser headerbar .suggested-action {
+  background-color: {{colors.surface_container_high.default.rgba}};
+  color: {{colors.on_surface.default.rgba}};
+}
+
+filechooser headerbar,
+window.filechooser headerbar,
+.filechooser headerbar,
+window.filechooser .titlebar,
+.filechooser .titlebar {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+filechooser headerbar button,
+window.filechooser headerbar button,
+.filechooser headerbar button {
+  background-color: {{colors.surface_container_high.default.rgba}};
+  color: {{colors.on_surface.default.rgba}};
+  border-color: {{colors.outline_variant.default.rgba}};
+  background-image: none;
+  box-shadow: none;
+}
+
+filechooser headerbar button.suggested-action,
+window.filechooser headerbar button.suggested-action,
+.filechooser headerbar button.suggested-action,
+filechooser headerbar button.default,
+window.filechooser headerbar button.default,
+.filechooser headerbar button.default,
+filechooser headerbar .suggested-action,
+window.filechooser headerbar .suggested-action,
+.filechooser headerbar .suggested-action {
+  background-color: {{colors.inverse_primary.default.rgba}};
+  color: {{colors.on_surface.default.rgba}};
+  border-color: {{colors.inverse_primary.default.rgba}};
+  background-image: none;
+  box-shadow: none;
+}
+
+filechooser headerbar button:checked,
+window.filechooser headerbar button:checked,
+.filechooser headerbar button:checked,
+filechooser headerbar button:active,
+window.filechooser headerbar button:active,
+.filechooser headerbar button:active {
+  background-color: {{colors.inverse_primary.default.rgba}};
+  color: {{colors.on_surface.default.rgba}};
+  border-color: {{colors.inverse_primary.default.rgba}};
+  background-image: none;
+  box-shadow: none;
+}
+
+filechooser row:selected,
+filechooser view:selected,
+filechooser selection,
+filechooser button:checked,
+filechooser button:active,
+.filechooser row:selected,
+.filechooser view:selected,
+.filechooser selection,
+.filechooser button:checked,
+.filechooser button:active,
+window.filechooser row:selected,
+window.filechooser view:selected,
+window.filechooser selection,
+window.filechooser button:checked,
+window.filechooser button:active {
+  background-color: {{colors.inverse_primary.default.rgba}};
+  color: {{colors.on_surface.default.rgba}};
+}
+
+filechooser button.suggested-action,
+filechooser button.default,
+filechooser .suggested-action,
+window.filechooser button.suggested-action,
+window.filechooser button.default,
+window.filechooser .suggested-action,
+.filechooser button.suggested-action,
+.filechooser button.default,
+.filechooser .suggested-action,
+button.suggested-action,
+button.default,
+.suggested-action {
+  background-color: {{colors.inverse_primary.default.rgba}};
+  color: {{colors.on_surface.default.rgba}};
+  border-color: {{colors.inverse_primary.default.rgba}};
+  background-image: none;
+  box-shadow: none;
+}
+
+filechooser #pathbarbox > stack > box > button:checked,
+filechooser #pathbarbox > stack > box > button:checked:hover,
+filechooser #pathbarbox > stack > box > button:checked:focus,
+filechooser #pathbarbox > stack > box > button:checked:active,
+filechooser #pathbarbox > stack > box > button:checked:disabled,
+pathbar.linked:not(.vertical) > button:checked,
+pathbar.linked:not(.vertical) > button:checked:hover,
+pathbar.linked:not(.vertical) > button:checked:focus,
+pathbar.linked:not(.vertical) > button:checked:active,
+pathbar.linked:not(.vertical) > button:checked:disabled,
+.path-bar.linked:not(.vertical) > button:checked,
+.path-bar.linked:not(.vertical) > button:checked:hover,
+.path-bar.linked:not(.vertical) > button:checked:focus,
+.path-bar.linked:not(.vertical) > button:checked:active,
+.path-bar.linked:not(.vertical) > button:checked:disabled,
+.titlebar button:not(.suggested-action):not(.destructive-action):checked,
+.titlebar button:not(.suggested-action):not(.destructive-action):checked:hover,
+.titlebar button:not(.suggested-action):not(.destructive-action):checked:focus,
+.titlebar button:not(.suggested-action):not(.destructive-action):checked:active,
+.titlebar button:not(.suggested-action):not(.destructive-action):checked:disabled {
+  background-color: transparent;
+  color: {{colors.on_surface.default.rgba}};
+  border-top-color: transparent;
+  border-left-color: transparent;
+  border-right-color: transparent;
+  border-bottom-color: transparent;
+  border-image: none;
+  border-radius: 0;
+  background-image: none;
+  box-shadow: inset 0 -2px {{colors.inverse_primary.default.rgba}};
+}
+
+filechooser #pathbarbox > stack > box > button:checked label,
+pathbar.linked:not(.vertical) > button:checked label,
+.path-bar.linked:not(.vertical) > button:checked label,
+.titlebar button:not(.suggested-action):not(.destructive-action):checked label {
+  color: {{colors.on_surface.default.rgba}};
+}
+
+row:selected,
+view:selected,
+selection {
+  background-color: {{colors.primary_container.default.rgba}};
+  color: {{colors.on_primary_container.default.rgba}};
+}
+
+*:focus {
+  border-color: {{colors.primary.default.rgba}};
+}
