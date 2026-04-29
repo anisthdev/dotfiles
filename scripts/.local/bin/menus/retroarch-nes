@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+THEME="$SCRIPT_DIR/styles/common-menu.rasi"
+APPEND_CONFIG="$SCRIPT_DIR/retroarch-quit-on-close.cfg"
+
+PLAYLIST="${RETROARCH_NES_PLAYLIST:-$HOME/.config/retroarch/playlists/Nintendo - Nintendo Entertainment System.lpl}"
+THUMB_DIR="${RETROARCH_NES_THUMB_DIR:-$HOME/.config/retroarch/thumbnails/Nintendo - Nintendo Entertainment System/Named_Boxarts}"
+FALLBACK_ICON="$HOME/.config/retroarch/assets/ozone/png/retroarch.png"
+
+if [[ ! -r "$PLAYLIST" ]]; then
+  notify-send "RetroArch NES" "Playlist not found: $PLAYLIST"
+  exit 1
+fi
+
+if ! command -v jq >/dev/null 2>&1; then
+  notify-send "RetroArch NES" "jq is required to read RetroArch playlists"
+  exit 1
+fi
+
+game_count="$(
+  jq --arg home "$HOME" '
+    [.items[]
+    | select(.path != null and .label != null)
+    | select(.core_path != null and .core_path != "" and .core_path != "DETECT")
+    | select((.core_path | gsub("^~"; $home)) as $core | $core | test("^/"))]
+    | length
+  ' "$PLAYLIST"
+)"
+
+if [[ "$game_count" -eq 0 ]]; then
+  notify-send "RetroArch NES" "No games found in playlist"
+  exit 1
+fi
+
+menu_rows() {
+  jq -r '
+    .items[]
+    | select(.path != null and .label != null)
+    | select(.core_path != null and .core_path != "" and .core_path != "DETECT")
+    | .label
+  ' "$PLAYLIST" | while IFS= read -r label; do
+    icon="$THUMB_DIR/$label.png"
+    if [[ ! -r "$icon" ]]; then
+      sanitized_label="${label//&/_}"
+      sanitized_label="${sanitized_label//:/ -}"
+      sanitized_label="${sanitized_label//\?/_}"
+      icon="$THUMB_DIR/$sanitized_label.png"
+    fi
+    [[ -r "$icon" ]] || icon="$FALLBACK_ICON"
+    printf '%s\0icon\x1f%s\n' "$label" "$icon"
+  done
+}
+
+if ! selected_index="$(
+  menu_rows | rofi \
+    -dmenu \
+    -i \
+    -format i \
+    -p " " \
+    -mesg "     NES" \
+    -theme "$THEME" \
+    -theme-str 'window { width: 620px; } element-icon { size: 98px; } element { padding: 10px 12px; } listview { lines: 4; } inputbar { enabled: true; } entry { placeholder: "Search games..."; }'
+)"; then
+  exit 0
+fi
+
+[[ -n "$selected_index" ]] || exit 0
+
+game="$(
+  jq -r --argjson index "$selected_index" '
+    [.items[]
+    | select(.path != null and .label != null)
+    | select(.core_path != null and .core_path != "" and .core_path != "DETECT")][$index]
+    | [.path, .core_path]
+    | @tsv
+  ' "$PLAYLIST"
+)"
+
+IFS=$'\t' read -r rom_path core_path <<< "$game"
+
+if [[ -z "${rom_path:-}" || ! -r "$rom_path" ]]; then
+  notify-send "RetroArch NES" "Game file not found: ${rom_path:-unknown}"
+  exit 1
+fi
+
+core_path="${core_path/#\~/$HOME}"
+
+if [[ -z "${core_path:-}" || ! -r "$core_path" ]]; then
+  notify-send "RetroArch NES" "Configured core not found: ${core_path:-unknown}"
+  exit 1
+fi
+
+exec retroarch -f --appendconfig="$APPEND_CONFIG" -L "$core_path" "$rom_path"
