@@ -1,5 +1,6 @@
 return {
 	"saghen/blink.cmp",
+	version = "1.*",
 	event = "VeryLazy",
 	dependencies = {
 		{ "L3MON4D3/LuaSnip", keys = {} },
