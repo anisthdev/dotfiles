@@ -1,0 +1,13 @@
+@import "common-menu.rasi"
+
+entry { 
+  placeholder: "Search NES games..."; 
+}
+
+// element-icon {
+//   size: 58px;
+// }
+
+element-icon.selected {
+  size: 98px;
+}

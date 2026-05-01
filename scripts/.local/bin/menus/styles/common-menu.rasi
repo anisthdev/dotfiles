@@ -47,17 +47,12 @@ element urgent {
   text-color: #9aa0a6;
 }
 
-element urgent.selected {
-  background-color: transparent;
-  text-color: #9aa0a6;
-}
-
 element selected.urgent {
   background-color: transparent;
   text-color: #9aa0a6;
 }
 
-element urgent.selected element-text {
+element selected.urgent element-text {
   background-color: transparent;
   text-color: #9aa0a6;
 }

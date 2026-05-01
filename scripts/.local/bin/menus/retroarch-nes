@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-THEME="$SCRIPT_DIR/styles/common-menu.rasi"
+THEME="$SCRIPT_DIR/styles/retroarch-nes.rasi"
 APPEND_CONFIG="$SCRIPT_DIR/retroarch-quit-on-close.cfg"
 
 PLAYLIST="${RETROARCH_NES_PLAYLIST:-$HOME/.config/retroarch/playlists/Nintendo - Nintendo Entertainment System.lpl}"
@@ -61,7 +61,6 @@ if ! selected_index="$(
     -p " " \
     -mesg "     NES" \
     -theme "$THEME" \
-    -theme-str 'window { width: 620px; } element-icon { size: 98px; } element { padding: 10px 12px; } listview { lines: 4; } inputbar { enabled: true; } entry { placeholder: "Search games..."; }'
 )"; then
   exit 0
 fi
