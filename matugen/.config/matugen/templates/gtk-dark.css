@@ -86,13 +86,22 @@ window.nautilus-window gridview,
 popover > contents,
 popover.background > contents,
 popover.menu > contents,
+menu,
+menu > contents,
+menu.background,
+menu.background > contents,
 window.nautilus-window popover > contents,
 window.nautilus-window popover.background > contents,
 window.nautilus-window popover.menu > contents,
+window.nautilus-window menu,
+window.nautilus-window menu > contents,
+window.nautilus-window menu.background,
+window.nautilus-window menu.background > contents,
 .nautilus-window popover > contents,
 .nautilus-window popover.background > contents,
 .nautilus-window popover.menu > contents {
-  background-color: {{colors.surface_container.default.rgba | set_alpha: 0.7}};
+  background-color: {{colors.surface_container.default.rgba}};
+  opacity: 0.5;
   color: {{colors.on_surface.default.rgba}};
   border-radius: 14px;
   padding: 2px;
@@ -102,11 +111,33 @@ window.nautilus-window popover.menu > contents,
 }
 
 popover.background {
-  background-color: {{colors.surface_container.default.rgba | set_alpha: 0.7}};
+  background-color: {{colors.surface_container.default.rgba}};
+  opacity: 0.5;
   background-image: none;
   border-radius: 14px;
-  padding: 0;
+  padding: 4px;
   margin: 0;
+  border-width: 0;
+  border-style: none;
+  box-shadow: none;
+}
+
+tooltip,
+tooltip.background {
+  background-color: {{colors.surface_container.default.rgba}};
+  opacity: 0.5;
+  color: {{colors.on_surface.default.rgba}};
+  border-radius: 10px;
+  padding: 6px 8px;
+  border-width: 0;
+  border-style: none;
+  box-shadow: none;
+}
+
+tooltip label {
+  background-color: transparent;
+  color: {{colors.on_surface.default.rgba}};
+  padding: 0;
   border-width: 0;
   border-style: none;
   box-shadow: none;
