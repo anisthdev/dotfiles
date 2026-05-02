@@ -1,4 +1,4 @@
-@import "./colors.rasi"
+@theme "launcher"
 
 configuration {
     modi:                        "drun";
@@ -48,7 +48,6 @@ listview {
     fixed-columns:               true;
     cursor:                      "default";
     background-color:            transparent;
-    text-color:                  @main-fg;
 }
 
 //----- Elements -----//
@@ -61,13 +60,6 @@ element {
     border-radius:               16px;
     cursor:                      pointer;
     background-color:            transparent;
-    text-color:                  @main-fg;
-}
-
-@media(max-aspect-ratio: 1.8) {
-    element {
-        orientation:             vertical;
-    }
 }
 
 element selected.normal {
