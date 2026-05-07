@@ -5,6 +5,7 @@ end
 
 fish_add_path $HOME/.local/bin
 fish_add_path $HOME/.sdks/flutter/bin
+fish_add_path $HOME/.cargo/bin
 set -x TMUX_CONF $HOME/.config/tmux/.tmux.conf
 set -x TNS_ADMIN /opt/instantclient/network/admin
 set -x SESSHIN_DIR $HOME/.config/sesshin

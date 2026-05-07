@@ -28,3 +28,22 @@ alias df='duf -only local,network,fuse -output filesystem,type,size,used,usage,m
 alias du='dust -r'
 alias mkdir='mkdir -p'
 
+alias xleak='xleak -H -i'
+
+
+alias sss='sudo systemctl status'
+alias ssst='sudo systemctl start'
+alias sssp='sudo systemctl stop'
+alias sssr='sudo systemctl restart'
+alias ssse='sudo systemctl enable'
+
+alias uss='systemctl --user status'
+alias usst='systemctl --user start'
+alias ussp='systemctl --user stop'
+alias ussr='systemctl --user restart'
+alias usse='systemctl --user enable'
+
+# transmission-remote
+alias tr='transmission-remote'
+alias tra='transmission-remote -a'
+alias tradd='transmission-remote -a'
