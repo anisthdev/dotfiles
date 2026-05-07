@@ -101,7 +101,7 @@ window.nautilus-window menu.background > contents,
 .nautilus-window popover.background > contents,
 .nautilus-window popover.menu > contents {
   background-color: {{colors.surface_container.default.rgba}};
-  opacity: 0.5;
+  opacity: 0.8;
   color: {{colors.on_surface.default.rgba}};
   border-radius: 14px;
   padding: 2px;
@@ -111,8 +111,7 @@ window.nautilus-window menu.background > contents,
 }
 
 popover.background {
-  background-color: {{colors.surface_container.default.rgba}};
-  opacity: 0.5;
+  background-color: transparent;
   background-image: none;
   border-radius: 14px;
   padding: 4px;
@@ -125,7 +124,7 @@ popover.background {
 tooltip,
 tooltip.background {
   background-color: {{colors.surface_container.default.rgba}};
-  opacity: 0.5;
+  opacity: 0.7;
   color: {{colors.on_surface.default.rgba}};
   border-radius: 10px;
   padding: 6px 8px;

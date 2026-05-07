@@ -1,0 +1,100 @@
+format = """
+$directory\
+$git_branch\
+$git_status\
+$python\
+$nodejs\
+$java\
+$rust\
+$golang\
+$php\
+$dart\
+$lua\
+\n~> """
+
+
+palette= 'colors'
+
+[palettes.colors]
+primary = '{{colors.primary.default.hex}}'
+on_primary = '{{colors.on_primary.default.hex}}'
+primary_container = '{{colors.primary_container.default.hex}}'
+on_primary_container = '{{colors.on_primary_container.default.hex}}'
+secondary = '{{colors.secondary.default.hex}}'
+on_secondary = '{{colors.on_secondary.default.hex}}'
+tertiary = '{{colors.tertiary.default.hex}}'
+on_tertiary = '{{colors.on_tertiary.default.hex}}'
+surface = '{{colors.surface.default.hex}}'
+background = '{{colors.background.default.hex}}'
+
+
+
+[os]
+disabled = false
+style = "bg:tertiary fg:on_tertiary"
+format = "[$symbol]($style)"
+
+[os.symbols]
+Ubuntu = " 󰕈 "
+Arch = " 󰣇 "
+Redhat = " 󱄛 "
+RedHatEnterprise = " 󱄛 "
+
+[hostname]
+style = "bg:color3 fg:color4"
+format = "[$ssh_symbol$hostname]($style)"
+ssh_symbol = "󰣀 " 
+
+[directory]
+style = "fg:on_primary_container"
+format = "[$path ]($style)"
+truncation_length = 4
+truncation_symbol = "…/"
+
+[directory.substitutions]
+"Documents" = "󱔘 "
+"Downloads" = " "
+"Music" = " "
+"Pictures" = " "
+"Study" = "󱉟 "
+"Work" = "󱔟 "
+
+[git_branch]
+symbol = ""
+format = '·[ $symbol $branch ](fg:secondary)'
+
+[git_status]
+format = '[($all_status$ahead_behind )](fg:on_secondary)'
+
+[dart]
+symbol = " "
+format = '·[ $symbol($version) ](fg:#0468D7)'
+
+[nodejs]
+symbol = " "
+format = '·[ $symbol($version) ](fg:#b8bb26)'
+
+[rust]
+symbol = " "
+format = '·[ $symbol($version) ](fg:#d3869b)'
+
+[java]
+symbol = "󰬷 "
+format = '·[ $symbol ($version) ](fg:#d3869b)'
+
+[golang]
+symbol = " "
+format = '·[ $symbol($version) ](fg:#00ADD8)'
+
+[lua]
+symbol = "󰢱 "
+format = '·[ $symbol($version) ](fg:#03037E)'
+
+[php]
+symbol = " "
+format = '·[ $symbol($version) ](fg:#8ec07c)'
+
+[python]
+symbol = " "
+format = '·[ $symbol($version) ($virtualenv) ](fg:#F7BA0A)'
+
