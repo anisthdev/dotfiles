@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+TRAY_ID="vpn"
+TRAY_ICON="network-vpn"
+
+current_vpn_names() {
+  nmcli -t -f NAME,TYPE,STATE connection show 2>/dev/null \
+    | awk -F: '$2=="vpn" && $3=="activated" {print $1}' \
+    | paste -sd ', ' -
+}
+
+show_vpn_tray() {
+  local names="$1"
+  tray show --id "$TRAY_ID" --icon "$TRAY_ICON" --tooltip "VPN active: $names" >/dev/null 2>&1 || true
+}
+
+hide_vpn_tray() {
+  tray hide --id "$TRAY_ID" >/dev/null 2>&1 || true
+}
+
+cleanup() {
+  hide_vpn_tray
+}
+
+trap cleanup EXIT INT TERM
+
+if ! command -v nmcli >/dev/null 2>&1; then
+  exit 0
+fi
+
+if ! command -v tray >/dev/null 2>&1; then
+  exit 0
+fi
+
+last_state=""
+
+while true; do
+  vpn_names="$(current_vpn_names)"
+
+  if [[ "$vpn_names" != "$last_state" ]]; then
+    if [[ -n "$vpn_names" ]]; then
+      show_vpn_tray "$vpn_names"
+    else
+      hide_vpn_tray
+    fi
+    last_state="$vpn_names"
+  fi
+
+  sleep 2
+done

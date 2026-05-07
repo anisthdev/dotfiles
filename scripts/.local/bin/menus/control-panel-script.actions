@@ -10,6 +10,7 @@ dispatch_external_action() {
     screenshot) run_external_cmd "$SCRIPT_DIR/screenshot" ;;
     screenrecord) run_external_cmd "$SCRIPT_DIR/screenrecord" ;;
     nightlight) run_external_cmd "$SCRIPT_DIR/../toggle-nightlight" ;;
+    vpn-indicator) run_external_cmd "$SCRIPT_DIR/vpn-indicator" ;;
     *) ;;
   esac
   exit 0
@@ -103,6 +104,32 @@ wifi_connect_worker() {
   nmcli device wifi connect "$target_ssid" password "$password" >/dev/null 2>&1 || true
 }
 
+vpn_toggle_detached() {
+  local vpn_name="$1"
+  local is_active="${2:-0}"
+  nohup "$0" --vpn-toggle "$vpn_name" "$is_active" >/dev/null 2>&1 </dev/null &
+}
+
+vpn_toggle_worker() {
+  local vpn_name="$1"
+  local is_active="${2:-0}"
+
+  if [[ "$is_active" -eq 1 ]]; then
+    nmcli connection down "$vpn_name" >/dev/null 2>&1 || true
+    return 0
+  fi
+
+  nmcli connection up "$vpn_name" >/dev/null 2>&1 || true
+}
+
+ensure_vpn_indicator() {
+  if pgrep -f "$SCRIPT_DIR/vpn-indicator" >/dev/null 2>&1; then
+    return 0
+  fi
+
+  nohup "$SCRIPT_DIR/vpn-indicator" >/dev/null 2>&1 </dev/null &
+}
+
 bluetooth_toggle() {
   local addr="$1"
   local name info
@@ -133,6 +160,7 @@ handle_action() {
     nav:audio:outputs) render_audio_outputs ;;
     nav:audio:inputs) render_audio_inputs ;;
     nav:wifi) render_wifi ;;
+    nav:vpn) render_vpn ;;
     nav:bluetooth) render_bluetooth ;;
     cmd:*)
       dispatch_external_action "${action#cmd:}"
@@ -161,6 +189,17 @@ handle_action() {
         fi
       fi
       wifi_handle_selection "$(b64dec "$ssid_b64")" "$(b64dec "$security_b64")" "$active_flag"
+      exit 0
+      ;;
+    vpn:toggle:*)
+      vpn_payload="${action#vpn:toggle:}"
+      vpn_name_b64="${vpn_payload%%:*}"
+      if [[ "$vpn_payload" == "$vpn_name_b64" ]]; then
+        active_flag="0"
+      else
+        active_flag="${vpn_payload#*:}"
+      fi
+      vpn_toggle_detached "$(b64dec "$vpn_name_b64")" "$active_flag"
       exit 0
       ;;
     bt:toggle:*)

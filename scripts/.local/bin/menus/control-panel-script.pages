@@ -4,6 +4,7 @@ render_root() {
   row "<span font_family='SF Pro Display' font_weight='bold'>Wifi</span>" "nav:wifi" "" "network-wireless"
   row "<span font_family='SF Pro Display' font_weight='bold'>Bluetooth</span>" "nav:bluetooth" "" "bluetooth"
   row "<span font_family='SF Pro Display' font_weight='bold'>Audio Sinks</span>" "nav:audio:outputs" "" "audio-speakers"
+  row "<span font_family='SF Pro Display' font_weight='bold'>VPN</span>" "nav:vpn" "" "network-vpn"
   row "<span font_family='SF Pro Display' font_weight='bold'>Audio Sources</span>" "nav:audio:inputs" "" "audio-input-microphone"
   row "<span font_family='SF Pro Display' font_weight='bold'>Power</span>" "cmd:power" "" "system-shutdown"
   row "<span font_family='SF Pro Display' font_weight='bold'>Wallpaper</span>" "cmd:wallpaper" "" "preferences-desktop-wallpaper"
@@ -233,12 +234,53 @@ render_wifi_page() {
   emit_page "wifi" " " "Wi-Fi"
 }
 
+render_vpn_page() {
+  begin_page
+  row "<span font_family='SF Pro Display' font_weight='bold'>Back</span>" "nav:root" "" "go-previous"
+
+  if ! command -v nmcli >/dev/null 2>&1; then
+    row "<span font_family='SF Pro Display' font_weight='bold'>nmcli not found</span>" "noop"
+    emit_page "vpn" " " "VPN"
+    return
+  fi
+
+  declare -A active_vpn=()
+
+  mapfile -t active_lines < <(nmcli -t -f NAME,TYPE connection show --active 2>/dev/null | awk -F: '$2=="vpn" {print $1}' || true)
+  local line vpn_name label
+  for line in "${active_lines[@]}"; do
+    active_vpn["$line"]=1
+  done
+
+  mapfile -t vpn_lines < <(nmcli -t -f NAME,TYPE connection show 2>/dev/null | awk -F: '$2=="vpn" {print $1}' || true)
+
+  if [[ ${#vpn_lines[@]} -eq 0 ]]; then
+    row "<span font_family='SF Pro Display' font_weight='bold'>No VPN profiles found</span>" "noop" "" "dialog-information"
+  else
+    for vpn_name in "${vpn_lines[@]}"; do
+      [[ -z "$vpn_name" ]] && continue
+
+      label="<span font_family='SF Pro Display' font_weight='bold'>$(escape_markup "$vpn_name")</span>"
+      if [[ -n "${active_vpn[$vpn_name]:-}" ]]; then
+        row "$label" "vpn:toggle:$(b64enc "$vpn_name"):1" "active" "network-vpn"
+      else
+        row "$label" "vpn:toggle:$(b64enc "$vpn_name"):0" "" "network-vpn"
+      fi
+    done
+  fi
+  emit_page "vpn" " " "VPN"
+}
+
 render_wifi() {
   render_wifi_page "no"
 }
 
 render_wifi_refresh() {
   render_wifi_page "yes"
+}
+
+render_vpn() {
+  render_vpn_page
 }
 
 render_bluetooth() {
@@ -301,6 +343,7 @@ render_page() {
     audio-outputs) render_audio_outputs ;;
     audio-inputs) render_audio_inputs ;;
     wifi) render_wifi ;;
+    vpn) render_vpn ;;
     bluetooth) render_bluetooth ;;
     *) render_root ;;
   esac
@@ -309,6 +352,7 @@ render_page() {
 render_refresh_page() {
   case "$1" in
     wifi) render_wifi_refresh ;;
+    vpn) render_vpn ;;
     root|audio|audio-outputs|audio-inputs|bluetooth) render_page "$1" ;;
     *) render_root ;;
   esac
