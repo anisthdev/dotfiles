@@ -45,4 +45,4 @@ selection="$(
 
 [[ -n "$selection" ]] || exit 0
 
-exec matugen --type scheme-rainbow image "$WALLPAPER_DIR/$selection" --source-color-index 0
+exec matugen --type scheme-expressive image "$WALLPAPER_DIR/$selection" --source-color-index 0

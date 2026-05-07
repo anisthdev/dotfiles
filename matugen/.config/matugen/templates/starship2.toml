@@ -26,6 +26,7 @@ tertiary = '{{colors.tertiary.default.hex}}'
 on_tertiary = '{{colors.on_tertiary.default.hex}}'
 surface = '{{colors.surface.default.hex}}'
 background = '{{colors.background.default.hex}}'
+inverse_primary = '{{colors.inverse_primary.default.hex}}'
 
 
 
@@ -64,7 +65,7 @@ symbol = ""
 format = '·[ $symbol $branch ](fg:secondary)'
 
 [git_status]
-format = '[($all_status$ahead_behind )](fg:on_secondary)'
+format = '[($all_status$ahead_behind )](fg:inverse_primary)'
 
 [dart]
 symbol = " "
