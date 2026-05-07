@@ -80,6 +80,10 @@ output_path = '~/.config/gtk-4.0/gtk.css'
 input_path = './templates/gtk-dark.css'
 output_path = '~/.config/gtk-4.0/gtk-dark.css'
 
+[templates.firefox_private]
+input_path = './templates/firefox-private.css'
+output_path = '~/.mozilla/firefox/RiJIKUI2.Profile 1/chrome/userContent.css'
+
 [templates.nvim]
 input_path = './templates/background.lua'
 output_path = '~/.config/nvim/lua/core/ui/background.lua'

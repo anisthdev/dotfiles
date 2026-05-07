@@ -1,0 +1,75 @@
+@-moz-document url("about:privatebrowsing") {
+  :root {
+    color-scheme: dark !important;
+    --base-color: #343333 !important;
+    --backup-main-color: #343333 !important;
+    --in-content-page-background: #343333 !important;
+    --in-content-page-color: {{colors.on_surface.default.rgba}} !important;
+    --in-content-text-color: {{colors.on_surface.default.rgba}} !important;
+    --in-content-box-background: {{colors.surface_container.default.rgba}} !important;
+    --in-content-banner-background: {{colors.surface_container.default.rgba}} !important;
+    --in-content-banner-text-color: {{colors.on_surface.default.rgba}} !important;
+    --in-content-button-background: {{colors.surface_container.default.rgba}} !important;
+    --in-content-button-background-hover: {{colors.surface_container_high.default.rgba}} !important;
+    --in-content-button-background-active: {{colors.surface_container_highest.default.rgba}} !important;
+    --in-content-primary-button-background: {{colors.surface_container_high.default.rgba}} !important;
+    --in-content-primary-button-background-hover: {{colors.surface_container_highest.default.rgba}} !important;
+    --in-content-primary-button-background-active: {{colors.surface_container_highest.default.rgba}} !important;
+    --in-content-primary-button-text-color: {{colors.on_surface.default.rgba}} !important;
+    --ppb-search-focused-outline-color: {{colors.outline_variant.default.rgba}} !important;
+    --ppb-search-background: {{colors.surface_container.default.rgba}} !important;
+  }
+
+  body {
+    background-color: #343333 !important;
+    color: {{colors.on_surface.default.rgba}} !important;
+  }
+
+  html,
+  .container,
+  .showPrivate,
+  .showSearch,
+  .logo-and-wordmark,
+  .search-inner-wrapper {
+    background-color: transparent !important;
+    color: {{colors.on_surface.default.rgba}} !important;
+  }
+
+  .info-border,
+  #search-banner,
+  .promo {
+    display: none !important;
+  }
+
+  .search-inner-wrapper {
+    border: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+
+  .search-handoff-button,
+  .search-handoff-button:hover,
+  .search-handoff-button:active,
+  .search-handoff-button:focus,
+  .search-handoff-button:focus-visible {
+    background-color: {{colors.surface_container.default.rgba}} !important;
+    border: 1px solid {{colors.outline_variant.default.rgba}} !important;
+    box-shadow: none !important;
+    color: {{colors.on_surface.default.rgba}} !important;
+  }
+
+  .search-handoff-button .fake-textbox,
+  .search-handoff-button .fake-editable {
+    background-color: transparent !important;
+    color: {{colors.on_surface.default.rgba}} !important;
+  }
+
+  .search-handoff-button .fake-caret {
+    background-color: {{colors.on_surface.default.rgba}} !important;
+  }
+
+  /* Optional: Change the color of the Private Mask icon */
+  .private-mask {
+    fill: {{colors.on_surface_variant.default.rgba}} !important;
+  }
+}
