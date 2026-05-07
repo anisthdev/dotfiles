@@ -1,0 +1,185 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+THEME="$SCRIPT_DIR/styles/torrent-stream.rasi"
+
+JACKETT_CONFIG="${JACKETT_CONFIG:-/var/lib/jackett/ServerConfig.json}"
+JACKETT_URL="${JACKETT_URL:-}"
+JACKETT_API_KEY="${JACKETT_API_KEY:-}"
+JACKETT_INDEXER="${JACKETT_INDEXER:-xxxtor}"
+
+die() {
+    printf '%s\n' "$*" >&2
+    exit 1
+}
+
+require() {
+    command -v "$1" >/dev/null 2>&1 || die "Missing dependency: $1"
+}
+
+load_jackett_config() {
+    if [[ -r "$JACKETT_CONFIG" ]]; then
+        if [[ -z "$JACKETT_API_KEY" ]]; then
+            JACKETT_API_KEY="$(jq -r '.APIKey // empty' "$JACKETT_CONFIG")"
+        fi
+
+        if [[ -z "$JACKETT_URL" ]]; then
+            local port
+            port="$(jq -r '.Port // 9117' "$JACKETT_CONFIG")"
+            JACKETT_URL="http://127.0.0.1:$port"
+        fi
+    fi
+
+    JACKETT_URL="${JACKETT_URL:-http://127.0.0.1:9117}"
+}
+
+search_query() {
+    rofi -dmenu \
+        -p "󰥨 " \
+        -mesg "󰓾  Search torrents" \
+        -theme "$THEME" \
+        -theme-str 'mainbox { children: [ message, inputbar ]; }' \
+        -theme-str 'listview { enabled: false; }'
+}
+
+fetch_results() {
+    local query="$1"
+
+    curl -fsS --get \
+        --data-urlencode "apikey=$JACKETT_API_KEY" \
+        --data-urlencode "q=$query" \
+        "$JACKETT_URL/api/v2.0/indexers/$JACKETT_INDEXER/results/"
+}
+
+normalize_results() {
+    jq '
+        def nz: . // 0;
+        def leechers: (.Peers | nz);
+        def ratio:
+            if leechers > 0 then ((.Seeders | nz) / leechers)
+            elif (.Seeders | nz) > 0 then (.Seeders | nz)
+            else 0
+            end;
+
+        (.Results // [])
+        | map({
+            title: (.Title // "Untitled"),
+            seeders: (.Seeders | nz),
+            leechers: leechers,
+            peers: ((.Seeders | nz) + leechers),
+            ratio: ratio,
+            size_bytes: (.Size | nz),
+            magnet_uri: (.MagnetUri // .MagnetURI // "")
+        })
+        | map(select(.magnet_uri != ""))
+        | sort_by(.seeders, .leechers, .ratio)
+        | reverse
+    '
+}
+
+format_size() {
+    local bytes="$1"
+
+    awk -v bytes="$bytes" '
+        BEGIN {
+            split("B KiB MiB GiB TiB", units, " ")
+            value = bytes
+            unit = 1
+            while (value >= 1024 && unit < 5) {
+                value = value / 1024
+                unit++
+            }
+            if (unit == 1) {
+                printf "%d %s", value, units[unit]
+            } else {
+                printf "%.1f %s", value, units[unit]
+            }
+        }
+    '
+}
+
+print_rows() {
+    local results_file="$1"
+    local index title seeders leechers peers ratio size_bytes size
+
+    jq -r '
+        to_entries[]
+        | [
+            .key,
+            .value.title,
+            .value.seeders,
+            .value.leechers,
+            .value.peers,
+            .value.ratio,
+            .value.size_bytes
+        ]
+        | @tsv
+    ' "$results_file" | while IFS=$'\t' read -r index title seeders leechers peers ratio size_bytes; do
+        size="$(format_size "$size_bytes")"
+        printf '%03d  S:%s  L:%s  P:%s  R:%.2f  %s  %s\n' \
+            "$index" "$seeders" "$leechers" "$peers" "$ratio" "$size" "$title"
+    done
+}
+
+select_result() {
+    local results_file="$1"
+
+    print_rows "$results_file" | rofi -dmenu \
+        -i \
+        -p "󰓾 " \
+        -mesg "󰈙  Select stream" \
+        -theme "$THEME"
+}
+
+main() {
+    require curl
+    require jq
+    require rofi
+    require peerflix
+    require mpv
+
+    local query response_file results_file selection index magnet
+
+    load_jackett_config
+    if [[ -z "$JACKETT_API_KEY" ]]; then
+        rofi -e "Missing Jackett API key"
+        exit 1
+    fi
+
+    query="$(search_query)" || exit 0
+    query="$(printf '%s' "$query" | xargs)"
+    [[ -n "$query" ]] || exit 0
+
+    response_file="$(mktemp --tmpdir jackett-stream-response.XXXXXX.json)"
+    results_file="$(mktemp --tmpdir jackett-stream-results.XXXXXX.json)"
+    trap 'rm -f "$response_file" "$results_file"' EXIT
+
+    if ! fetch_results "$query" >"$response_file"; then
+        rofi -e "Could not reach Jackett at $JACKETT_URL"
+        exit 1
+    fi
+
+    if ! normalize_results <"$response_file" >"$results_file"; then
+        rofi -e "Jackett returned an unreadable response"
+        exit 1
+    fi
+
+    if [[ "$(jq 'length' "$results_file")" -eq 0 ]]; then
+        rofi -e "No streamable results found"
+        exit 0
+    fi
+
+    selection="$(select_result "$results_file")" || exit 0
+    [[ -n "$selection" ]] || exit 0
+
+    index="${selection%% *}"
+    [[ "$index" =~ ^[0-9]+$ ]] || exit 0
+
+    magnet="$(jq -r --argjson index "$index" '.[$index].magnet_uri // empty' "$results_file")"
+    [[ -n "$magnet" ]] || exit 0
+
+    exec peerflix "$magnet" --mpv --remove
+}
+
+main "$@"

@@ -2,8 +2,6 @@
 
 window {
   width: 540px;
-  anchor: center;
-  location: center;
 }
 
 mainbox {

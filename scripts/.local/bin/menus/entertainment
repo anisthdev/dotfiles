@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+THEME="$SCRIPT_DIR/styles/entertainment.rasi"
+
+labels=(
+    "Play URL"
+    "Telegram Media"
+    "Torrent Stream"
+    "RetroArch NES"
+    "Playlists"
+)
+
+commands=(
+    "$SCRIPT_DIR/play-video"
+    "$SCRIPT_DIR/telegram-media"
+    "$SCRIPT_DIR/torrent-stream"
+    "$SCRIPT_DIR/retroarch-nes"
+    "$SCRIPT_DIR/playlist"
+)
+
+icons=(
+    "mpv"
+    "telegram"
+    "folder-videos"
+    "retroarch"
+    "playlist"
+)
+
+menu_rows() {
+    local index
+    for index in "${!labels[@]}"; do
+        printf '%s\0icon\x1f%s\n' "${labels[$index]}" "${icons[$index]}"
+    done
+}
+
+if ! selected_index="$(
+    menu_rows | rofi \
+        -dmenu \
+        -i \
+        -format i \
+        -p " " \
+        -mesg "󱂬  Entertainment" \
+        -theme "$THEME"
+)"; then
+    exit 0
+fi
+
+[[ -n "$selected_index" ]] || exit 0
+
+exec "${commands[$selected_index]}"

@@ -1,0 +1,155 @@
+#!/usr/bin/env python3
+"""Fetch file list from an Internet Archive item, let user pick a variant, and generate an M3U playlist."""
+
+import json
+import os
+import re
+import sys
+import urllib.request
+import urllib.parse
+
+BASE = "https://archive.org"
+
+MEDIA_EXTS = {
+    ".mp4",".webm",".mkv",".avi",".mov",".flv",".wmv",".m4v",
+    ".mp3",".ogg",".flac",".wav",".aac",".opus",".m4a",".wma",
+    ".m3u8",".ts",
+}
+
+def identifier_from_url(url: str) -> str:
+    m = re.match(r"https?://archive\.org/(?:download|metadata|details)/([^/?#]+)", url)
+    if not m:
+        sys.exit(f"Could not parse archive.org URL: {url}")
+    return m.group(1)
+
+def fetch_files(identifier: str) -> list[dict]:
+    url = f"{BASE}/metadata/{identifier}"
+    req = urllib.request.Request(url, headers={"User-Agent": "mpv-playlist/1.0"})
+    with urllib.request.urlopen(req, timeout=15) as resp:
+        data = json.loads(resp.read())
+    return data.get("files", [])
+
+def is_media(name: str) -> bool:
+    n = name.lower()
+    return any(n.endswith(e) for e in MEDIA_EXTS)
+
+def get_ext(name: str) -> str:
+    _, ext = os.path.splitext(name)
+    return ext.lower()
+
+def get_base(name: str) -> str:
+    """Strip extension to get the common name (e.g. 'E01 - Rebirth' from 'E01 - Rebirth.mkv')."""
+    return os.path.splitext(name)[0]
+
+def find_variants(media_files: list[dict]) -> dict[str, list[dict]]:
+    """Group files by extension."""
+    variants: dict[str, list[dict]] = {}
+    for f in media_files:
+        ext = get_ext(f["name"])
+        variants.setdefault(ext, []).append(f)
+    return variants
+
+def prompt_variant(variants: dict[str, list[dict]]) -> str:
+    """Show available extensions and let the user pick one."""
+    # Sort by count desc, then by extension name
+    sorted_exts = sorted(variants.keys(), key=lambda e: (-len(variants[e]), e))
+
+    if len(sorted_exts) == 1:
+        return sorted_exts[0]
+
+    print("\nVariants found:")
+    print("-" * 60)
+    for i, ext in enumerate(sorted_exts, 1):
+        files = variants[ext]
+        count = len(files)
+        # show a sample + size info if available
+        sample = files[0]["name"]
+        size_str = ""
+        total_bytes = sum(int(f.get("size", 0)) for f in files)
+        if total_bytes > 0:
+            total_mb = total_bytes / (1024 * 1024)
+            size_str = f" (~{total_mb:.0f} MB total)"
+        print(f"  {i}. {ext:8s}  {count:3d} files  —  sample: {sample}{size_str}")
+    print("-" * 60)
+
+    while True:
+        choice = input("Pick a variant (number), or 'a' for all, or 'q' to quit: ").strip().lower()
+        if choice == "q":
+            sys.exit("Aborted.")
+        if choice == "a":
+            return "__all__"
+        try:
+            idx = int(choice) - 1
+            if 0 <= idx < len(sorted_exts):
+                return sorted_exts[idx]
+        except ValueError:
+            pass
+        print(f"Enter a number between 1 and {len(sorted_exts)}, 'a', or 'q'.")
+
+def build_m3u(files: list[dict], identifier: str) -> str:
+    lines = ["#EXTM3U", ""]
+    for f in sorted(files, key=lambda x: x.get("name", "")):
+        name = f["name"]
+        path = urllib.parse.quote(name, safe="/")
+        url = f"{BASE}/download/{identifier}/{path}"
+        duration = f.get("length")
+        title = name.rsplit("/", 1)[-1]
+        if duration:
+            lines.append(f"#EXTINF:{int(float(duration))},{title}")
+        else:
+            lines.append(f"#EXTINF:-1,{title}")
+        lines.append(url)
+        lines.append("")
+    if len(lines) <= 2:
+        sys.exit("No media files found.")
+    return "\n".join(lines)
+
+def main():
+    if len(sys.argv) < 2:
+        sys.exit(f"Usage: {sys.argv[0]} <archive.org URL> [output.m3u]")
+
+    url = sys.argv[1]
+    identifier = identifier_from_url(url)
+
+    print(f"Fetching metadata for: {identifier}...")
+    all_files = fetch_files(identifier)
+    media_files = [f for f in all_files if is_media(f["name"])]
+
+    if not media_files:
+        sys.exit("No media files found in this item.")
+
+    print(f"Found {len(media_files)} media files.")
+
+    # Check if there are multiple variants (different extensions)
+    variants = find_variants(media_files)
+
+    if len(variants) > 1:
+        selected = prompt_variant(variants)
+    else:
+        ext = list(variants.keys())[0]
+        selected = ext
+        print(f"Only one variant: {ext}")
+
+    # Filter files
+    if selected == "__all__":
+        chosen = media_files
+        suffix = "all"
+    else:
+        chosen = [f for f in media_files if get_ext(f["name"]) == selected]
+        suffix = selected.lstrip(".")
+
+    if not chosen:
+        sys.exit("No files matched the selected variant.")
+
+    print(f"\nGenerating playlist with {len(chosen)} files ({suffix})...")
+    m3u = build_m3u(chosen, identifier)
+
+    outpath = sys.argv[2] if len(sys.argv) > 2 else f"{identifier}_{suffix}.m3u"
+    with open(outpath, "w") as fh:
+        fh.write(m3u)
+
+    print(f"  -> {outpath}")
+    print(f"  Play with: mpv {outpath}")
+
+if __name__ == "__main__":
+    main()

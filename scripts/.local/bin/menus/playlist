@@ -1,0 +1,49 @@
+#! /usr/bin/env bash
+
+PLAYLIST_DIR="$HOME/Movies/Playlists"
+ICON_DIR="$HOME/.cache/playlist-icons"
+TMPFILE=$(mktemp)
+
+# Find all playlist files (.m3u, .m3u8)
+mapfile -t playlists < <(
+    find "$PLAYLIST_DIR" -maxdepth 1 \( -name "*.m3u" -o -name "*.m3u8" \) -type f 2>/dev/null | sort
+)
+
+if [ ${#playlists[@]} -eq 0 ]; then
+    notify-send "Playlist" "No playlists found in $PLAYLIST_DIR"
+    exit 1
+fi
+
+# Build list for rofi dmenu: display_text\0icon\x1ficon_path\n
+for pl in "${playlists[@]}"; do
+    name="${pl##*/}"
+    base="${name%.*}"
+    icon="$ICON_DIR/${base}.png"
+    if [ -f "$icon" ]; then
+        printf '%s\0icon\x1f%s\n' "$base" "$icon"
+    else
+        printf '%s\n' "$base"
+    fi
+done > "$TMPFILE"
+
+selected=$(rofi -dmenu -i -p "󰤺 " \
+    -theme-str 'entry { placeholder: "Select playlist..."; }' \
+    < "$TMPFILE")
+rm -f "$TMPFILE"
+
+if [ -z "$selected" ]; then
+    exit 0
+fi
+
+# rofi dmenu returns just the display text
+name="$selected"
+
+# Find and play the selected playlist
+for pl in "${playlists[@]}"; do
+    plname="${pl##*/}"
+    plbase="${plname%.*}"
+    if [ "$plbase" = "$name" ]; then
+        mpv --playlist="$pl"
+        exit 0
+    fi
+done

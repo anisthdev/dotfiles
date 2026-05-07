@@ -1,0 +1,9 @@
+@import "common-menu.rasi"
+
+listview {
+  lines: 5;
+}
+
+entry {
+  placeholder: "Filter...";
+}

@@ -1,0 +1,17 @@
+@import "common-menu.rasi"
+
+window {
+  width: 760px;
+}
+
+listview {
+  lines: 10;
+}
+
+entry {
+  placeholder: "Search...";
+}
+
+element-text {
+  font: "SF Pro Display Medium 13";
+}
