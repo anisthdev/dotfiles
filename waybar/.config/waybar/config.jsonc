@@ -183,7 +183,7 @@
     ]
   },
   "custom/weather": {
-    "exec": "/home/asif/.config/waybar/weather/waybar-weather",
+    "exec": "WAYBAR_WEATHER_VERBOSE=1 /home/asif/.config/waybar/weather/waybar-weather",
     "return-type": "json",
     "format": "{}",
     "tooltip": true,

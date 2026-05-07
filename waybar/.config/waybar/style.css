@@ -28,6 +28,7 @@ window#waybar {
   background-color: @surface_container_highest;
   margin: 0px 5px;
   color: @inverse_surface;
+  border-radius: 10px;
   transition: margin 150ms ease-in-out;
   transition: background-color 0.3s ease, color 0.3s ease, padding 0.2s ease;
   border: none;
