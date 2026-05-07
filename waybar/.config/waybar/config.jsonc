@@ -41,6 +41,7 @@
   },
   "hyprland/window": {
     "format": "{title}",
+    "max-length": 50,
     "separate-outputs": true,
     "icon": true,
     "rewrite": {
@@ -84,16 +85,7 @@
     "format-connected": "<span font_family='lucide' rise='-4000' size='large'> </span> {num_connections}",
     "tooltip-format": "{controller_alias}\t{controller_address}",
     "tooltip-format-connected": "{device_enumerate}",
-    "tooltip-format-enumerate-connected": "{device_alias}\t{device_battery_percentage}%",
-    "on-click": "~/.local/bin/rofi-bluetooth-only"
-  },
-  "custom/pacman": {
-    "format": "  {}",
-    "interval": "once",
-    "exec": "checkupdates | wc -l",
-    "on-click": "update-system",
-    "signal": 8,
-    "tooltip-format": "{} updates available"
+    "tooltip-format-enumerate-connected": "{device_alias}\t{device_battery_percentage}%"
   },
   "battery": {
     "format": "<span font_family='lucide' rise='-4000' size='large'>{icon}</span> {capacity}%",
@@ -173,49 +165,14 @@
     },
     "sort-by-number": true
   },
-  "backlight": {
-    "device": "intel_backlight",
-    "format": "{icon}   {percent}%",
-    "format-icons": [
-      "󰃞",
-      "󰃟",
-      "󰃠"
-    ]
-  },
   "custom/weather": {
-    "exec": "WAYBAR_WEATHER_VERBOSE=1 /home/asif/.config/waybar/weather/waybar-weather",
+    "exec": "/home/asif/.config/waybar/weather/waybar-weather",
     "return-type": "json",
     "format": "{}",
     "tooltip": true,
-    "interval": 900
+    "interval": 600
   },
   "tray": {
     "spacing": 8
-  },
-  "power-profiles-daemon": {
-    "format": "{icon}",
-    "tooltip-format": "Power mode: {profile}",
-    "tooltip": true,
-    "format-icons": {
-      "default": "",
-      "performance": "󰠠",
-      "balanced": "󰚀",
-      "power-saver": "󰌪"
-    }
-  },
-  "cpu": {
-    "interval": 10,
-    "format": "    {}%",
-    "max-length": 10
-  },
-  "memory": {
-    "interval": 30,
-    "format": "    {}%",
-    "max-length": 10
-  },
-  "disk": {
-    "interval": 30,
-    "format": "   {percentage_used}% used on {path}",
-    "path": "/"
   }
 }
