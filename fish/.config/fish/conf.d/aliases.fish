@@ -46,32 +46,3 @@ alias usse='systemctl --user enable'
 # transmission-remote
 alias tr='transmission-remote'
 alias tra='transmission-remote -a'
-
-function tradd
-    set -l input $argv[1]
-
-    # If no argument, check clipboard for magnet link
-    if test -z "$input"
-        set input (wl-paste --type text 2>/dev/null | string match -r '^magnet:')
-        if test -z "$input"
-            echo "No torrent file, magnet link, or clipboard magnet found"
-            return 1
-        end
-    end
-
-    # Check if input is a magnet link
-    if string match -qr '^magnet:' "$input"
-        transmission-remote -a "$input"
-    else
-        # Assume it's a file path
-        if test -f "$input"
-            transmission-remote -a "$input"
-        else
-            echo "File not found: $input"
-            return 1
-        end
-    end
-
-    # Open tremc
-    command tremc &
-end
