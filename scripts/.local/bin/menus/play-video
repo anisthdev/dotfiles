@@ -9,4 +9,8 @@ url="$(printf '%s' "$url" | xargs)"
 
 [[ -n "$url" ]] || exit 0
 
-exec mpv -- "$url"
+if [[ "$url" == magnet:* ]]; then
+    exec peerflix --mpv -- "$url"
+else
+    exec mpv -- "$url"
+fi
