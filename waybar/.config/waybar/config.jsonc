@@ -1,6 +1,5 @@
 {
   "layer": "top",
-  "position": "top",
   "reload_style_on_change": true,
   "margin-top": 5,
   "margin-left": 5,
@@ -22,7 +21,6 @@
     "pulseaudio",
     "battery"
   ],
-  "height": 27,
   "mpd": {
     "format": "{stateIcon}    {title} - {artist}",
     "format-disconnected": "Disconnected ",
@@ -106,7 +104,7 @@
   "pulseaudio": {
     "format": "<span font_family='lucide' rise='-4000' size='large'>{icon}</span> {desc} · {volume}%",
     "format-bluetooth": "<span font_family='lucide' rise='-4000' size='large'>{icon}</span> {desc} · {volume}%",
-    "format-muted": " ",
+    "format-muted": "<span font_family='lucide' rise='-4000' size='large'> </span> · Muted",
     "scroll-step": 1,
     "on-click": "~/.local/bin/rofi-audio-switcher sink",
     "on-click-right": "~/.local/bin/rofi-audio-switcher source",
