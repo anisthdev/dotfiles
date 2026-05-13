@@ -10,7 +10,7 @@ dispatch_external_action() {
     screenshot) run_external_cmd "$SCRIPT_DIR/screenshot" ;;
     screenrecord) run_external_cmd "$SCRIPT_DIR/screenrecord" ;;
     nightlight) run_external_cmd "$SCRIPT_DIR/../toggle-nightlight" ;;
-    vpn-indicator) run_external_cmd "$SCRIPT_DIR/vpn-indicator" ;;
+    vpn-indicator) start_vpn_indicator ;;
     *) ;;
   esac
   exit 0
@@ -123,11 +123,20 @@ vpn_toggle_worker() {
 }
 
 ensure_vpn_indicator() {
-  if pgrep -f "$SCRIPT_DIR/vpn-indicator" >/dev/null 2>&1; then
+  if command -v systemctl >/dev/null 2>&1 \
+    && systemctl --user start vpn-indicator.service >/dev/null 2>&1; then
     return 0
   fi
 
-  nohup "$SCRIPT_DIR/vpn-indicator" >/dev/null 2>&1 </dev/null &
+  if pgrep -f "$VPN_INDICATOR" >/dev/null 2>&1; then
+    return 0
+  fi
+
+  nohup "$VPN_INDICATOR" >/dev/null 2>&1 </dev/null &
+}
+
+start_vpn_indicator() {
+  ensure_vpn_indicator
 }
 
 bluetooth_toggle() {
