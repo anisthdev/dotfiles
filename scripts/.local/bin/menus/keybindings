@@ -196,5 +196,5 @@ done
 # Run rofi
 font="'SF Mono 14'"
 printf '%s\n' "${output[@]}" | rofi -dmenu -i -p " " -mesg "Keybindings" \
-  -theme-str "configuration { show-icons: false; } element { children: [ element-text ]; } element-text { font: $font;} window {width: 650px;} inputbar {enabled: true;} entry {placeholder: 'Search...';}" \
+  -theme-str "configuration { show-icons: false; } element { children: [ element-text ]; } element-text { font: $font;} window {width: 650px;} inputbar {enabled: true;} entry {placeholder: \"Search...\";}" \
   -theme "$theme"
