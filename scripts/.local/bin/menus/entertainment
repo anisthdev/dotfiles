@@ -7,7 +7,7 @@ THEME="$SCRIPT_DIR/styles/entertainment.rasi"
 labels=(
     "Play URL"
     "Telegram Media"
-    "Torrent Stream"
+    "Movies"
     "RetroArch NES"
     "Playlists"
 )
@@ -15,7 +15,7 @@ labels=(
 commands=(
     "$SCRIPT_DIR/play-video"
     "$SCRIPT_DIR/telegram-media"
-    "$SCRIPT_DIR/torrent-stream"
+    "$SCRIPT_DIR/movie-search"
     "$SCRIPT_DIR/retroarch-nes"
     "$SCRIPT_DIR/playlist"
 )
@@ -23,7 +23,7 @@ commands=(
 icons=(
     "mpv"
     "telegram"
-    "folder-videos"
+    "video-x-generic"
     "retroarch"
     "playlist"
 )
