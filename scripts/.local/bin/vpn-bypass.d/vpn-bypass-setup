@@ -1,0 +1,190 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+NS="${VPN_BYPASS_NS:-vpn-bypass}"
+HOST_IF="${VPN_BYPASS_HOST_IF:-${NS}-host}"
+NS_IF="${VPN_BYPASS_NS_IF:-${NS}0}"
+HOST_ADDR="${VPN_BYPASS_HOST_ADDR:-10.200.200.1/24}"
+NS_ADDR="${VPN_BYPASS_NS_ADDR:-10.200.200.2/24}"
+NS_IP="${VPN_BYPASS_NS_IP:-10.200.200.2}"
+SUBNET="${VPN_BYPASS_SUBNET:-10.200.200.0/24}"
+TABLE="${VPN_BYPASS_TABLE:-200}"
+RULE_PRIORITY="${VPN_BYPASS_RULE_PRIORITY:-1000}"
+RESOLV_DIR="/etc/netns/$NS"
+RESOLV_CONF="$RESOLV_DIR/resolv.conf"
+NFT_TABLE="${VPN_BYPASS_NFT_TABLE:-vpn_bypass}"
+NFT_CHAIN="${VPN_BYPASS_NFT_CHAIN:-postrouting}"
+ROUTE_WAIT_SECONDS="${VPN_BYPASS_ROUTE_WAIT_SECONDS:-30}"
+
+die() {
+    printf '%s\n' "$*" >&2
+    exit 1
+}
+
+require_root() {
+    [[ "$(id -u)" -eq 0 ]] || die "vpn-bypass-setup must run as root"
+}
+
+require() {
+    command -v "$1" >/dev/null 2>&1 || die "Missing dependency: $1"
+}
+
+default_route() {
+    ip -4 route show default 2>/dev/null | awk '
+        {
+            dev = ""
+            for (i = 1; i <= NF; i++) {
+                if ($i == "dev") {
+                    dev = $(i + 1)
+                    break
+                }
+            }
+            if (dev !~ /^(tun|tap|wg|tailscale|ppp)/) {
+                print
+                exit
+            }
+        }
+    '
+}
+
+wait_for_default_route() {
+    local deadline route
+
+    deadline=$((SECONDS + ROUTE_WAIT_SECONDS))
+    while (( SECONDS <= deadline )); do
+        route="$(default_route)"
+        if [[ -n "$route" ]]; then
+            printf '%s\n' "$route"
+            return 0
+        fi
+        sleep 1
+    done
+
+    return 1
+}
+
+route_field() {
+    local route="$1"
+    local name="$2"
+
+    awk -v name="$name" '
+        {
+            for (i = 1; i <= NF; i++) {
+                if ($i == name) {
+                    print $(i + 1)
+                    exit
+                }
+            }
+        }
+    ' <<<"$route"
+}
+
+have_namespace() {
+    ip netns list | awk -v ns="$NS" '$1 == ns { found = 1 } END { exit(found ? 0 : 1) }'
+}
+
+have_link() {
+    ip link show "$1" >/dev/null 2>&1
+}
+
+have_ns_link() {
+    ip netns exec "$NS" ip link show "$1" >/dev/null 2>&1
+}
+
+ensure_namespace() {
+    have_namespace || ip netns add "$NS"
+}
+
+ensure_veth() {
+    if have_link "$HOST_IF" && have_ns_link "$NS_IF"; then
+        return
+    fi
+
+    if have_link "$HOST_IF"; then
+        ip link delete "$HOST_IF"
+    fi
+
+    ip link add "$HOST_IF" type veth peer name "$NS_IF" netns "$NS"
+}
+
+ensure_addresses() {
+    ip addr replace "$HOST_ADDR" dev "$HOST_IF"
+    ip link set "$HOST_IF" up
+
+    ip netns exec "$NS" ip addr replace "$NS_ADDR" dev "$NS_IF"
+    ip netns exec "$NS" ip link set lo up
+    ip netns exec "$NS" ip link set "$NS_IF" up
+    ip netns exec "$NS" ip route replace default via "${HOST_ADDR%/*}"
+}
+
+ensure_policy_route() {
+    local route="$1"
+    local iface="$2"
+    local gateway="$3"
+
+    if [[ -n "$gateway" ]]; then
+        ip route replace default via "$gateway" dev "$iface" table "$TABLE"
+    else
+        ip route replace default dev "$iface" table "$TABLE"
+    fi
+
+    while ip rule del from "$SUBNET" table "$TABLE" priority "$RULE_PRIORITY" 2>/dev/null; do
+        :
+    done
+    ip rule add from "$SUBNET" table "$TABLE" priority "$RULE_PRIORITY"
+}
+
+ensure_nat() {
+    local iface="$1"
+
+    nft list table ip "$NFT_TABLE" >/dev/null 2>&1 || nft add table ip "$NFT_TABLE"
+    nft list chain ip "$NFT_TABLE" "$NFT_CHAIN" >/dev/null 2>&1 \
+        || nft add chain ip "$NFT_TABLE" "$NFT_CHAIN" '{ type nat hook postrouting priority 100; policy accept; }'
+
+    nft flush chain ip "$NFT_TABLE" "$NFT_CHAIN"
+    nft add rule ip "$NFT_TABLE" "$NFT_CHAIN" ip saddr "$SUBNET" oifname "$iface" masquerade
+}
+
+ensure_dns() {
+    install -d -m 755 "$RESOLV_DIR"
+    cat >"$RESOLV_CONF" <<'EOF'
+nameserver 1.1.1.1
+nameserver 1.0.0.1
+nameserver 2606:4700:4700::1111
+nameserver 2606:4700:4700::1001
+EOF
+}
+
+main() {
+    local route iface gateway
+
+    require_root
+    require ip
+    require nft
+    require sysctl
+
+    route="$(wait_for_default_route || true)"
+    [[ -n "$route" ]] || die "No non-VPN IPv4 default route found"
+
+    iface="$(route_field "$route" dev)"
+    gateway="$(route_field "$route" via)"
+    [[ -n "$iface" ]] || die "Could not determine non-VPN interface"
+
+    sysctl -w net.ipv4.ip_forward=1 >/dev/null
+
+    ensure_namespace
+    ensure_veth
+    ensure_addresses
+    ensure_policy_route "$route" "$iface" "$gateway"
+    ensure_nat "$iface"
+    ensure_dns
+
+    printf 'vpn-bypass namespace ready: %s via %s' "$NS" "$iface"
+    if [[ -n "$gateway" ]]; then
+        printf ' gateway %s' "$gateway"
+    fi
+    printf '\n'
+    ip route get 1.1.1.1 from "$NS_IP" iif "$HOST_IF" | head -n 1
+}
+
+main "$@"

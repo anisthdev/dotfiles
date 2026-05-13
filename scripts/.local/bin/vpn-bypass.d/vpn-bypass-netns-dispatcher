@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+action="${2:-}"
+lock_file="/run/vpn-bypass-netns-dispatcher.lock"
+
+case "$action" in
+    up|dhcp4-change|vpn-up|vpn-down)
+        /usr/bin/flock -n "$lock_file" /usr/bin/bash -c '
+            sleep 2
+            /usr/bin/systemctl reset-failed vpn-bypass-netns.service
+            /usr/bin/systemctl restart vpn-bypass-netns.service
+        ' >/dev/null 2>&1 &
+        ;;
+esac

@@ -1,0 +1,13 @@
+[Unit]
+Description=VPN bypass network namespace
+After=NetworkManager.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/sbin/vpn-bypass-setup
+ExecReload=/usr/local/sbin/vpn-bypass-setup
+
+[Install]
+WantedBy=multi-user.target

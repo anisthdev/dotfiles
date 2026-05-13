@@ -1,0 +1,174 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+SUPPORT_DIR="$SCRIPT_DIR/vpn-bypass.d"
+NS="${VPN_BYPASS_NS:-vpn-bypass}"
+APP_USER="${VPN_BYPASS_USER:-${SUDO_USER:-${USER:-}}}"
+APP_UID="${VPN_BYPASS_UID:-$(id -u 2>/dev/null || printf '1000')}"
+APP_GID="${VPN_BYPASS_GID:-$(id -g 2>/dev/null || printf '1000')}"
+NAMESPACE_RESOLV_CONF="/etc/netns/${NS}/resolv.conf"
+BYPASS_SUBNET="${VPN_BYPASS_SUBNET:-10.200.200.0/24}"
+BYPASS_TABLE="${VPN_BYPASS_TABLE:-200}"
+BYPASS_RULE_PRIORITY="${VPN_BYPASS_RULE_PRIORITY:-1000}"
+
+die() {
+    printf '%s\n' "$*" >&2
+    exit 1
+}
+
+require() {
+    command -v "$1" >/dev/null 2>&1 || die "Missing dependency: $1"
+}
+
+default_route() {
+    ip route show default 2>/dev/null | awk '
+        $0 !~ /dev (tun|tailscale)/ {
+            print
+            exit
+        }
+    '
+}
+
+setup_hints() {
+    local route iface gw
+
+    route="$(default_route)"
+    iface="$(printf '%s\n' "$route" | awk '
+        {
+            for (i = 1; i <= NF; i++) {
+                if ($i == "dev") {
+                    print $(i + 1)
+                    exit
+                }
+            }
+        }
+    ')"
+    gw="$(printf '%s\n' "$route" | awk '
+        {
+            for (i = 1; i <= NF; i++) {
+                if ($i == "via") {
+                    print $(i + 1)
+                    exit
+                }
+            }
+        }
+    ')"
+
+    [[ -n "$iface" ]] || iface="wlan0"
+    [[ -n "$gw" ]] || gw="192.168.29.1"
+
+    cat <<SETUP_HINTS
+Install the persistent setup service as root:
+
+sudo install -m 755 "$SUPPORT_DIR/vpn-bypass-setup" /usr/local/sbin/vpn-bypass-setup
+sudo install -m 644 "$SUPPORT_DIR/vpn-bypass-netns.service" /etc/systemd/system/vpn-bypass-netns.service
+sudo install -m 755 "$SUPPORT_DIR/vpn-bypass-netns-dispatcher" /etc/NetworkManager/dispatcher.d/90-vpn-bypass-netns
+sudo systemctl daemon-reload
+sudo systemctl enable --now vpn-bypass-netns.service
+
+Host route currently points to:
+  iface: $iface
+  gateway: $gw
+SETUP_HINTS
+}
+
+have_namespace() {
+    ip netns list 2>/dev/null | awk -v ns="$NS" '$1 == ns { found = 1 } END { exit(found ? 0 : 1) }'
+}
+
+namespace_exec() {
+    local -a cmd=("$@")
+    local -a sudo_args
+
+    if [[ -z "$APP_USER" ]]; then
+        die "Could not determine the app user"
+    fi
+
+    sudo_args=(
+        sudo -n
+        --preserve-env=HOME,PATH,DISPLAY,WAYLAND_DISPLAY,XDG_RUNTIME_DIR,DBUS_SESSION_BUS_ADDRESS
+        /usr/bin/ip netns exec "$NS"
+        /usr/bin/setpriv
+        --reuid="$APP_UID"
+        --regid="$APP_GID"
+        --clear-groups
+        --inh-caps=-all
+        --ambient-caps=-all
+        --
+    )
+
+    exec "${sudo_args[@]}" "${cmd[@]}"
+}
+
+run_in_namespace() {
+    if ! have_namespace; then
+        setup_hints >&2
+        exit 1
+    fi
+
+    if [[ $# -eq 0 ]]; then
+        die "Usage: vpn-bypass [--help|status|setup-hints|-- <command...>|<command...>]"
+    fi
+
+    namespace_exec "$@"
+}
+
+status() {
+    printf 'namespace: %s\n' "$NS"
+    if have_namespace; then
+        printf 'state: present\n'
+        if [[ -r "$NAMESPACE_RESOLV_CONF" ]]; then
+            printf 'ns resolv.conf: present\n'
+        else
+            printf 'ns resolv.conf: missing\n'
+        fi
+        printf 'ns default route: '
+        if sudo -n /usr/bin/ip netns exec "$NS" /usr/bin/ip route show default 2>/dev/null; then
+            :
+        else
+            printf '%s\n' "unavailable (need passwordless sudo for namespace access)"
+        fi
+        printf 'host bypass route: '
+        ip route get 1.1.1.1 from 10.200.200.2 iif "${NS}-host" 2>/dev/null | head -n 1 || printf 'unavailable\n'
+    else
+        printf 'state: missing\n'
+    fi
+
+    printf 'host default route: '
+    default_route || true
+}
+
+main() {
+    require ip
+
+    case "${1:-}" in
+        --help|-h)
+            cat <<EOF
+Usage:
+  vpn-bypass status
+  vpn-bypass setup-hints
+  vpn-bypass -- <command...>
+  vpn-bypass <command...>
+EOF
+            ;;
+        status)
+            status
+            ;;
+        setup-hints)
+            setup_hints
+            ;;
+        --)
+            shift
+            run_in_namespace "$@"
+            ;;
+        "")
+            die "Usage: vpn-bypass status|setup-hints|-- <command...>|<command...>"
+            ;;
+        *)
+            run_in_namespace "$@"
+            ;;
+    esac
+}
+
+main "$@"
