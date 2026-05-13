@@ -1,0 +1,25 @@
+@import "common-menu.rasi"
+
+configuration {
+  show-icons: false;
+}
+
+window {
+  width: 1080px;
+}
+
+listview {
+  lines: 10;
+}
+
+entry {
+  placeholder: "Search movies...";
+}
+
+element {
+  children: [ element-text ];
+}
+
+element-text {
+  font: "SF Mono Bold 13";
+}
