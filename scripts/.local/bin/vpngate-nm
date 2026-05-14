@@ -1,0 +1,628 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import base64
+import os
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
+import time
+import urllib.error
+import urllib.request
+from urllib.parse import urljoin
+from dataclasses import dataclass
+from pathlib import Path
+
+from bs4 import BeautifulSoup
+
+API_URL = os.environ.get("VPN_GATE_API_URL", "https://www.vpngate.net/api/iphone/")
+PROFILE_PREFIX = os.environ.get("VPN_GATE_PROFILE_PREFIX", "VPN Gate - ")
+FETCH_TIMEOUT = int(os.environ.get("VPN_GATE_FETCH_TIMEOUT", "20"))
+OPENVPN_TIMEOUT = int(os.environ.get("VPN_GATE_OPENVPN_TIMEOUT", "90"))
+OPENVPN_USE_SUDO = os.environ.get("VPN_GATE_OPENVPN_SUDO", "").lower() in {"1", "true", "yes", "on"}
+DEBUG = os.environ.get("VPN_GATE_DEBUG", "").lower() in {"1", "true", "yes", "on"}
+
+
+@dataclass(frozen=True)
+class CountryRow:
+    country_long: str
+    country_short: str
+    count: int
+
+
+@dataclass(frozen=True)
+class ServerRow:
+    country_long: str
+    country_short: str
+    host: str
+    ip: str
+    score: int
+    ping: int
+    speed: float
+    sessions: int
+    uptime: int
+    total_users: int
+    total_traffic: str
+    log_type: str
+    config_ref: str
+
+
+def die(message: str, code: int = 1):
+    print(message, file=sys.stderr)
+    raise SystemExit(code)
+
+
+def debug(message: str) -> None:
+    if DEBUG:
+        print(f"[debug] {message}", file=sys.stderr)
+
+
+def require(cmd: str) -> None:
+    if shutil.which(cmd) is None:
+        die(f"Missing dependency: {cmd}")
+
+
+def run(cmd: list[str], *, input_text: str | None = None) -> subprocess.CompletedProcess[str]:
+    try:
+        return subprocess.run(
+            cmd,
+            input=input_text,
+            text=True,
+            capture_output=True,
+            check=True,
+        )
+    except subprocess.CalledProcessError as exc:
+        stderr = (exc.stderr or exc.stdout or "").strip()
+        if stderr:
+            die(stderr)
+        die(f"Command failed: {' '.join(cmd)}")
+
+
+def fetch_api_text() -> str:
+    print("Fetching VPN Gate API...", file=sys.stderr)
+    try:
+        with urllib.request.urlopen(API_URL, timeout=FETCH_TIMEOUT) as response:
+            return response.read().decode("utf-8", "replace")
+    except (urllib.error.URLError, TimeoutError, OSError) as exc:
+        die(f"Failed to fetch VPN Gate API: {exc}")
+
+
+def parse_api_rows(text: str) -> list[ServerRow]:
+    rows: list[ServerRow] = []
+
+    for line in text.splitlines():
+        if not line or line.startswith("*") or line.startswith("#"):
+            continue
+
+        row = line.split(",", 14)
+        if len(row) < 15:
+            continue
+
+        try:
+            rows.append(
+                ServerRow(
+                    country_long=row[5],
+                    country_short=row[6],
+                    host=row[0],
+                    ip=row[1],
+                    score=int(row[2]),
+                    ping=int(row[3]),
+                    speed=float(row[4]),
+                    sessions=int(row[7]),
+                    uptime=int(row[8]),
+                    total_users=int(row[9]),
+                    total_traffic=row[10],
+                    log_type=row[11],
+                    config_ref=row[14],
+                )
+            )
+        except ValueError:
+            continue
+
+    if not rows:
+        die("VPN Gate API returned no usable rows")
+
+    return rows
+
+
+def build_countries(rows: list[ServerRow]) -> list[CountryRow]:
+    counts: dict[tuple[str, str], int] = {}
+    for row in rows:
+        key = (row.country_long, row.country_short)
+        counts[key] = counts.get(key, 0) + 1
+
+    countries = [
+        CountryRow(country_long=country_long, country_short=country_short, count=count)
+        for (country_long, country_short), count in counts.items()
+    ]
+    countries.sort(key=lambda c: (c.country_long.lower(), c.country_short.lower()))
+    return countries
+
+
+def render_country_lines(countries: list[CountryRow]) -> list[str]:
+    lines: list[str] = []
+    for country in countries:
+        raw = f"{country.country_long}\t{country.country_short}\t{country.count}"
+        display = f"{country.country_long:<28} {country.country_short:<8} {country.count:>7}"
+        lines.append(f"{raw}\t{display}")
+    return lines
+
+
+def format_speed(value: float) -> str:
+    speed_mbps = float(value) / 1_000_000.0
+    return f"{speed_mbps:.2f} Mbps"
+
+
+def format_uptime(value: int) -> str:
+    if value <= 0:
+        return "0m"
+    seconds = int(value) // 1_000
+    days, rem = divmod(seconds, 24 * 3600)
+    hours, rem = divmod(rem, 3600)
+    minutes, _ = divmod(rem, 60)
+    if days:
+        return f"{days}d{hours:02d}h"
+    if hours:
+        return f"{hours}h"
+    return f"{minutes}m"
+
+
+def render_server_lines(rows: list[ServerRow]) -> list[str]:
+    lines: list[str] = []
+    for row in rows:
+        raw = (
+            f"{row.country_long}\t{row.country_short}\t{row.host}\t{row.ip}\t"
+            f"{row.score}\t{row.ping}\t{row.speed}\t{row.sessions}\t"
+            f"{row.uptime}\t{row.total_users}\t{row.total_traffic}\t"
+            f"{row.log_type}\t{row.config_ref}"
+        )
+        display = (
+            f"{row.host:<18} "
+            f"{row.ip:<15} "
+            f"{row.score:>8} "
+            f"{row.ping:>6} "
+            f"{format_speed(row.speed):>12} "
+            f"{row.sessions:>8} "
+            f"{format_uptime(row.uptime):>9} "
+            f"{row.total_users:>9}"
+        )
+        lines.append(f"{raw}\t{display}")
+    return lines
+
+
+def render_server_header() -> str:
+    return (
+        f"{'HOST':<18} "
+        f"{'IP':<15} "
+        f"{'SCORE':>8} "
+        f"{'PING':>6} "
+        f"{'SPEED':>12} "
+        f"{'SESS':>8} "
+        f"{'UPTIME':>9} "
+        f"{'USERS':>9}"
+    )
+
+
+def fzf_select(lines: list[str], prompt: str, header: str, nth: str) -> str:
+    if not sys.stdin.isatty() or not sys.stdout.isatty():
+        die("Interactive selection requires a TTY session")
+    if shutil.which("fzf") is None:
+        die("Missing dependency: fzf")
+
+    env = os.environ.copy()
+    env["FZF_DEFAULT_OPTS"] = ""
+    proc = subprocess.run(
+        [
+            "fzf",
+            "--prompt",
+            prompt,
+            "--height=40%",
+            "--layout=reverse",
+            "--header",
+            header,
+            "--delimiter=\t",
+            f"--with-nth={nth}",
+        ],
+        input="\n".join(lines) + "\n",
+        text=True,
+        capture_output=True,
+        env=env,
+    )
+    if proc.returncode != 0:
+        raise SystemExit(proc.returncode)
+    return proc.stdout.rstrip("\n")
+
+
+def parse_selected_country(line: str) -> CountryRow:
+    parts = line.split("\t")
+    if len(parts) < 3:
+        die("Could not parse selected country row")
+    try:
+        return CountryRow(parts[0], parts[1], int(parts[2]))
+    except ValueError:
+        die("Could not parse selected country row")
+
+
+def parse_selected_server(line: str) -> ServerRow:
+    parts = line.split("\t")
+    if len(parts) < 13:
+        die("Selected VPN Gate row was incomplete")
+    try:
+        return ServerRow(
+            country_long=parts[0],
+            country_short=parts[1],
+            host=parts[2],
+            ip=parts[3],
+            score=int(parts[4]),
+            ping=int(parts[5]),
+            speed=float(parts[6]),
+            sessions=int(parts[7]),
+            uptime=int(parts[8]),
+            total_users=int(parts[9]),
+            total_traffic=parts[10],
+            log_type=parts[11],
+            config_ref=parts[12],
+        )
+    except ValueError:
+        die("Selected VPN Gate row was incomplete")
+
+
+def resolve_country(countries: list[CountryRow], hint: str | None) -> CountryRow:
+    if hint:
+        q = hint.lower()
+        matches = [
+            country
+            for country in countries
+            if q in country.country_long.lower() or q in country.country_short.lower()
+        ]
+        if not matches:
+            die(f"No VPN Gate countries matched: {hint}")
+        if len(matches) == 1:
+            return matches[0]
+        selected = fzf_select(
+            render_country_lines(matches),
+            "Country> ",
+            "COUNTRY                      CODE      SERVERS",
+            "4,5,6",
+        )
+        return parse_selected_country(selected)
+
+    selected = fzf_select(
+        render_country_lines(countries),
+        "Country> ",
+        "COUNTRY                      CODE      SERVERS",
+        "4,5,6",
+    )
+    return parse_selected_country(selected)
+
+
+def resolve_server(rows: list[ServerRow], country: CountryRow) -> ServerRow:
+    matches = [
+        row
+        for row in rows
+        if row.country_long.lower() == country.country_long.lower()
+        or row.country_short.lower() == country.country_short.lower()
+    ]
+    if not matches:
+        die(f"No VPN Gate servers matched: {country.country_long}")
+    matches.sort(key=lambda r: (-r.score, r.ping, r.host.lower()))
+    selected = fzf_select(
+        render_server_lines(matches),
+        f"Server for {country.country_long}> ",
+        render_server_header(),
+        "14,15,16,17,18,19,20,21",
+    )
+    return parse_selected_server(selected)
+
+
+def patch_ovpn(ovpn_path: Path) -> bool:
+    original = ovpn_path.read_text(encoding="utf-8", errors="replace").splitlines()
+    if any(line.startswith("data-ciphers ") for line in original):
+        return False
+
+    patched: list[str] = []
+    inserted = False
+    for line in original:
+        patched.append(line)
+        if line.strip() == "cipher AES-128-CBC" and not inserted:
+            patched.append("data-ciphers AES-128-CBC:DEFAULT")
+            patched.append("data-ciphers-fallback AES-128-CBC")
+            inserted = True
+
+    if inserted:
+        ovpn_path.write_text("\n".join(patched) + "\n", encoding="utf-8")
+    return inserted
+
+
+def fetch_text(url: str) -> str:
+    with urllib.request.urlopen(url, timeout=FETCH_TIMEOUT) as response:
+        return response.read().decode("utf-8", "replace")
+
+
+def load_ovpn_text(server: ServerRow) -> str:
+    ref = server.config_ref.strip()
+    if ref.startswith("http://") or ref.startswith("https://") or ref.startswith("/"):
+        try:
+            return fetch_text(ref if ref.startswith("http") else urljoin(WEB_URL, ref))
+        except (urllib.error.URLError, TimeoutError, OSError):
+            pass
+
+    try:
+        return base64.b64decode(ref).decode("utf-8", "replace")
+    except Exception:
+        pass
+
+    api_rows = parse_api_rows(fetch_api_text())
+    for row in api_rows:
+        if row.host == server.host and row.ip == server.ip:
+            try:
+                return base64.b64decode(row.config_ref).decode("utf-8", "replace")
+            except Exception:
+                break
+
+    die(f"Could not load OpenVPN config for {server.host}")
+
+
+def build_openvpn_command(ovpn_path: Path, auth_path: Path, log_path: Path) -> list[str]:
+    cmd = [
+        "openvpn",
+        "--config",
+        str(ovpn_path),
+        "--auth-user-pass",
+        str(auth_path),
+        "--verb",
+        "4",
+        "--log",
+        str(log_path),
+    ]
+    if OPENVPN_USE_SUDO:
+        require("sudo")
+        return ["sudo", *cmd]
+    return cmd
+
+
+def read_log_tail(log_path: Path, limit: int = 40) -> str:
+    if not log_path.exists():
+        return ""
+    try:
+        text = log_path.read_text(encoding="utf-8", errors="replace")
+    except PermissionError:
+        if not OPENVPN_USE_SUDO or shutil.which("sudo") is None:
+            raise
+        proc = subprocess.run(
+            ["sudo", "cat", str(log_path)],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        text = proc.stdout if proc.returncode == 0 else ""
+    lines = [line for line in text.splitlines() if line.strip()]
+    return "\n".join(lines[-limit:])
+
+
+def print_log_tail(log_path: Path, limit: int = 40) -> None:
+    tail = read_log_tail(log_path, limit)
+    if tail:
+        print(tail)
+
+
+def test_profile(server: ServerRow) -> None:
+    tempdir = Path(tempfile.mkdtemp(prefix="vpngate-nm-"))
+    profile_name = f"{PROFILE_PREFIX}{server.country_long}"
+    success = False
+    proc: subprocess.Popen[str] | None = None
+    stderr_path = tempdir / "openvpn-wrapper.stderr"
+
+    try:
+        ovpn_path = tempdir / f"{server.host}.ovpn"
+        auth_path = tempdir / "auth.txt"
+        log_path = tempdir / "openvpn.log"
+
+        ovpn_path.write_text(load_ovpn_text(server), encoding="utf-8")
+        patched = patch_ovpn(ovpn_path)
+        auth_path.write_text("vpn\nvpn\n", encoding="utf-8")
+        os.chmod(auth_path, 0o600)
+
+        cmd = build_openvpn_command(ovpn_path, auth_path, log_path)
+        with stderr_path.open("w", encoding="utf-8") as stderr_file:
+            proc = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=stderr_file, text=True)
+
+        deadline = time.monotonic() + OPENVPN_TIMEOUT
+        failure_markers = (
+            "AUTH_FAILED",
+            "TLS Error",
+            "Fatal error",
+            "Exiting due to fatal error",
+            "Connection reset, restarting",
+            "Inactivity timeout",
+            "SIGTERM[hard,",
+            "Cannot ioctl",
+            "Could not determine IPv4/IPv6",
+            "data-ciphers",
+        )
+
+        while time.monotonic() < deadline:
+            tail = read_log_tail(log_path)
+            if "Initialization Sequence Completed" in tail:
+                success = True
+                break
+            if any(marker in tail for marker in failure_markers):
+                break
+            if proc.poll() is not None:
+                break
+            time.sleep(1)
+
+        if proc.poll() is None:
+            proc.terminate()
+            try:
+                proc.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+                proc.wait(timeout=5)
+
+        tail = read_log_tail(log_path)
+        stderr_tail = ""
+        if stderr_path.exists():
+            stderr_tail = stderr_path.read_text(encoding="utf-8", errors="replace").strip()
+
+        if success or "Initialization Sequence Completed" in tail:
+            print(f"OpenVPN test succeeded: {profile_name}")
+            print(f"Server: {server.host} ({server.ip})")
+            if patched:
+                print("Applied OpenVPN 2.7 cipher compatibility patch")
+            return
+
+        print(f"OpenVPN test failed: {profile_name}", file=sys.stderr)
+        if tail:
+            print(tail, file=sys.stderr)
+        elif stderr_tail:
+            print(stderr_tail, file=sys.stderr)
+        else:
+            print("No OpenVPN log was written.", file=sys.stderr)
+            if OPENVPN_USE_SUDO:
+                print(
+                    "OpenVPN was launched through sudo; if sudo requires a password, the test cannot proceed non-interactively.",
+                    file=sys.stderr,
+                )
+        raise SystemExit(proc.returncode or 1 if proc else 1)
+    finally:
+        shutil.rmtree(tempdir, ignore_errors=True)
+
+
+def nmcli_uuids() -> set[str]:
+    proc = run(["nmcli", "-t", "-f", "UUID", "connection", "show"])
+    return {line.strip() for line in proc.stdout.splitlines() if line.strip()}
+
+
+def nmcli_uuids_by_name(name: str) -> list[str]:
+    proc = run(["nmcli", "-t", "-f", "UUID,NAME", "connection", "show"])
+    uuids: list[str] = []
+    for line in proc.stdout.splitlines():
+        if not line.strip():
+            continue
+        uuid, _, conn_name = line.partition(":")
+        if conn_name == name:
+            uuids.append(uuid)
+    return uuids
+
+
+def nmcli_import_openvpn(path: Path) -> None:
+    run(["nmcli", "connection", "import", "type", "openvpn", "file", str(path)])
+
+
+def nmcli_rename(uuid: str, name: str) -> None:
+    run(["nmcli", "connection", "modify", "uuid", uuid, "connection.id", name])
+
+
+def nmcli_delete(uuid: str) -> None:
+    run(["nmcli", "connection", "delete", "uuid", uuid])
+
+
+def import_profile(server: ServerRow) -> None:
+    tempdir = Path(tempfile.mkdtemp(prefix="vpngate-nm-"))
+    old_uuids = nmcli_uuids_by_name(f"{PROFILE_PREFIX}{server.country_long}")
+    new_uuid: str | None = None
+    profile_name = f"{PROFILE_PREFIX}{server.country_long}"
+
+    try:
+        ovpn_path = tempdir / f"{server.host}.ovpn"
+        ovpn_path.write_text(load_ovpn_text(server), encoding="utf-8")
+        patch_ovpn(ovpn_path)
+
+        before = nmcli_uuids()
+        nmcli_import_openvpn(ovpn_path)
+        after = nmcli_uuids()
+        created = list(after - before)
+        if created:
+            new_uuid = created[0]
+        else:
+            proc = run(["nmcli", "-t", "-f", "UUID,NAME", "connection", "show"])
+            for line in proc.stdout.splitlines():
+                uuid, _, conn_name = line.partition(":")
+                if conn_name == profile_name:
+                    new_uuid = uuid
+                    break
+
+        if not new_uuid:
+            die("Imported profile but could not identify its UUID")
+
+        try:
+            nmcli_rename(new_uuid, profile_name)
+        except subprocess.CalledProcessError:
+            for uuid in old_uuids:
+                nmcli_delete(uuid)
+            nmcli_rename(new_uuid, profile_name)
+
+        for uuid in old_uuids:
+            if uuid != new_uuid:
+                nmcli_delete(uuid)
+
+        print(f"Imported profile: {profile_name}")
+        print(f"Server: {server.host} ({server.ip})")
+        print(f"Connection UUID: {new_uuid}")
+    finally:
+        shutil.rmtree(tempdir, ignore_errors=True)
+
+
+def print_country_list(countries: list[CountryRow]) -> None:
+    for line in render_country_lines(countries):
+        print(line.rsplit("\t", 1)[1])
+
+
+def print_server_list(rows: list[ServerRow], hint: str | None = None) -> None:
+    if hint:
+        q = hint.lower()
+        rows = [
+            row
+            for row in rows
+            if q in row.country_long.lower() or q in row.country_short.lower()
+    ]
+    rows = sorted(rows, key=lambda r: (-r.score, r.ping, r.host.lower()))
+    for line in render_server_lines(rows):
+        print(line.rsplit("\t", 1)[1])
+
+
+def main(argv: list[str]) -> int:
+    require("fzf")
+
+    mode = argv[1] if len(argv) > 1 else ""
+    arg = argv[2] if len(argv) > 2 else None
+    selector_hint = arg if mode in {"list", "test"} else (mode or None)
+
+    rows = parse_api_rows(fetch_api_text())
+    countries = build_countries(rows)
+
+    if mode == "--help" or mode == "-h" or mode == "help":
+        print(
+            "Usage:\n"
+            "  vpngate-nm [COUNTRY]\n"
+            "  vpngate-nm list\n"
+            "  vpngate-nm list [COUNTRY]\n"
+            "  vpngate-nm test [COUNTRY]\n"
+        )
+        return 0
+
+    if mode == "list":
+        if arg:
+            print_server_list(rows, arg)
+        else:
+            print_country_list(countries)
+        return 0
+
+    country = resolve_country(countries, selector_hint)
+    server = resolve_server(rows, country)
+
+    if mode == "test":
+        require("openvpn")
+        test_profile(server)
+        return 0
+
+    require("nmcli")
+    import_profile(server)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main(sys.argv))
