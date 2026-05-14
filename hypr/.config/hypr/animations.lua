@@ -1,0 +1,23 @@
+hl.curve("linear", { type = "bezier", points = { { 1, 1 }, { 1, 1 } } })
+hl.curve("spring", { type = "bezier", points = { { 0.05, 0.9 }, { 0.1, 1.05 } } })
+hl.curve("bouncy", { type = "bezier", points = { { 0.68, -0.6 }, { 0.27, 1.4 } } })
+hl.curve("whip", { type = "bezier", points = { { 0.22, 1 }, { 0.36, 1.1 } } })
+hl.curve("overshoot", { type = "bezier", points = { { 0.34, 1.56 }, { 0.64, 1.0 } } })
+
+-- example spring curve
+hl.curve("easy", { type = "spring", mass = 1, stiffness = 71.2633, dampening = 15.8273644 })
+
+hl.animation({ leaf = "windowsIn", enabled = true, speed = 6.0, bezier = "whip", style = "slide" })
+hl.animation({ leaf = "windowsOut", enabled = true, speed = 6.0, bezier = "whip", style = "slide" })
+hl.animation({ leaf = "windowsMove", enabled = true, speed = 6.0, spring = "easy", style = "slide" })
+hl.animation({ leaf = "fade", enabled = true, speed = 4.0, bezier = "spring" })
+hl.animation({ leaf = "fadePopups", enabled = true, speed = 2.0, bezier = "spring" })
+hl.animation({ leaf = "fadePopupsIn", enabled = true, speed = 2.0, bezier = "spring" })
+hl.animation({ leaf = "fadePopupsOut", enabled = false, speed = 2.0, bezier = "spring" })
+hl.animation({ leaf = "layersIn", enabled = true, speed = 4.0, bezier = "whip", style = "slide" })
+hl.animation({ leaf = "layersOut", enabled = true, speed = 4.0, bezier = "whip", style = "slide" })
+hl.animation({ leaf = "fadeLayersIn", enabled = true, speed = 3.5, bezier = "bouncy" })
+hl.animation({ leaf = "fadeLayersOut", enabled = true, speed = 3.5, bezier = "bouncy" })
+hl.animation({ leaf = "workspaces", enabled = true, speed = 4.5, bezier = "whip", style = "slidevert" })
+hl.animation({ leaf = "specialWorkspace", enabled = true, speed = 5.0, bezier = "whip", style = "slidevert 70%" })
+hl.animation({ leaf = "zoomFactor", enabled = true, speed = 7, bezier = "whip" })

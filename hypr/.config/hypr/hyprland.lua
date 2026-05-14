@@ -1,0 +1,7 @@
+require("autostart")
+require("monitors")
+require("bindings")
+require("looknfeel")
+require("input")
+require("windows")
+require("animations")
