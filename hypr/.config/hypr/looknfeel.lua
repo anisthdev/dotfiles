@@ -40,7 +40,7 @@ hl.config({
 })
 
 -- blur for waybar, rofi and mako
-hl.layer_rule({ match = { namespace = "waybar|rofi|mako" }, blur = true, ignore_alpha = 0.2 })
+hl.layer_rule({ match = { namespace = "waybar|rofi|notifications" }, blur = true, ignore_alpha = 0.2 })
 
 -- no animation for these layers, since they are used for popups and selection and stuff
 hl.layer_rule({ match = { namespace = "glint|selection|hyprpicker" }, no_anim = true })
