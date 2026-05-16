@@ -80,7 +80,13 @@ cleanup() {
   hide_vpn_tray
 }
 
-trap cleanup EXIT INT TERM
+stop_indicator() {
+  cleanup
+  exit 0
+}
+
+trap cleanup EXIT
+trap stop_indicator INT TERM
 
 if ! command -v nmcli >/dev/null 2>&1; then
   exit 0
@@ -92,9 +98,6 @@ fi
 
 refresh_indicator
 
-while true; do
-  while IFS= read -r _; do
-    refresh_indicator
-  done < <(nmcli monitor 2>/dev/null)
-  sleep 2
-done
+while IFS= read -r _; do
+  refresh_indicator
+done < <(nmcli monitor 2>/dev/null)
