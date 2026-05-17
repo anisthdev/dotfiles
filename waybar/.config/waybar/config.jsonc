@@ -81,6 +81,7 @@
     "format": "<span font_family='lucide' rise='-4000' size='large'> </span> {num_connections}",
     "format-disabled": " ",
     "format-connected": "<span font_family='lucide' rise='-4000' size='large'> </span> {num_connections}",
+    "on-click": "~/.local/bin/menus/control-panel-script --page bluetooth",
     "tooltip-format": "{controller_alias}\t{controller_address}",
     "tooltip-format-connected": "{device_enumerate}",
     "tooltip-format-enumerate-connected": "{device_alias}\t{device_battery_percentage}%"
@@ -106,8 +107,8 @@
     "format-bluetooth": "<span font_family='lucide' rise='-4000' size='large'>{icon}</span> {desc} · {volume}%",
     "format-muted": "<span font_family='lucide' rise='-4000' size='large'> </span> · Muted",
     "scroll-step": 1,
-    "on-click": "~/.local/bin/rofi-audio-switcher sink",
-    "on-click-right": "~/.local/bin/rofi-audio-switcher source",
+    "on-click": "~/.local/bin/menus/control-panel-script --page audio-outputs",
+    "on-click-right": "~/.local/bin/menus/control-panel-script --page audio-inputs",
     "ignored-sinks": [
       "Easy Effects Sink"
     ],
@@ -137,7 +138,7 @@
       " "
     ],
     "tooltip-format": "Connected to {essid}",
-    "on-click": "~/.local/bin/rofi-wifi-only"
+    "on-click": "~/.local/bin/menus/control-panel-script --page wifi"
   },
   "hyprland/workspaces": {
     "format": "{icon}",
