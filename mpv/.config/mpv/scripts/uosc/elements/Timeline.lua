@@ -253,20 +253,65 @@ function Timeline:render()
 		return time <= state.time and x or x + line_width
 	end
 
+	local chapter_gap_width = math.max(1, round(2 * state.scale))
+	local chapter_gaps = {}
+	if state.chapters then
+		local half_gap = chapter_gap_width / 2
+		for _, chapter in ipairs(state.chapters) do
+			if chapter.time > 0.1 and chapter.time < state.duration - 0.1 then
+				local chapter_x = t2x(chapter.time)
+				local gap_ax = clamp(bax, chapter_x - half_gap, bbx)
+				local gap_bx = clamp(bax, chapter_x + half_gap, bbx)
+				if gap_bx > gap_ax then chapter_gaps[#chapter_gaps + 1] = {ax = gap_ax, bx = gap_bx} end
+			end
+		end
+		table.sort(chapter_gaps, function(a, b) return a.ax < b.ax end)
+		for i = #chapter_gaps, 2, -1 do
+			local previous, current = chapter_gaps[i - 1], chapter_gaps[i]
+			if current.ax <= previous.bx then
+				previous.bx = math.max(previous.bx, current.bx)
+				table.remove(chapter_gaps, i)
+			end
+		end
+	end
+
+	local function draw_segmented_rect(ax, ay, bx, by, opts)
+		if bx <= ax or by <= ay then return end
+		local segment_ax = ax
+		for _, gap in ipairs(chapter_gaps) do
+			local gap_ax = clamp(ax, gap.ax, bx)
+			local gap_bx = clamp(ax, gap.bx, bx)
+			if gap_bx > segment_ax then
+				if gap_ax > segment_ax then ass:rect(segment_ax, ay, gap_ax, by, opts) end
+				segment_ax = gap_bx
+			end
+		end
+		if bx > segment_ax then ass:rect(segment_ax, ay, bx, by, opts) end
+	end
+
+	local function draw_segmented_texture(ax, ay, bx, by, char, opts)
+		if bx <= ax or by <= ay then return end
+		local segment_ax = ax
+		for _, gap in ipairs(chapter_gaps) do
+			local gap_ax = clamp(ax, gap.ax, bx)
+			local gap_bx = clamp(ax, gap.bx, bx)
+			if gap_bx > segment_ax then
+				if gap_ax > segment_ax then ass:texture(segment_ax, ay, gap_ax, by, char, opts) end
+				segment_ax = gap_bx
+			end
+		end
+		if bx > segment_ax then ass:texture(segment_ax, ay, bx, by, char, opts) end
+	end
+
 	-- Background
-	ass:new_event()
-	ass:pos(0, 0)
-	ass:append('{\\rDefault\\an7\\blur0\\bord0\\1c&H' .. bg .. '}')
-	ass:opacity(config.opacity.timeline)
-	ass:draw_start()
-	ass:rect_cw(bax, bay, fax, bby) --left of progress
-	ass:rect_cw(fbx, bay, bbx, bby) --right of progress
-	ass:rect_cw(fax, bay, fbx, fay) --above progress
-	ass:draw_stop()
+	local background_opts = {color = bg, opacity = config.opacity.timeline}
+	draw_segmented_rect(bax, bay, fax, bby, background_opts) --left of progress
+	draw_segmented_rect(fbx, bay, bbx, bby, background_opts) --right of progress
+	draw_segmented_rect(fax, bay, fbx, fay, background_opts) --above progress
 
 	-- Progress
 	local function draw_progress()
-		ass:rect(fax, fay, fbx, fby, {opacity = config.opacity.position})
+		draw_segmented_rect(fax, fay, fbx, fby, {opacity = config.opacity.position})
 	end
 
 	-- Youtube heatmap
@@ -302,9 +347,9 @@ function Timeline:render()
 				local ax = range[1] < 0.5 and bax or math.floor(t2x(range[1]))
 				local bx = range[2] > state.duration - 0.5 and bbx or math.ceil(t2x(range[2]))
 				opts.color, opts.opacity, opts.anchor_x = 'ffffff', 0.4 - (0.2 * visibility), bax
-				ass:texture(ax, fay, bx, fby, texture_char, opts)
+				draw_segmented_texture(ax, fay, bx, fby, texture_char, opts)
 				opts.color, opts.opacity, opts.anchor_x = '000000', 0.6 - (0.2 * visibility), bax + offset
-				ass:texture(ax, fay, bx, fby, texture_char, opts)
+				draw_segmented_texture(ax, fay, bx, fby, texture_char, opts)
 			end
 		end
 	end
@@ -314,7 +359,7 @@ function Timeline:render()
 		local rax = chapter_range.start < 0.1 and bax or t2x(chapter_range.start)
 		local rbx = chapter_range['end'] > state.duration - 0.1 and bbx
 			or t2x(math.min(chapter_range['end'], state.duration))
-		ass:rect(rax, fay, rbx, fby, {color = chapter_range.color, opacity = chapter_range.opacity})
+		draw_segmented_rect(rax, fay, rbx, fby, {color = chapter_range.color, opacity = chapter_range.opacity})
 	end
 
 	-- Chapters
@@ -325,21 +370,6 @@ function Timeline:render()
 		local diamond_border = options.timeline_border and math.max(options.timeline_border, 1) or 1
 
 		if diamond_radius > 0 then
-			local function draw_chapter(time, radius)
-				local chapter_x, chapter_y = t2x(time), fay - 1
-				ass:new_event()
-				ass:append(string.format(
-					'{\\pos(0,0)\\rDefault\\an7\\blur0\\yshad0.01\\bord%f\\1c&H%s\\3c&H%s\\4c&H%s\\1a&H%X&\\3a&H00&\\4a&H00&}',
-					diamond_border, fg, bg, bg, opacity_to_alpha(config.opacity.chapters)
-				))
-				ass:draw_start()
-				ass:move_to(chapter_x - radius, chapter_y)
-				ass:line_to(chapter_x, chapter_y - radius)
-				ass:line_to(chapter_x + radius, chapter_y)
-				ass:line_to(chapter_x, chapter_y + radius)
-				ass:draw_stop()
-			end
-
 			if #state.chapters > 0 then
 				-- Find hovered chapter indicator
 				local closest_delta = math.huge
@@ -356,7 +386,6 @@ function Timeline:render()
 				end
 
 				for i, chapter in ipairs(state.chapters) do
-					if chapter ~= hovered_chapter then draw_chapter(chapter.time, diamond_radius) end
 					local circle = {point = {x = t2x(chapter.time), y = fay - 1}, r = diamond_radius_hovered}
 					if visibility > 0 and chapter == hovered_chapter then
 						cursor:zone('primary_down', circle, function()
@@ -367,10 +396,9 @@ function Timeline:render()
 
 				-- Render hovered chapter above others
 				if hovered_chapter then
-					draw_chapter(hovered_chapter.time, diamond_radius_hovered)
-					timestamp_gap = tooltip_gap + round(diamond_radius_hovered)
+					timestamp_gap = tooltip_gap + round(chapter_gap_width / 2)
 				else
-					timestamp_gap = tooltip_gap + round(diamond_radius)
+					timestamp_gap = tooltip_gap + round(chapter_gap_width / 2)
 				end
 			end
 
