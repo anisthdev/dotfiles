@@ -97,7 +97,7 @@ defaults = {
 	show_hidden_files = false,
 	use_trash = false,
 	adjust_osd_margins = true,
-	chapter_ranges = 'openings:30abf964,endings:30abf964,ads:c54e4e80',
+	chapter_ranges = 'openings:30abf964,recaps:30abf964,endings:30abf964,outros:30abf964,previews:30abf964,ads:c54e4e80',
 	chapter_range_patterns = 'openings:オープニング;endings:エンディング',
 	languages = 'slang,en',
 	subtitles_directory = '~~/subtitles',
@@ -589,11 +589,19 @@ file_end_timer:kill()
 
 local skip_chapter_range_titles = {
 	openings = t('Skip Intro'),
-	intros = t('Skip Intro'),
+	recaps = t('Skip Recap'),
 	endings = t('Skip Outro'),
 	outros = t('Skip Outro'),
+	previews = t('Skip Preview'),
 	ads = t('Skip Ad'),
 }
+
+function has_next_episode()
+	return state.has_playlist
+		and state.playlist_pos
+		and state.playlist_count
+		and (state.playlist_pos < state.playlist_count or mp.get_property_native('loop-playlist'))
+end
 
 function get_active_skippable_chapter_range()
 	if not state.time or not state.duration or not state.chapter_ranges then return nil end
@@ -601,9 +609,12 @@ function get_active_skippable_chapter_range()
 		local start_time = range.start or 0
 		local end_time = math.min(range['end'] or state.duration, state.duration)
 		if range.name and skip_chapter_range_titles[range.name] and state.time >= start_time and state.time < end_time then
+			local is_outro = range.name == 'endings' or range.name == 'outros'
+			local action = is_outro and has_next_episode() and 'next' or 'seek'
 			return table_assign({}, range, {
 				['end'] = end_time,
-				title = skip_chapter_range_titles[range.name],
+				action = action,
+				title = action == 'next' and t('Next Episode') or skip_chapter_range_titles[range.name],
 			})
 		end
 	end
@@ -615,12 +626,17 @@ function update_skippable_chapter_range()
 	local changed = (previous and previous.start or nil) ~= (active and active.start or nil)
 		or (previous and previous['end'] or nil) ~= (active and active['end'] or nil)
 		or (previous and previous.name or nil) ~= (active and active.name or nil)
+		or (previous and previous.action or nil) ~= (active and active.action or nil)
 	if changed then set_state('skippable_chapter_range', active) end
 end
 
 function skip_active_chapter_range()
 	local range = state.skippable_chapter_range or get_active_skippable_chapter_range()
 	if not range or not range['end'] then return end
+	if range.action == 'next' then
+		navigate_item(1)
+		return
+	end
 	mp.commandv('seek', range['end'], 'absolute+exact')
 end
 
@@ -752,10 +768,11 @@ mp.observe_property('title-bar', 'bool', create_state_setter('title_bar'))
 mp.observe_property('loop-file', 'native', create_state_setter('loop_file'))
 mp.observe_property('ab-loop-a', 'number', create_state_setter('ab_loop_a'))
 mp.observe_property('ab-loop-b', 'number', create_state_setter('ab_loop_b'))
-mp.observe_property('playlist-pos-1', 'number', create_state_setter('playlist_pos'))
+mp.observe_property('playlist-pos-1', 'number', create_state_setter('playlist_pos', update_skippable_chapter_range))
 mp.observe_property('playlist-count', 'number', function(_, value)
 	set_state('playlist_count', value)
 	set_state('has_playlist', value > 1)
+	update_skippable_chapter_range()
 	Elements:trigger('dispositions')
 end)
 mp.observe_property('fullscreen', 'bool', create_state_setter('fullscreen', update_fullormaxed))

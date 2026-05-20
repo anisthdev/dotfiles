@@ -699,6 +699,15 @@ function serialize_chapter_ranges(normalized_chapters)
 			requires_next_chapter = true,
 		},
 		{
+			name = 'recaps',
+			patterns = {
+				'^recap$', ' recap$',
+				'^previously$', '^previously on',
+				'^last time$', '^last episode',
+			},
+			requires_next_chapter = true,
+		},
+		{
 			name = 'endings',
 			patterns = {
 				'^ed ', '^ed$', ' ed$',
@@ -710,7 +719,14 @@ function serialize_chapter_ranges(normalized_chapters)
 			patterns = {
 				'^outro$', ' outro$',
 				'^closing$', '^closing ',
-				'^preview$', '^pv$',
+			},
+		},
+		{
+			name = 'previews',
+			patterns = {
+				'^preview$', ' preview$',
+				'^next preview$', '^next episode preview$',
+				'^pv$', ' pv$',
 			},
 		},
 	}
