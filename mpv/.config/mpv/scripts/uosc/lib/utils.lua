@@ -737,7 +737,7 @@ function serialize_chapter_ranges(normalized_chapters)
 						ranges[#ranges + 1] = table_assign({
 							start = chapter.time,
 							['end'] = next_chapter and next_chapter.time or math.huge,
-						}, config.chapter_ranges[meta.name])
+						}, config.chapter_ranges[meta.name], {name = meta.name})
 					end
 				end
 			end
@@ -756,7 +756,7 @@ function serialize_chapter_ranges(normalized_chapters)
 							end_chapter = end_chapter,
 							start = chapter.time,
 							['end'] = end_chapter.time,
-						}, config.chapter_ranges.ads)
+						}, config.chapter_ranges.ads, {name = 'ads'})
 						ranges[#ranges + 1], sponsor_ranges[#sponsor_ranges + 1] = range, range
 						end_chapter.is_end_only = true
 						break
@@ -768,7 +768,7 @@ function serialize_chapter_ranges(normalized_chapters)
 				ranges[#ranges + 1] = table_assign({
 					start = chapter.time,
 					['end'] = next_chapter and next_chapter.time or math.huge,
-				}, config.chapter_ranges.ads)
+				}, config.chapter_ranges.ads, {name = 'ads'})
 			end
 		end
 	end

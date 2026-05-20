@@ -383,6 +383,7 @@ state = {
 	ime_active = mp.get_property_native('input-ime'),
 	chapters = {},
 	chapter_ranges = {},
+	skippable_chapter_range = nil,
 	border = mp.get_property_native('border'),
 	title_bar = mp.get_property_native('title-bar'),
 	fullscreen = mp.get_property_native('fullscreen'),
@@ -476,6 +477,7 @@ function update_duration()
 		and (state._duration + state.start_time) or state._duration)
 	set_state('duration', duration)
 	update_human_times()
+	if update_skippable_chapter_range then update_skippable_chapter_range() end
 end
 
 function update_human_times()
@@ -585,6 +587,43 @@ end
 local file_end_timer = mp.add_timeout(1, handle_file_end)
 file_end_timer:kill()
 
+local skip_chapter_range_titles = {
+	openings = t('Skip Intro'),
+	intros = t('Skip Intro'),
+	endings = t('Skip Outro'),
+	outros = t('Skip Outro'),
+	ads = t('Skip Ad'),
+}
+
+function get_active_skippable_chapter_range()
+	if not state.time or not state.duration or not state.chapter_ranges then return nil end
+	for _, range in ipairs(state.chapter_ranges) do
+		local start_time = range.start or 0
+		local end_time = math.min(range['end'] or state.duration, state.duration)
+		if range.name and skip_chapter_range_titles[range.name] and state.time >= start_time and state.time < end_time then
+			return table_assign({}, range, {
+				['end'] = end_time,
+				title = skip_chapter_range_titles[range.name],
+			})
+		end
+	end
+	return nil
+end
+
+function update_skippable_chapter_range()
+	local previous, active = state.skippable_chapter_range, get_active_skippable_chapter_range()
+	local changed = (previous and previous.start or nil) ~= (active and active.start or nil)
+		or (previous and previous['end'] or nil) ~= (active and active['end'] or nil)
+		or (previous and previous.name or nil) ~= (active and active.name or nil)
+	if changed then set_state('skippable_chapter_range', active) end
+end
+
+function skip_active_chapter_range()
+	local range = state.skippable_chapter_range or get_active_skippable_chapter_range()
+	if not range or not range['end'] then return end
+	mp.commandv('seek', range['end'], 'absolute+exact')
+end
+
 function load_file_index_in_current_directory(index)
 	if not state.path or is_protocol(state.path) then return end
 
@@ -639,6 +678,7 @@ mp.register_event('file-loaded', function()
 end)
 mp.register_event('end-file', function(event)
 	set_state('path', nil)
+	set_state('skippable_chapter_range', nil)
 	if event.reason == 'eof' then
 		file_end_timer:kill()
 		handle_file_end()
@@ -661,6 +701,7 @@ mp.observe_property('playback-time', 'number', create_state_setter('time', funct
 	end
 
 	update_human_times()
+	update_skippable_chapter_range()
 end))
 mp.observe_property('rebase-start-time', 'bool', create_state_setter('rebase_start_time', update_duration))
 mp.observe_property('demuxer-start-time', 'number', create_state_setter('start_time', update_duration))
@@ -703,6 +744,7 @@ mp.observe_property('chapter-list', 'native', function(_, chapters)
 	set_state('chapters', chapters)
 	set_state('chapter_ranges', chapter_ranges)
 	set_state('has_chapter', #chapters > 0)
+	update_skippable_chapter_range()
 	Elements:trigger('dispositions')
 end)
 mp.observe_property('border', 'bool', create_state_setter('border'))
@@ -815,6 +857,7 @@ bind_command('flash-volume', function() Elements:flash({'volume'}) end)
 bind_command('flash-speed', function() Elements:flash({'speed'}) end)
 bind_command('flash-pause-indicator', function() Elements:flash({'pause_indicator'}) end)
 bind_command('flash-progress', function() Elements:flash({'progress'}) end)
+bind_command('skip-chapter-range', skip_active_chapter_range)
 bind_command('toggle-progress', function() Elements:maybe('timeline', 'toggle_progress') end)
 bind_command('toggle-title', function() Elements:maybe('top_bar', 'toggle_title') end)
 bind_command('decide-pause-indicator', function() Elements:maybe('pause_indicator', 'decide') end)
@@ -1155,6 +1198,7 @@ local constructors = {
 	pause_indicator = require('elements/PauseIndicator'),
 	top_bar = require('elements/TopBar'),
 	timeline = require('elements/Timeline'),
+	skip_chapter_button = require('elements/SkipChapterButton'),
 	controls = options.controls and options.controls ~= 'never' and require('elements/Controls'),
 	volume = itable_index_of({'left', 'right'}, options.volume) and require('elements/Volume'),
 }
