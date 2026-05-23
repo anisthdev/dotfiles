@@ -126,7 +126,7 @@
   },
   "network": {
     "format": "{ifname}",
-    "format-wifi": "<span font_family='lucide' rise='-4000' size='large'>{icon}</span>{essid} · {signalStrength}",
+    "format-wifi": "<span font_family='lucide' rise='-4000' size='large'>{icon}</span>{essid}",
     "format-ethernet": "<span font_family='lucide' rise='-4000' size='large'> </span>Ethernet",
     "format-disconnected": "  Disconnected",
     "max-length": 50,
@@ -136,7 +136,7 @@
       " ",
       " "
     ],
-    "tooltip-format-wifi": "Connected to {essid}",
+    "tooltip-format-wifi": "Connected to {essid} · {signalStrength}",
     "tooltip-format-ethernet": "Connected to {ifname}\nIP: {ipaddr}",
     "on-click": "~/.local/bin/menus/control-panel-script --page wifi"
   },
