@@ -125,10 +125,9 @@
     "tooltip-format": "{desc} · Volume: {volume}%"
   },
   "network": {
-    "interface": "wlan0",
     "format": "{ifname}",
     "format-wifi": "<span font_family='lucide' rise='-4000' size='large'>{icon}</span>{essid}",
-    "format-ethernet": "󰈀  {ipaddr}/{cidr}",
+    "format-ethernet": "<span font_family='lucide' rise='-4000' size='large'> </span>USB Ethernet",
     "format-disconnected": "  Disconnected",
     "max-length": 50,
     "format-icons": [
