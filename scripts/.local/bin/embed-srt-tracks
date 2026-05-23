@@ -1,0 +1,174 @@
+#!/usr/bin/env python3
+import argparse
+import json
+import re
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+
+DEFAULT_ROOT = Path.home() / "Videos" / "TV"
+VIDEO_EXTENSIONS = {".mkv", ".mp4"}
+
+
+def die(message):
+    print(f"error: {message}", file=sys.stderr)
+    raise SystemExit(1)
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Embed matching SRT files into TV episode containers.")
+    parser.add_argument("--root", type=Path, default=DEFAULT_ROOT, help=f"TV root directory. Default: {DEFAULT_ROOT}")
+    parser.add_argument(
+        "--match",
+        default="The.Office",
+        help="Only process video paths containing this text. Use an empty string to disable. Default: The.Office",
+    )
+    parser.add_argument("--language", default="eng", help="Subtitle language tag. Default: eng")
+    parser.add_argument("--apply", action="store_true", help="Actually write output files. Default is dry-run.")
+    parser.add_argument("--overwrite", action="store_true", help="Overwrite output files if they already exist.")
+    parser.add_argument(
+        "--suffix",
+        default=".subs",
+        help="Suffix inserted before .mkv for generated output files. Default: .subs",
+    )
+    return parser.parse_args()
+
+
+def command_exists(name):
+    return shutil.which(name) is not None
+
+
+def parse_episode(path):
+    match = re.search(r"[Ss](\d{1,2})[ ._-]*[Ee](\d{1,2})", path.name)
+    if not match:
+        return None
+    return int(match.group(1)), int(match.group(2))
+
+
+def iter_videos(root, match_text):
+    for path in sorted(root.rglob("*")):
+        if not path.is_file() or path.suffix.lower() not in VIDEO_EXTENSIONS:
+            continue
+        if match_text and match_text.lower() not in str(path).lower():
+            continue
+        if parse_episode(path):
+            yield path
+
+
+def find_subtitles(video):
+    candidates = []
+    stem = video.stem
+    season_episode = parse_episode(video)
+    if not season_episode:
+        return []
+
+    subs_root = video.parent / "Subs"
+    if subs_root.exists():
+        exact_dir = subs_root / stem
+        if exact_dir.exists():
+            candidates.extend(exact_dir.glob("*.srt"))
+
+        if not candidates:
+            season, episode = season_episode
+            pattern = re.compile(rf"[Ss]{season:02d}[ ._-]*[Ee]{episode:02d}", re.IGNORECASE)
+            for path in subs_root.rglob("*.srt"):
+                if pattern.search(str(path)):
+                    candidates.append(path)
+
+    candidates.extend(video.parent.glob(f"{stem}*.srt"))
+    return sorted({path.resolve() for path in candidates}, key=lambda path: path.name)
+
+
+def has_subtitle_tracks(video):
+    command = [
+        "ffprobe",
+        "-v",
+        "error",
+        "-select_streams",
+        "s",
+        "-show_entries",
+        "stream=index",
+        "-of",
+        "json",
+        str(video),
+    ]
+    result = subprocess.run(command, check=False, capture_output=True, text=True)
+    if result.returncode != 0:
+        return False
+    try:
+        payload = json.loads(result.stdout)
+    except json.JSONDecodeError:
+        return False
+    return bool(payload.get("streams"))
+
+
+def output_path(video, suffix):
+    return video.with_name(f"{video.stem}{suffix}.mkv")
+
+
+def subtitle_title(path, index):
+    prefix = path.stem.split("_", 1)[0]
+    label = "English"
+    if prefix.isdigit():
+        return f"{label} {index}"
+    return path.stem.replace(".", " ").replace("_", " ").strip() or f"{label} {index}"
+
+
+def mkvmerge_command(video, subtitles, output, language):
+    command = ["mkvmerge", "-o", str(output), str(video)]
+    for index, subtitle in enumerate(subtitles, start=1):
+        command.extend(
+            [
+                "--language",
+                f"0:{language}",
+                "--track-name",
+                f"0:{subtitle_title(subtitle, index)}",
+                str(subtitle),
+            ]
+        )
+    return command
+
+
+def main():
+    args = parse_args()
+    if not args.root.exists():
+        die(f"root does not exist: {args.root}")
+    if not command_exists("mkvmerge"):
+        die("mkvmerge is required")
+    if not command_exists("ffprobe"):
+        die("ffprobe is required")
+
+    videos = list(iter_videos(args.root, args.match))
+    if not videos:
+        die("no matching videos found")
+
+    print(f"mode: {'apply' if args.apply else 'dry-run'}")
+    print(f"root: {args.root}")
+    print(f"files: {len(videos)}")
+
+    for index, video in enumerate(videos, start=1):
+        subtitles = find_subtitles(video)
+        if not subtitles:
+            print(f"[{index}/{len(videos)}] no subtitles: {video.name}")
+            continue
+
+        output = output_path(video, args.suffix)
+        if output.exists() and not args.overwrite:
+            print(f"[{index}/{len(videos)}] skipped, output exists: {output.name}")
+            continue
+
+        existing = " existing-subs" if has_subtitle_tracks(video) else ""
+        names = ", ".join(path.name for path in subtitles)
+        if not args.apply:
+            print(f"[{index}/{len(videos)}] dry-run{existing}: {video.name} -> {output.name} :: {names}")
+            continue
+
+        command = mkvmerge_command(video, subtitles, output, args.language)
+        subprocess.run(command, check=True)
+        print(f"[{index}/{len(videos)}] created{existing}: {output.name} :: {names}")
+
+
+if __name__ == "__main__":
+    main()
