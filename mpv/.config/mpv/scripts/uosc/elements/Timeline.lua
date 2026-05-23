@@ -305,13 +305,19 @@ function Timeline:render()
 
 	-- Background
 	local background_opts = {color = bg, opacity = config.opacity.timeline}
-	draw_segmented_rect(bax, bay, fax, bby, background_opts) --left of progress
+	draw_segmented_rect(bax, bay, fax, bby, {
+		color = config.color.position or fg,
+		opacity = config.opacity.position,
+	}) --left of progress
 	draw_segmented_rect(fbx, bay, bbx, bby, background_opts) --right of progress
 	draw_segmented_rect(fax, bay, fbx, fay, background_opts) --above progress
 
 	-- Progress
 	local function draw_progress()
-		draw_segmented_rect(fax, fay, fbx, fby, {opacity = config.opacity.position})
+		draw_segmented_rect(fax, fay, fbx, fby, {
+			color = config.color.position or fg,
+			opacity = config.opacity.position,
+		})
 	end
 
 	-- Youtube heatmap
