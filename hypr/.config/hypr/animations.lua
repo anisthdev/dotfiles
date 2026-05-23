@@ -19,5 +19,5 @@ hl.animation({ leaf = "layersOut", enabled = true, speed = 4.0, bezier = "whip",
 hl.animation({ leaf = "fadeLayersIn", enabled = true, speed = 3.5, bezier = "bouncy" })
 hl.animation({ leaf = "fadeLayersOut", enabled = true, speed = 3.5, bezier = "bouncy" })
 hl.animation({ leaf = "workspaces", enabled = true, speed = 4.5, bezier = "whip", style = "slidevert" })
-hl.animation({ leaf = "specialWorkspace", enabled = true, speed = 5.0, bezier = "whip", style = "slidevert 70%" })
+hl.animation({ leaf = "specialWorkspace", enabled = true, speed = 3.0, bezier = "whip", style = "slidevert 70%" })
 hl.animation({ leaf = "zoomFactor", enabled = true, speed = 7, bezier = "whip" })
