@@ -126,8 +126,8 @@
   },
   "network": {
     "format": "{ifname}",
-    "format-wifi": "<span font_family='lucide' rise='-4000' size='large'>{icon}</span>{essid}",
-    "format-ethernet": "<span font_family='lucide' rise='-4000' size='large'> </span>USB Ethernet",
+    "format-wifi": "<span font_family='lucide' rise='-4000' size='large'>{icon}</span>{essid} · {signalStrength}",
+    "format-ethernet": "<span font_family='lucide' rise='-4000' size='large'> </span>Ethernet",
     "format-disconnected": "  Disconnected",
     "max-length": 50,
     "format-icons": [
@@ -136,7 +136,8 @@
       " ",
       " "
     ],
-    "tooltip-format": "Connected to {essid}",
+    "tooltip-format-wifi": "Connected to {essid}",
+    "tooltip-format-ethernet": "Connected to {ifname}\nIP: {ipaddr}",
     "on-click": "~/.local/bin/menus/control-panel-script --page wifi"
   },
   "hyprland/workspaces": {
