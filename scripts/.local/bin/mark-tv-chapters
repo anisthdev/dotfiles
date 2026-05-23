@@ -1,0 +1,356 @@
+#!/usr/bin/env python3
+import argparse
+import csv
+import json
+import shutil
+import subprocess
+import sys
+import tempfile
+import time
+import urllib.parse
+import urllib.request
+import xml.etree.ElementTree as ET
+from pathlib import Path
+
+
+DEFAULT_ROOT = Path.home() / "Videos" / "TV"
+VIDEO_EXTENSIONS = {".mkv", ".mp4"}
+
+SEGMENT_TITLES = {
+    "intro": "Opening",
+    "opening": "Opening",
+    "recap": "Recap",
+    "outro": "Ending",
+    "ending": "Ending",
+    "credits": "Ending",
+    "preview": "Preview",
+}
+
+
+def die(message):
+    print(f"error: {message}", file=sys.stderr)
+    raise SystemExit(1)
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Fetch intro/outro segments and write chapters for TV episodes."
+    )
+    parser.add_argument("--root", type=Path, default=DEFAULT_ROOT, help=f"TV root directory. Default: {DEFAULT_ROOT}")
+    parser.add_argument(
+        "--provider",
+        choices=("introdb", "theintrodb"),
+        default="introdb",
+        help="Timestamp provider to query. Default: introdb",
+    )
+    parser.add_argument("--imdb-id", help=f"Series IMDb ID. Required for IntroDB provider.")
+    parser.add_argument("--tmdb-id", help=f"Series TMDB ID. Required for TheIntroDB provider.")
+    parser.add_argument(
+        "--match",
+        default="The.Office",
+        help="Only process paths containing this text. Use an empty string to disable. Default: The.Office",
+    )
+    parser.add_argument("--apply", action="store_true", help="Actually write chapters. Default is dry-run.")
+    parser.add_argument("--overwrite", action="store_true", help="Overwrite generated MKV outputs for MP4 inputs.")
+    parser.add_argument(
+        "--segments-file",
+        type=Path,
+        help="Optional CSV with columns: season,episode,type,start,end. CSV data wins over IntroDB.",
+    )
+    parser.add_argument("--no-api", action="store_true", help="Only use --segments-file data; do not query APIs.")
+    parser.add_argument("--sleep", type=float, default=0.25, help="Delay between API requests. Default: 0.25")
+    return parser.parse_args()
+
+
+def parse_episode(path):
+    match = None
+    for pattern in (r"[Ss](\d{1,2})[ ._-]*[Ee](\d{1,2})", r"(\d{1,2})x(\d{1,2})"):
+        import re
+
+        match = re.search(pattern, path.name)
+        if match:
+            break
+    if not match:
+        return None
+    return int(match.group(1)), int(match.group(2))
+
+
+def iter_video_files(root, match_text):
+    for path in sorted(root.rglob("*")):
+        if not path.is_file() or path.suffix.lower() not in VIDEO_EXTENSIONS:
+            continue
+        if match_text and match_text.lower() not in str(path).lower():
+            continue
+        episode = parse_episode(path)
+        if episode:
+            yield path, episode[0], episode[1]
+
+
+def fetch_introdb_segments(imdb_id, season, episode):
+    query = urllib.parse.urlencode({"imdb_id": imdb_id, "season": season, "episode": episode})
+    url = f"https://api.introdb.app/segments?{query}"
+    request = urllib.request.Request(url)
+    with urllib.request.urlopen(request, timeout=20) as response:
+        payload = json.load(response)
+    return normalize_segments(payload)
+
+
+def fetch_theintrodb_segments(tmdb_id, season, episode):
+    query_params = {"tmdb_id": tmdb_id, "season": season, "episode": episode}
+    query = urllib.parse.urlencode(query_params)
+    url = f"https://api.theintrodb.org/v3/media?{query}"
+    request = urllib.request.Request(url)
+    try:
+        with urllib.request.urlopen(request, timeout=20) as response:
+            payload = json.load(response)
+    except urllib.error.HTTPError as error:
+        if error.code == 404:
+            return []
+        raise
+    return normalize_theintrodb_segments(payload)
+
+
+def first_value(data, names):
+    for name in names:
+        if name in data and data[name] not in (None, ""):
+            return data[name]
+    return None
+
+
+def parse_seconds(value):
+    if value is None:
+        return None
+    if isinstance(value, (int, float)):
+        return float(value)
+    text = str(value).strip()
+    if not text:
+        return None
+    if ":" not in text:
+        return float(text)
+    parts = [float(part) for part in text.split(":")]
+    seconds = 0.0
+    for part in parts:
+        seconds = seconds * 60 + part
+    return seconds
+
+
+def normalize_segments(payload):
+    if isinstance(payload, dict):
+        if "segments" in payload:
+            raw_segments = payload["segments"]
+        elif "data" in payload:
+            raw_segments = payload["data"]
+        elif "start" in payload and "end" in payload:
+            raw_segments = [dict(payload, segment_type="intro")]
+        elif any(name in payload for name in SEGMENT_TITLES):
+            raw_segments = []
+            for kind in SEGMENT_TITLES:
+                segment = payload.get(kind)
+                if isinstance(segment, dict):
+                    raw_segments.append(dict(segment, segment_type=kind))
+        else:
+            raw_segments = []
+    elif isinstance(payload, list):
+        raw_segments = payload
+    else:
+        raw_segments = []
+
+    segments = []
+    for raw in raw_segments:
+        if not isinstance(raw, dict):
+            continue
+        kind = str(first_value(raw, ("segment_type", "type", "kind", "category")) or "intro").lower()
+        title = SEGMENT_TITLES.get(kind)
+        if not title:
+            continue
+        start = parse_seconds(first_value(raw, ("start_sec", "start", "start_time", "startTime")))
+        end = parse_seconds(first_value(raw, ("end_sec", "end", "end_time", "endTime")))
+        if start is None or end is None or end <= start:
+            continue
+        segments.append({"kind": kind, "title": title, "start": start, "end": end})
+
+    return sorted(segments, key=lambda segment: (segment["start"], segment["end"]))
+
+
+def normalize_theintrodb_segments(payload):
+    if not isinstance(payload, dict) or payload.get("error"):
+        return []
+
+    segments = []
+    for kind, title in SEGMENT_TITLES.items():
+        raw_segments = payload.get(kind)
+        if isinstance(raw_segments, dict):
+            raw_segments = [raw_segments]
+        if not isinstance(raw_segments, list):
+            continue
+
+        for raw in raw_segments:
+            if not isinstance(raw, dict):
+                continue
+            start_ms = raw.get("start_ms")
+            end_ms = raw.get("end_ms")
+            if end_ms is None and kind in {"outro", "ending", "credits"}:
+                end_ms = start_ms + 1000
+            if start_ms is None:
+                start_ms = 0
+            if start_ms is None or end_ms is None or end_ms <= start_ms:
+                continue
+            segments.append(
+                {
+                    "kind": kind,
+                    "title": title,
+                    "start": start_ms / 1000,
+                    "end": end_ms / 1000,
+                }
+            )
+
+    return sorted(segments, key=lambda segment: (segment["start"], segment["end"]))
+
+
+def load_segments_file(path):
+    if not path:
+        return {}
+    if not path.exists():
+        die(f"segments file does not exist: {path}")
+
+    result = {}
+    with path.open(newline="") as handle:
+        reader = csv.DictReader(handle)
+        required = {"season", "episode", "type", "start", "end"}
+        missing = required - set(reader.fieldnames or [])
+        if missing:
+            die(f"segments file missing columns: {', '.join(sorted(missing))}")
+
+        for row in reader:
+            kind = (row.get("type") or "").strip().lower()
+            title = SEGMENT_TITLES.get(kind)
+            if not title:
+                print(f"warning: unsupported segment type in CSV: {kind}", file=sys.stderr)
+                continue
+            start = parse_seconds(row.get("start"))
+            end = parse_seconds(row.get("end"))
+            if start is None or end is None or end <= start:
+                print(f"warning: invalid segment time in CSV: {row}", file=sys.stderr)
+                continue
+            key = (int(row["season"]), int(row["episode"]))
+            result.setdefault(key, []).append({"kind": kind, "title": title, "start": start, "end": end})
+
+    for key in result:
+        result[key].sort(key=lambda segment: (segment["start"], segment["end"]))
+    return result
+
+
+def timestamp(seconds):
+    milliseconds = round((seconds - int(seconds)) * 1000)
+    total = int(seconds)
+    if milliseconds == 1000:
+        total += 1
+        milliseconds = 0
+    hours, remainder = divmod(total, 3600)
+    minutes, secs = divmod(remainder, 60)
+    return f"{hours:02d}:{minutes:02d}:{secs:02d}.{milliseconds:03d}"
+
+
+def chapter_xml(segments):
+    points = {}
+    for segment in segments:
+        points[round(segment["start"], 3)] = segment["title"]
+        points.setdefault(round(segment["end"], 3), "Episode")
+
+    chapters = ET.Element("Chapters")
+    edition = ET.SubElement(chapters, "EditionEntry")
+    for seconds, title in sorted(points.items()):
+        atom = ET.SubElement(edition, "ChapterAtom")
+        ET.SubElement(atom, "ChapterTimeStart").text = timestamp(seconds)
+        display = ET.SubElement(atom, "ChapterDisplay")
+        ET.SubElement(display, "ChapterString").text = title
+        ET.SubElement(display, "ChapterLanguage").text = "eng"
+
+    ET.indent(chapters, space="  ")
+    return '<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(chapters, encoding="unicode")
+
+
+def write_chapters(path, xml_text, apply, overwrite):
+    if not apply:
+        return "dry-run"
+
+    with tempfile.NamedTemporaryFile("w", suffix=".xml", delete=False) as handle:
+        handle.write(xml_text)
+        chapters_path = Path(handle.name)
+
+    try:
+        if path.suffix.lower() == ".mkv":
+            subprocess.run(["mkvpropedit", str(path), "--chapters", str(chapters_path)], check=True)
+            return "updated"
+
+        output = path.with_suffix(".mkv")
+        if output.exists() and not overwrite:
+            return f"skipped, exists: {output}"
+        command = ["mkvmerge", "-o", str(output), "--chapters", str(chapters_path), str(path)]
+        subprocess.run(command, check=True)
+        return f"created: {output}"
+    finally:
+        chapters_path.unlink(missing_ok=True)
+
+
+def command_exists(name):
+    return shutil.which(name) is not None
+
+
+def main():
+    args = parse_args()
+    if not args.root.exists():
+        die(f"root does not exist: {args.root}")
+    if args.provider == "introdb" and not args.imdb_id:
+        die("IMDb ID is required for IntroDB provider")
+    if args.provider == "theintrodb" and not args.tmdb_id:
+        die("TMDB ID is required for TheIntroDB provider")
+
+
+
+    if args.apply:
+        if not command_exists("mkvpropedit"):
+            die("mkvpropedit is required for MKV in-place edits")
+        if not command_exists("mkvmerge"):
+            die("mkvmerge is required to remux MP4 files to MKV")
+
+    manual_segments = load_segments_file(args.segments_file)
+    files = list(iter_video_files(args.root, args.match))
+    if not files:
+        die("no matching video files with SxxEyy episode numbers found")
+
+    print(f"mode: {'apply' if args.apply else 'dry-run'}")
+    print(f"root: {args.root}")
+    print(f"provider: {args.provider}")
+    print(f"imdb_id: {args.imdb_id}")
+    print(f"tmdb_id: {args.tmdb_id}")
+    if args.segments_file:
+        print(f"segments_file: {args.segments_file}")
+    print(f"files: {len(files)}")
+
+    for index, (path, season, episode) in enumerate(files, start=1):
+        segments = manual_segments.get((season, episode))
+        if segments is None and not args.no_api:
+            try:
+                if args.provider == "theintrodb":
+                    segments = fetch_theintrodb_segments(args.tmdb_id, season, episode)
+                else:
+                    segments = fetch_introdb_segments(args.imdb_id, season, episode)
+            except Exception as error:
+                print(f"[{index}/{len(files)}] S{season:02d}E{episode:02d} fetch failed: {error}")
+                continue
+
+        if not segments:
+            print(f"[{index}/{len(files)}] S{season:02d}E{episode:02d} no segments")
+            continue
+
+        labels = ", ".join(
+            f"{segment['title']} {timestamp(segment['start'])}-{timestamp(segment['end'])}" for segment in segments
+        )
+        result = write_chapters(path, chapter_xml(segments), args.apply, args.overwrite)
+        print(f"[{index}/{len(files)}] S{season:02d}E{episode:02d} {result}: {path.name} :: {labels}")
+        time.sleep(args.sleep)
+
+
+if __name__ == "__main__":
+    main()
