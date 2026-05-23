@@ -9,11 +9,11 @@ window {
 }
 
 listview {
-  lines: 10;
+  lines: 15;
 }
 
 entry {
-  placeholder: "Search movies...";
+  placeholder: "Search...";
 }
 
 element {

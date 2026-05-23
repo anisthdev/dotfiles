@@ -1,0 +1,368 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+
+JACKETT_CONFIG="${JACKETT_CONFIG:-/var/lib/jackett/ServerConfig.json}"
+JACKETT_URL="${JACKETT_URL:-}"
+JACKETT_API_KEY="${JACKETT_API_KEY:-}"
+JACKETT_INDEXER="${JACKETT_INDEXER:-tag:movies}"
+JACKETT_SEARCH_TYPE="${JACKETT_SEARCH_TYPE:-movie}"
+JACKETT_CATEGORY="${JACKETT_CATEGORY:-}"
+JACKETT_TV_CATEGORY="${JACKETT_TV_CATEGORY:-}"
+JACKETT_LIMIT="${JACKETT_LIMIT:-30}"
+JACKETT_THEME="${JACKETT_THEME:-$SCRIPT_DIR/styles/jackett-search.rasi}"
+JACKETT_SEARCH_LABEL="${JACKETT_SEARCH_LABEL:-movies}"
+JACKETT_SELECT_LABEL="${JACKETT_SELECT_LABEL:-result}"
+JACKETT_EMPTY_LABEL="${JACKETT_EMPTY_LABEL:-results}"
+JACKETT_TITLE_FALLBACK="${JACKETT_TITLE_FALLBACK:-Result}"
+JACKETT_TMP_PREFIX="${JACKETT_TMP_PREFIX:-jackett-search}"
+
+die() {
+    printf '%s\n' "$*" >&2
+    exit 1
+}
+
+require() {
+    command -v "$1" >/dev/null 2>&1 || die "Missing dependency: $1"
+}
+
+load_jackett_config() {
+    if [[ -r "$JACKETT_CONFIG" ]]; then
+        if [[ -z "$JACKETT_API_KEY" ]]; then
+            JACKETT_API_KEY="$(jq -r '.APIKey // empty' "$JACKETT_CONFIG")"
+        fi
+
+        if [[ -z "$JACKETT_URL" ]]; then
+            local port
+            port="$(jq -r '.Port // 9117' "$JACKETT_CONFIG")"
+            JACKETT_URL="http://127.0.0.1:$port"
+        fi
+    fi
+
+    JACKETT_URL="${JACKETT_URL:-http://127.0.0.1:9117}"
+}
+
+search_query() {
+    rofi -dmenu \
+        -p "󰥨 " \
+        -mesg "󰈙  Search $JACKETT_SEARCH_LABEL" \
+        -theme "$JACKETT_THEME" \
+        -theme-str 'window { width: 500px; }' \
+        -theme-str 'mainbox { children: [ message, inputbar ]; }' \
+        -theme-str 'listview { enabled: false; }'
+}
+
+fetch_results() {
+    local query="$1"
+    local season="${2:-}"
+    local episode="${3:-}"
+    local search_type="$JACKETT_SEARCH_TYPE"
+    local category="$JACKETT_CATEGORY"
+
+    if [[ -n "$season" || -n "$episode" ]]; then
+        search_type="tvsearch"
+        if [[ -n "$JACKETT_TV_CATEGORY" ]]; then
+            category="$JACKETT_TV_CATEGORY"
+        fi
+    fi
+
+    local curl_args=(
+        --data-urlencode "apikey=$JACKETT_API_KEY"
+        --data-urlencode "t=$search_type"
+        --data-urlencode "q=$query"
+        --data-urlencode "limit=$JACKETT_LIMIT"
+    )
+
+    if [[ -n "$category" ]]; then
+        curl_args+=(--data-urlencode "cat=$category")
+    fi
+    if [[ -n "$season" ]]; then
+        curl_args+=(--data-urlencode "season=$season")
+    fi
+    if [[ -n "$episode" ]]; then
+        curl_args+=(--data-urlencode "ep=$episode")
+    fi
+
+    curl -fsS --get \
+        "${curl_args[@]}" \
+        "$JACKETT_URL/api/v2.0/indexers/$JACKETT_INDEXER/results/torznab/api"
+}
+
+parse_query() {
+    local raw_query="$1"
+    local part
+    parsed_query=""
+    parsed_season=""
+    parsed_episode=""
+    parsed_words=()
+
+    for part in $raw_query; do
+        if [[ "$part" =~ ^[sS]:([0-9]+)$ ]]; then
+            parsed_season="${BASH_REMATCH[1]}"
+            continue
+        fi
+        if [[ "$part" =~ ^[eE][pP]:([0-9]+)$ ]]; then
+            parsed_episode="${BASH_REMATCH[1]}"
+            continue
+        fi
+        parsed_words+=("$part")
+    done
+
+    parsed_query="${parsed_words[*]}"
+}
+
+normalize_results() {
+    local query="$1"
+
+    xq -r '.' | jq --arg query "$query" '
+        def norm:
+            ascii_downcase
+            | gsub("[^a-z0-9]+"; " ")
+            | gsub("^ +| +$"; "")
+            | gsub(" +"; " ");
+
+        def num(v):
+            (v // 0 | tostring | tonumber? // 0);
+
+        def first_attr($name):
+            (."torznab:attr" // [])
+            | if type == "array" then map(select(."@name" == $name) | ."@value") | .[0]
+              else select(."@name" == $name) | ."@value"
+              end;
+
+        def tracker_code:
+            gsub("(?<left>[a-z])(?<right>[A-Z])"; "\(.left) \(.right)")
+            | split("[^A-Za-z0-9]+"; "")
+            | map(select(length > 0))
+            | if length == 0 then "JKT"
+              elif length == 1 then (.[0] | ascii_upcase | .[0:4])
+              else (map(.[0:1] | ascii_upcase) | join("") | .[0:4])
+              end;
+
+        def score($q):
+            ((.title // "") | norm) as $title
+            | ($q | norm) as $query
+            | if $query == "" then 9
+              elif $title == $query then 0
+              elif ($title | startswith($query)) then 1
+              elif ($title | contains($query)) then 2
+              else 9
+              end;
+
+        (.rss.channel.item // [])
+        | if type == "array" then . elif . == null then [] else [.] end
+        | map(
+            {
+                title: (.title // "Untitled"),
+                indexer: ((.jackettindexer."#text" // .jackettindexer // "Jackett") | tostring),
+                tracker: (((.jackettindexer."#text" // .jackettindexer // "Jackett") | tostring) | tracker_code),
+                size_bytes: num(.size),
+                seeders: num(first_attr("seeders")),
+                peers: num(first_attr("peers")),
+                leechers: (
+                    (num(first_attr("peers")) - num(first_attr("seeders")))
+                    | if . > 0 then . else 0 end
+                ),
+                magnet_uri: (first_attr("magneturl") // .link // .guid // "")
+            }
+            | select(.magnet_uri != "")
+            | .score = score($query)
+        )
+        | map(select(.score < 9))
+        | sort_by(.score, (-.seeders), (-.peers))
+    '
+}
+
+format_title() {
+    local title="$1"
+    local width="$2"
+
+    printf "%-${width}.${width}s" "$title"
+}
+
+format_size() {
+    local bytes="$1"
+
+    awk -v bytes="$bytes" '
+        BEGIN {
+            split("B KiB MiB GiB TiB", units, " ")
+            value = bytes
+            unit = 1
+            while (value >= 1024 && unit < 5) {
+                value = value / 1024
+                unit++
+            }
+            if (unit == 1) {
+                printf "%d %s", value, units[unit]
+            } else {
+                printf "%.1f %s", value, units[unit]
+            }
+        }
+    '
+}
+
+vpn_is_active() {
+    command -v nmcli >/dev/null 2>&1 || return 1
+
+    nmcli -t -f TYPE,STATE connection show --active 2>/dev/null \
+        | awk -F: '$1=="vpn" && $2=="activated" { found = 1 } END { exit(found ? 0 : 1) }'
+}
+
+print_rows() {
+    local results_file="$1"
+    local title_width="$2"
+    local size_width="$3"
+    local title tracker seeders leechers size_bytes size size_padded seeders_padded leechers_padded tracker_padded
+
+    jq -r '
+        .[]
+        | [
+            .title,
+            .tracker,
+            .seeders,
+            .leechers,
+            .size_bytes
+        ]
+        | @tsv
+    ' "$results_file" | while IFS=$'\t' read -r title tracker seeders leechers size_bytes; do
+        size="$(format_size "$size_bytes")"
+        size_padded="$(printf "%-${size_width}s" "$size")"
+        title="$(format_title "$title" "$title_width")"
+        tracker_padded="$(printf '%-4.4s' "$tracker")"
+        seeders_padded="$(printf '%3s' "$seeders")"
+        leechers_padded="$(printf '%3s' "$leechers")"
+        printf '%s  %s    %s       %s    %s\n' \
+            "$tracker_padded" "$title" "$size_padded" "$seeders_padded" "$leechers_padded"
+    done
+}
+
+select_result() {
+    local results_file="$1"
+    local title_width="$2"
+    local size_width="$3"
+
+    print_rows "$results_file" "$title_width" "$size_width" | rofi -dmenu \
+        -i \
+        -format i \
+        -kb-custom-1 "Control+r" \
+        -p "󰓾 " \
+        -mesg "󰈙  Select $JACKETT_SELECT_LABEL" \
+        -theme "$JACKETT_THEME"
+}
+
+main() {
+    require curl
+    require jq
+    require rofi
+    require xq
+    require transmission-remote
+    require notify-send
+    require peerflix
+    require mpv
+
+    local query selection retv index magnet title title_width size_width
+    local parsed_query parsed_season parsed_episode
+    local parsed_words
+    response_file=""
+    results_file=""
+
+    load_jackett_config
+    if [[ -z "$JACKETT_API_KEY" ]]; then
+        rofi -e "Missing Jackett API key"
+        exit 1
+    fi
+
+    query="$(search_query)" || exit 0
+    query="$(printf '%s' "$query" | xargs)"
+    [[ -n "$query" ]] || exit 0
+    parse_query "$query"
+    [[ -n "$parsed_query" ]] || exit 0
+
+    if ! vpn_is_active; then
+        notify-send --icon=/usr/share/icons/Papirus/24x24/status/dialog-warning.svg "VPN is not active" "Some Jackett indexers may not return results"
+    fi
+
+    response_file="$(mktemp --tmpdir "$JACKETT_TMP_PREFIX-response.XXXXXX.xml")"
+    results_file="$(mktemp --tmpdir "$JACKETT_TMP_PREFIX-results.XXXXXX.json")"
+    trap 'rm -f "$response_file" "$results_file"' EXIT
+
+    if ! fetch_results "$parsed_query" "$parsed_season" "$parsed_episode" >"$response_file"; then
+        rofi -e "Could not reach Jackett at $JACKETT_URL"
+        exit 1
+    fi
+
+    if ! normalize_results "$parsed_query" <"$response_file" >"$results_file"; then
+        rofi -e "Jackett returned an unreadable response"
+        exit 1
+    fi
+
+    if [[ "$(jq 'length' "$results_file")" -eq 0 ]]; then
+        rofi -e "No $JACKETT_EMPTY_LABEL found"
+        exit 0
+    fi
+
+    title_width="$(jq '[.[].title | length] | max // 0' "$results_file")"
+    if (( title_width > 55 )); then
+        title_width=55
+    fi
+    if (( title_width < 1 )); then
+        title_width=1
+    fi
+
+    size_width=0
+    while IFS=$'\t' read -r _ _ _ _ size_bytes; do
+        size="$(format_size "$size_bytes")"
+        if (( ${#size} > size_width )); then
+            size_width="${#size}"
+        fi
+    done < <(
+        jq -r '
+            .[]
+            | [
+                .title,
+                .tracker,
+                .seeders,
+                .leechers,
+                .size_bytes
+            ]
+            | @tsv
+        ' "$results_file"
+    )
+    if (( size_width < 1 )); then
+        size_width=1
+    fi
+
+    set +e
+    selection="$(select_result "$results_file" "$title_width" "$size_width")"
+    retv=$?
+    set -e
+    [[ -n "$selection" ]] || exit 0
+
+    index="$selection"
+    [[ "$index" =~ ^[0-9]+$ ]] || exit 0
+
+    title="$(jq -r --argjson index "$index" --arg fallback "$JACKETT_TITLE_FALLBACK" '.[$index].title // $fallback' "$results_file")"
+    magnet="$(jq -r --argjson index "$index" '.[$index].magnet_uri // empty' "$results_file")"
+    [[ -n "$magnet" ]] || exit 0
+
+    if [[ "$retv" -eq 10 ]]; then
+        if vpn_is_active; then
+            nohup vpn-bypass -- peerflix "$magnet" --mpv --remove >/dev/null 2>&1 </dev/null &
+        else
+            nohup peerflix "$magnet" --mpv --remove >/dev/null 2>&1 </dev/null &
+        fi
+        notify-send --icon=video-x-generic "Peerflix" "Streaming: $title"
+        exit 0
+    fi
+
+    if transmission-remote -a "$magnet" >/dev/null 2>&1; then
+        notify-send --icon=video-x-generic "Transmission" "Added: $title"
+        exit 0
+    fi
+
+    notify-send --icon=dialog-error "Transmission" "Failed to add: $title"
+    exit 1
+}
+
+main "$@"

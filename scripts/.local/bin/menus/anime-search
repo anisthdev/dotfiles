@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+
+export JACKETT_INDEXER="${JACKETT_INDEXER:-tag:anime}"
+export JACKETT_SEARCH_TYPE="${JACKETT_SEARCH_TYPE:-search}"
+export JACKETT_SEARCH_LABEL="${JACKETT_SEARCH_LABEL:-anime}"
+export JACKETT_SELECT_LABEL="${JACKETT_SELECT_LABEL:-anime}"
+export JACKETT_EMPTY_LABEL="${JACKETT_EMPTY_LABEL:-anime results}"
+export JACKETT_TITLE_FALLBACK="${JACKETT_TITLE_FALLBACK:-Anime}"
+export JACKETT_TMP_PREFIX="${JACKETT_TMP_PREFIX:-jackett-anime}"
+
+exec "$SCRIPT_DIR/jackett-search" "$@"

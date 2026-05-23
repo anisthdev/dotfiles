@@ -7,7 +7,10 @@ THEME="$SCRIPT_DIR/styles/entertainment.rasi"
 labels=(
     "Play URL"
     "Telegram Media"
-    "Movies"
+    "Movies/TV"
+    "Hindi Movies"
+    "Anime"
+    "Ebooks"
     "RetroArch NES"
     "Playlists"
 )
@@ -16,6 +19,9 @@ commands=(
     "$SCRIPT_DIR/play-video"
     "$SCRIPT_DIR/telegram-media"
     "$SCRIPT_DIR/movie-search"
+    "$SCRIPT_DIR/hindi-movie-search"
+    "$SCRIPT_DIR/anime-search"
+    "$SCRIPT_DIR/ebook-search"
     "$SCRIPT_DIR/retroarch-nes"
     "$SCRIPT_DIR/playlist"
 )
@@ -24,6 +30,9 @@ icons=(
     "mpv"
     "telegram"
     "video-x-generic"
+    "video-x-generic"
+    "kawanime"
+    "accessories-ebook-reader"
     "retroarch"
     "playlist"
 )

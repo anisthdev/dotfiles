@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+
+export JACKETT_INDEXER="${JACKETT_INDEXER:-tag:step}"
+export JACKETT_SEARCH_TYPE="${JACKETT_SEARCH_TYPE:-movie}"
+export JACKETT_CATEGORY="${JACKETT_CATEGORY:-6000}"
+export JACKETT_SEARCH_LABEL="${JACKETT_SEARCH_LABEL:-Hindi movies}"
+export JACKETT_SELECT_LABEL="${JACKETT_SELECT_LABEL:-Hindi movie}"
+export JACKETT_EMPTY_LABEL="${JACKETT_EMPTY_LABEL:-Hindi movie results}"
+export JACKETT_TITLE_FALLBACK="${JACKETT_TITLE_FALLBACK:-Hindi movie}"
+export JACKETT_TMP_PREFIX="${JACKETT_TMP_PREFIX:-jackett-hindi-movie}"
+
+exec "$SCRIPT_DIR/jackett-search" "$@"
