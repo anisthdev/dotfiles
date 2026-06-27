@@ -32,3 +32,4 @@ hl.bind("ALT + PRINT", hl.dsp.exec_cmd(menuDir .. "screenrecord"), { description
 --others
 hl.bind(mainMod .. "SHIFT + S", hl.dsp.exec_cmd(scriptDir .. "ocr-region"), { description = "OCR region" })
 hl.bind(mainMod .. "PRINT", hl.dsp.exec_cmd("hyprpicker -a"), { description = "Color picker" })
+hl.bind(mainMod .. "SHIFT + P", hl.dsp.window.tag({ tag = "noop" }), { description = "Tag window for no opacity" })

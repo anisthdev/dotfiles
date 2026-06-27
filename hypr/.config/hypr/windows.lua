@@ -28,3 +28,4 @@ hl.window_rule({ match = { class = "nwg-look" }, float = true, size = { "500", "
 
 -- pseudo floating windows
 hl.window_rule({ match = { class = "firefox" }, pseudo = true, size = { "monitor_w * 0.65", "monitor_h" } })
+hl.window_rule({ match = { tag = "noop" }, opacity = "1.0 override 0.88" })
