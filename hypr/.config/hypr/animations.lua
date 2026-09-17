@@ -7,9 +7,9 @@ hl.curve("overshoot", { type = "bezier", points = { { 0.34, 1.56 }, { 0.64, 1.0 
 -- example spring curve
 hl.curve("easy", { type = "spring", mass = 1, stiffness = 71.2633, dampening = 15.8273644 })
 
-hl.animation({ leaf = "windowsIn", enabled = true, speed = 6.0, bezier = "whip", style = "slide" })
-hl.animation({ leaf = "windowsOut", enabled = true, speed = 6.0, bezier = "whip", style = "slide" })
-hl.animation({ leaf = "windowsMove", enabled = true, speed = 6.0, spring = "easy", style = "slide" })
+hl.animation({ leaf = "windowsIn", enabled = true, speed = 4.0, bezier = "whip", style = "slide" })
+hl.animation({ leaf = "windowsOut", enabled = true, speed = 4.0, bezier = "whip", style = "slide" })
+hl.animation({ leaf = "windowsMove", enabled = true, speed = 4.0, bezier = "whip", style = "slide" })
 hl.animation({ leaf = "fade", enabled = true, speed = 4.0, bezier = "spring" })
 hl.animation({ leaf = "fadePopups", enabled = true, speed = 2.0, bezier = "spring" })
 hl.animation({ leaf = "fadePopupsIn", enabled = true, speed = 2.0, bezier = "spring" })

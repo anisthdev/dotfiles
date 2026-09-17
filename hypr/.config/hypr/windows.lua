@@ -28,7 +28,7 @@ hl.window_rule({ match = { class = "xdg-desktop-portal-gtk" }, float = true, siz
 hl.window_rule({ match = { class = "thunar", title = "Rename.*" }, float = true, size = { "500", "80" }, animation = "gnomed", })
 hl.window_rule({ match = { class = "hyprland-share-picker" }, float = true, size = { "400", "400" }, animation = "gnomed", })
 hl.window_rule({ match = { class = "clipse-gui" }, float = true, size = { "500", "600" }, animation = "gnomed" })
-hl.window_rule({ match = { class = "localsend" }, float = true, size = { "500", "700" }, animation = "gnomed" })
+hl.window_rule({ match = { class = "org.localsend.localsend_app" }, float = true, size = { "500", "700" }, animation = "gnomed" })
 hl.window_rule({ match = { class = "nwg-look" }, float = true, size = { "500", "700" }, animation = "gnomed" })
 
 -- pseudo floating windows

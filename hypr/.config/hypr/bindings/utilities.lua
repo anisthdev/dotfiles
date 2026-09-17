@@ -25,7 +25,7 @@ hl.bind(mainMod .. "CTRL + SPACE", hl.dsp.exec_cmd(menuDir .. "wallpaper-picker"
 hl.bind(mainMod .. "ESCAPE", hl.dsp.exec_cmd(menuDir .. "power-menu"), { description = "Power menu" })
 hl.bind(mainMod .. "CTRL + N", hl.dsp.exec_cmd(glyphMenu), { description = "Glyph selector" })
 hl.bind(mainMod .. "CTRL + V", hl.dsp.exec_cmd(menuDir .. "play-video"), { description = "Play video from URL" })
-hl.bind(mainMod .. "K", hl.dsp.exec_cmd(menuDir .. "keybindings"), { description = "Keybindings" })
+hl.bind(mainMod .. "SHIFT + K", hl.dsp.exec_cmd(menuDir .. "keybindings"), { description = "Keybindings" })
 hl.bind("PRINT", hl.dsp.exec_cmd(menuDir .. "screenshot"), { description = "Screenshot" })
 hl.bind("ALT + PRINT", hl.dsp.exec_cmd(menuDir .. "screenrecord"), { description = "Screenrecord" })
 

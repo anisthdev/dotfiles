@@ -9,6 +9,7 @@
     "clock",
     "hyprland/workspaces",
     "custom/weather",
+    "hyprland/submap",
     "mpd"
   ],
   "modules-center": [
@@ -45,32 +46,12 @@
     "rewrite": {
       "firefox": "Firefox",
       "chromium": "Chromium",
-      "org.gnome.Nautilus": "Files",
-      "org.gnome.TextEditor": "Text Editor",
-      "org.gnome.Calculator": "Calculator",
-      "org.gnome.Settings": "Settings",
-      "org.gnome.Terminal": "Terminal",
-      "kitty": "Kitty",
-      "Alacritty": "Alacritty",
-      "foot": "Foot",
-      "code": "VS Code",
-      "Code": "VS Code",
-      "vesktop": "Discord",
-      "discord": "Discord",
-      "telegram-desktop": "Telegram",
-      "Spotify": "Spotify",
-      "spotify": "Spotify",
-      "steam": "Steam",
-      "vlc": "VLC",
-      "mpv": "mpv",
-      "obs": "OBS",
-      "thunar": "Files",
-      "pavucontrol": "Audio",
-      "eog": "Image Viewer",
-      "evince": "Document Viewer",
-      "org.keepassxc.KeePassXC": "KeePass",
       "com.mitchellh.ghostty": "Ghostty"
     }
+  },
+  "hyprland/submap": {
+    "format": "󰘖  {}",
+    "tooltip": false
   },
   "custom/launcher": {
     "format": " ",

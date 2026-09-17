@@ -11,6 +11,13 @@ hl.bind(mainMod .. " + left", hl.dsp.focus({ direction = "left" }), { descriptio
 hl.bind(mainMod .. " + right", hl.dsp.focus({ direction = "right" }), { description = "Focus right" })
 hl.bind(mainMod .. " + up", hl.dsp.focus({ direction = "up" }), { description = "Focus up" })
 hl.bind(mainMod .. " + down", hl.dsp.focus({ direction = "down" }), { description = "Focus down" })
+-- Vim-style focus navigation
+hl.bind(mainMod .. " + h", hl.dsp.focus({ direction = "left" }), { description = "Focus left" })
+hl.bind(mainMod .. " + l", hl.dsp.focus({ direction = "right" }), { description = "Focus right" })
+
+-- Vim-style workspace navigation (j = next, k = previous)
+hl.bind(mainMod .. " + j", hl.dsp.focus({ workspace = "e+1" }), { description = "Next workspace" })
+hl.bind(mainMod .. " + k", hl.dsp.focus({ workspace = "e-1" }), { description = "Previous workspace" })
 
 -- Switch workspaces with mainMod + [1-9]
 -- Move active window to a workspace with mainMod + SHIFT + [1-9]
@@ -35,3 +42,20 @@ hl.bind(mainMod .. " + mouse_up", hl.dsp.focus({ workspace = "e+1" }))
 -- Move/resize windows with mainMod + LMB/RMB and dragging
 hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(), { mouse = true })
 hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
+
+-- Resize active window (tiled, pseudo, floating) via a resize submap
+hl.bind(mainMod .. "SHIFT + R", hl.dsp.submap("resize"), { description = "Enter resize mode" })
+hl.define_submap("resize", function()
+	hl.bind("right", hl.dsp.window.resize({ x = 10, y = 0, relative = true }), { repeating = true, description = "Resize wider" })
+	hl.bind("left", hl.dsp.window.resize({ x = -10, y = 0, relative = true }), { repeating = true, description = "Resize narrower" })
+	hl.bind("up", hl.dsp.window.resize({ x = 0, y = -10, relative = true }), { repeating = true, description = "Resize shorter" })
+	hl.bind("down", hl.dsp.window.resize({ x = 0, y = 10, relative = true }), { repeating = true, description = "Resize taller" })
+
+	hl.bind("h", hl.dsp.window.resize({ x = -10, y = 0, relative = true }), { repeating = true, description = "Resize narrower" })
+	hl.bind("l", hl.dsp.window.resize({ x = 10, y = 0, relative = true }), { repeating = true, description = "Resize wider" })
+	hl.bind("k", hl.dsp.window.resize({ x = 0, y = -10, relative = true }), { repeating = true, description = "Resize shorter" })
+	hl.bind("j", hl.dsp.window.resize({ x = 0, y = 10, relative = true }), { repeating = true, description = "Resize taller" })
+
+	hl.bind("escape", hl.dsp.submap("reset"), { description = "Exit resize mode" })
+	hl.bind("return", hl.dsp.submap("reset"), { description = "Exit resize mode" })
+end)

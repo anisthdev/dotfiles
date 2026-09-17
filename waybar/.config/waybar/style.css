@@ -139,6 +139,14 @@ window#waybar {
   border: none;
 }
 
+#submap {
+  background-color: @tertiary_container;
+  color: @on_tertiary_container;
+  padding: 0px 15px;
+  border-radius: 8px;
+  margin-right: 10px;
+}
+
 window#waybar.empty #window {
   background-color: transparent;
 }
