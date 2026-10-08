@@ -1,0 +1,3 @@
+#!/bin/sh
+# mise's npm backend doesn't link this package's bin (it points outside bin/), so run it directly
+exec node "$(mise where npm:@github/copilot-language-server)/node_modules/@github/copilot-language-server/dist/language-server.js" "$@"
