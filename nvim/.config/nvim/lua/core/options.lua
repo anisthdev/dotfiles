@@ -1,3 +1,7 @@
+-- ui2 (experimental, nvim 0.12): new message/cmdline UI. No "Press ENTER", highlighted cmdline,
+-- and messages (incl. vim.notify) shown in a corner window that fades out instead of the cmdline.
+require("vim._core.ui2").enable({ msg = { targets = "msg" } })
+
 -- appearance
 vim.opt.number = true
 vim.opt.relativenumber = true
@@ -6,7 +10,7 @@ vim.opt.signcolumn = "yes"
 vim.opt.scrolloff = 8
 vim.opt.sidescrolloff = 8
 vim.opt.termguicolors = true
-vim.opt.cmdheight = 1
+vim.opt.cmdheight = 0
 vim.opt.pumheight = 10
 vim.opt.wrap = false
 vim.o.list = true
@@ -28,6 +32,10 @@ vim.o.splitbelow = true
 vim.o.autocomplete = true
 vim.opt.complete:prepend("o")
 vim.o.completeopt = "menuone,noselect,popup"
+
+-- cmdline completion: popup menu as you type (triggered by wildtrigger() in core/autocmds.lua)
+vim.o.wildmode = "noselect:lastused,full"
+vim.o.wildoptions = "pum,fuzzy"
 
 --folding and status column
 vim.o.foldcolumn = "1"

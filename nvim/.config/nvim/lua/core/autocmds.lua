@@ -17,3 +17,12 @@ vim.api.nvim_create_autocmd({ "FileType", "BufEnter" }, {
 		end
 	end,
 })
+
+-- cmdline autocompletion: open the completion menu while typing commands and searches
+vim.api.nvim_create_autocmd("CmdlineChanged", {
+	group = group,
+	pattern = { ":", "/", "?" },
+	callback = function()
+		vim.fn.wildtrigger()
+	end,
+})

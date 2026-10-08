@@ -60,3 +60,7 @@ map("n", "<C-S-H>", "3<C-w>>", { desc = "Resize Left" })
 map("n", "<C-S-J>", "3<C-w>-", { desc = "Resize Right" })
 map("n", "<C-S-K>", "3<C-w>+", { desc = "Resize Up" })
 map("n", "<C-S-L>", "3<C-w><", { desc = "Resize Down" })
+
+-- keep <Up>/<Down> as history navigation while the cmdline completion menu is open
+map("c", "<Up>", function() return vim.fn.wildmenumode() == 1 and "<C-e><Up>" or "<Up>" end, { expr = true })
+map("c", "<Down>", function() return vim.fn.wildmenumode() == 1 and "<C-e><Down>" or "<Down>" end, { expr = true })
