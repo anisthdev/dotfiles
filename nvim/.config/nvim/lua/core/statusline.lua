@@ -1,5 +1,5 @@
 -- Native statusline (replaces lualine). Layout mirrors the old lualine config:
--- [mode] [branch] buffers ............ lsp-progress diff diagnostics | flutter-device lsp | location
+-- [mode] [branch] buffers ............ lsp-progress diff diagnostics | lsp | location
 local M = {}
 
 local modes = {
@@ -42,7 +42,10 @@ end
 ---------------------------------------------------------------------------
 -- highlights (taken from gruvbox-material's palette, like its lualine theme)
 ---------------------------------------------------------------------------
+local icon_hls = {} -- cache of icon color + tab background groups, cleared on ColorScheme
+
 local function set_highlights()
+	icon_hls = {}
 	local ok, palette = pcall(function()
 		local cfg = vim.fn["gruvbox_material#get_configuration"]()
 		return vim.fn["gruvbox_material#get_palette"](cfg.background, cfg.foreground, cfg.colors_override)
@@ -69,7 +72,7 @@ local function set_highlights()
 	set(0, "StatusLine", { bg = bg_c, fg = fg })
 	set(0, "StatusLineNC", { bg = bg_c, fg = p("grey2") })
 	set(0, "StlSection", { bg = bg_b, fg = fg })
-	set(0, "StlBufActive", { bg = p("bg_green"), fg = dark, bold = true })
+	set(0, "StlBufActive", { bg = p("bg_dim"), fg = p("fg0"), bold = true })
 	set(0, "StlBufInactive", { bg = bg_c, fg = p("grey2") })
 	set(0, "StlDiffAdd", { bg = bg_c, fg = p("green") })
 	set(0, "StlDiffChange", { bg = bg_c, fg = p("blue") })
@@ -102,6 +105,20 @@ function _G.StatuslineBufClick(bufnr)
 	end
 end
 
+local has_devicons, devicons = pcall(require, "nvim-web-devicons")
+
+-- statusline group with the devicon's color on the given tab's background
+local function icon_hl(devicon_hl, tab_hl)
+	local name = "Stl" .. tab_hl .. devicon_hl
+	if not icon_hls[name] then
+		local tab = vim.api.nvim_get_hl(0, { name = tab_hl, link = false })
+		local icon = vim.api.nvim_get_hl(0, { name = devicon_hl, link = false })
+		vim.api.nvim_set_hl(0, name, { bg = tab.bg, fg = icon.fg or tab.fg, bold = tab.bold })
+		icon_hls[name] = true
+	end
+	return "%#" .. name .. "#"
+end
+
 local function buffers()
 	local current = vim.api.nvim_get_current_buf()
 	local out = {}
@@ -115,8 +132,14 @@ local function buffers()
 			if vim.bo[buf].modified then
 				name = name .. " \u{25cf}"
 			end
-			local hl = buf == current and "%#StlBufActive#" or "%#StlBufInactive#"
-			out[#out + 1] = ("%s%%%d@v:lua.StatuslineBufClick@ %s %%X"):format(hl, buf, esc(name))
+			local tab_hl = buf == current and "StlBufActive" or "StlBufInactive"
+			local icon = ""
+			if has_devicons then
+				local file = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(buf), ":t")
+				local glyph, devicon_hl = devicons.get_icon(file, nil, { default = true })
+				icon = icon_hl(devicon_hl, tab_hl) .. glyph .. "%#" .. tab_hl .. "# "
+			end
+			out[#out + 1] = ("%%#%s#%%%d@v:lua.StatuslineBufClick@ %s%s %%X"):format(tab_hl, buf, icon, esc(name))
 		end
 	end
 	return table.concat(out) .. "%#StatusLine#"

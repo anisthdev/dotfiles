@@ -44,7 +44,6 @@ vim.pack.add({
 	gh("neovim/nvim-lspconfig"),
 	gh("stevearc/conform.nvim"),
 	-- batch 5: the rest
-	gh("nvim-flutter/flutter-tools.nvim"),
 	{ src = gh("akinsho/toggleterm.nvim"), version = vim.version.range("*") },
 })
 
@@ -59,7 +58,6 @@ for _, mod in ipairs({
 	"treesitter",
 	"lsp",
 	"conform",
-	"flutter",
 	"toggleterm",
 }) do
 	require("pack." .. mod)
