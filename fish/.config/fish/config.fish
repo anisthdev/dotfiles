@@ -16,6 +16,7 @@ set -x BAT_THEME gruvbox-dark
 starship init fish | source
 fzf --fish | source
 atuin init fish --disable-up-arrow | source
+mise activate fish | source
 
 # configure fzf
 set -gx FZF_DEFAULT_COMMAND 'rg --files --follow --glob "!.git/*" --glob "!node_modules/*"'
