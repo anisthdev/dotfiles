@@ -122,20 +122,20 @@ local function buffers()
 	return table.concat(out) .. "%#StatusLine#"
 end
 
--- lsp progress: latest message per client, cleared shortly after it ends
+-- lsp progress: spinner + server name while any client is working
 local progress = {}
 local spinner = { ".  ", ".. ", "...", " ..", "  .", "   " }
 local frame = 0
 
 local function lsp_progress()
-	local parts = {}
-	for _, text in pairs(progress) do
-		parts[#parts + 1] = text
+	local names = {}
+	for _, name in pairs(progress) do
+		names[#names + 1] = name
 	end
-	if #parts == 0 then
+	if #names == 0 then
 		return ""
 	end
-	return "%#StatusLine#" .. spinner[frame % #spinner + 1] .. " " .. esc(table.concat(parts, " | ")) .. " "
+	return "%#StatusLine#" .. spinner[frame % #spinner + 1] .. " " .. esc(table.concat(names, ", ")) .. " "
 end
 
 local function diff()
@@ -144,7 +144,11 @@ local function diff()
 		return ""
 	end
 	local out = {}
-	for _, item in ipairs({ { "added", "+", "StlDiffAdd" }, { "changed", "~", "StlDiffChange" }, { "removed", "-", "StlDiffDelete" } }) do
+	for _, item in ipairs({
+		{ "added", "+", "StlDiffAdd" },
+		{ "changed", "~", "StlDiffChange" },
+		{ "removed", "-", "StlDiffDelete" },
+	}) do
 		local n = d[item[1]]
 		if n and n > 0 then
 			out[#out + 1] = ("%%#%s#%s%d"):format(item[3], item[2], n)
@@ -165,16 +169,6 @@ local function diagnostics()
 	return #out > 0 and table.concat(out, " ") .. " " or ""
 end
 
-local function flutter_device()
-	local decorations = vim.g.flutter_tools_decorations
-	local name = decorations and decorations.device and decorations.device.name
-	if not name then
-		return ""
-	end
-	name = (name:match("^([^%(]*)") or name):gsub("%s+$", ""):sub(1, 8)
-	return "%#StlSection# \u{eadb} " .. esc(name) .. " "
-end
-
 local function lsp_clients()
 	local clients = vim.lsp.get_clients({ bufnr = 0 })
 	local first = clients[1]
@@ -189,13 +183,12 @@ function M.render()
 	return table.concat({
 		mode(),
 		branch(),
-		"%#StatusLine# %<",
+		"%#StatusLine#%<",
 		buffers(),
 		"%=",
 		lsp_progress(),
 		diff(),
 		diagnostics(),
-		flutter_device(),
 		lsp_clients(),
 		modes[vim.api.nvim_get_mode().mode] and ("%%#StlMode%s#"):format(modes[vim.api.nvim_get_mode().mode][2])
 			or "%#StlModeNormal#",
@@ -235,14 +228,8 @@ vim.api.nvim_create_autocmd("LspProgress", {
 				redraw()
 			end, 500)
 		else
-			local text = value.title or ""
-			if value.percentage then
-				text = text .. ": " .. value.percentage .. "%"
-			end
-			if value.message then
-				text = text .. " (" .. value.message .. ")"
-			end
-			progress[id] = text
+			local client = vim.lsp.get_client_by_id(id)
+			progress[id] = client and client.name or ("client " .. id)
 		end
 		redraw()
 	end,
