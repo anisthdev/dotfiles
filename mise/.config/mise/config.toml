@@ -1,0 +1,15 @@
+[tools]
+google-java-format = "latest"
+"npm:@fsouza/prettierd" = "latest"
+"npm:@github/copilot-language-server" = "latest"
+"npm:@tailwindcss/language-server" = "latest"
+"npm:@vtsls/language-server" = "latest"
+"npm:prettier" = "latest"
+"npm:pyright" = "latest"
+"npm:vscode-langservers-extracted" = "latest"
+"pipx:black" = "latest"
+"pipx:isort" = "latest"
+stylua = "latest"
+"github:EmmyLuaLs/emmylua-analyzer-rust" = { version = "latest", asset_pattern = "emmylua_ls-linux-x64-glibc.2.17.tar.gz" }
+"http:jdtls" = { version = "1.61.0", url = "https://download.eclipse.org/jdtls/milestones/1.61.0/jdt-language-server-1.61.0-202609031315.tar.gz", bin_path = "bin" }
+java = "21"
