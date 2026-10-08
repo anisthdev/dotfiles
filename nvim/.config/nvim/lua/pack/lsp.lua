@@ -15,6 +15,9 @@ local servers = {
 local function on_attach(args)
 	local bufnr = args.buf
 	local client = vim.lsp.get_client_by_id(args.data.client_id)
+	if not client then
+		return
+	end
 
 	if vim.lsp.document_color and client:supports_method("textDocument/documentColor") then
 		vim.lsp.document_color.enable(true, { bufnr = bufnr }, { style = " 󱓻 " })
