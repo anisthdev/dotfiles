@@ -78,6 +78,18 @@ vim.diagnostic.config({
 	},
 })
 
+-- :LspClients - show all LSP clients attached to the current buffer
+vim.api.nvim_create_user_command("LspClients", function()
+	local clients = vim.lsp.get_clients({ bufnr = 0 })
+	if #clients == 0 then
+		print("No LSP clients attached")
+		return
+	end
+	for _, c in ipairs(clients) do
+		print(("%-15s id=%-3d root=%s"):format(c.name, c.id, c.root_dir or "?"))
+	end
+end, { desc = "List LSP clients attached to the current buffer" })
+
 -- enable the server configurations
 for _, server in ipairs(servers) do
 	vim.lsp.enable(server)
