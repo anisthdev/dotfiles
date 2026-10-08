@@ -40,6 +40,13 @@ local function on_attach(args)
 		set_tab_completion(bufnr)
 	end
 
+	-- folding (overrides the treesitter foldexpr from core/folds.lua)
+	if client:supports_method("textDocument/foldingRange") then
+		for _, win in ipairs(vim.fn.win_findbuf(bufnr)) do
+			vim.wo[win][0].foldexpr = "v:lua.vim.lsp.foldexpr()"
+		end
+	end
+
 	-- go to definition
 	if client:supports_method("textDocument/definition") then
 		vim.keymap.set("n", "grd", vim.lsp.buf.definition, { buffer = bufnr, desc = "Go to Definition" })

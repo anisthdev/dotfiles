@@ -47,13 +47,22 @@ vim.pack.add({
 	gh("nvim-flutter/flutter-tools.nvim"),
 	{ src = gh("akinsho/toggleterm.nvim"), version = vim.version.range("*") },
 	gh("lukas-reineke/indent-blankline.nvim"),
-	gh("kevinhwang91/promise-async"),
-	gh("kevinhwang91/nvim-ufo"),
-	gh("folke/snacks.nvim"),
 })
 
 require("pack.colorscheme")
-for _, mod in ipairs({ "snacks", "surround", "autopairs", "autotag", "oil", "git", "telescope", "treesitter", "lsp", "conform", "flutter", "toggleterm", "indent", "ufo" }) do
+for _, mod in ipairs({
+	"surround",
+	"autopairs",
+	"autotag",
+	"oil",
+	"git",
+	"telescope",
+	"treesitter",
+	"lsp",
+	"conform",
+	"flutter",
+	"toggleterm",
+	"indent",
+}) do
 	require("pack." .. mod)
 end
-
