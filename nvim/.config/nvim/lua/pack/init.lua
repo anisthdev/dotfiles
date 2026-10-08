@@ -46,7 +46,6 @@ vim.pack.add({
 	-- batch 5: the rest
 	gh("nvim-flutter/flutter-tools.nvim"),
 	{ src = gh("akinsho/toggleterm.nvim"), version = vim.version.range("*") },
-	gh("lukas-reineke/indent-blankline.nvim"),
 })
 
 require("pack.colorscheme")
@@ -62,7 +61,6 @@ for _, mod in ipairs({
 	"conform",
 	"flutter",
 	"toggleterm",
-	"indent",
 }) do
 	require("pack." .. mod)
 end

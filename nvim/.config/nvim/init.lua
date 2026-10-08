@@ -1,7 +1,7 @@
 require("core.options")
 require("core.keymaps")
 require("core.autocmds")
-require("core.folds")
+require("core.indent")
 require("pack")
 require("core.statusline")
 require("core.ui")

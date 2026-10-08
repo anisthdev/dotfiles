@@ -40,7 +40,7 @@ local function on_attach(args)
 		set_tab_completion(bufnr)
 	end
 
-	-- folding (overrides the treesitter foldexpr from core/folds.lua)
+	-- folding (overrides the treesitter foldexpr from core/options.lua)
 	if client:supports_method("textDocument/foldingRange") then
 		for _, win in ipairs(vim.fn.win_findbuf(bufnr)) do
 			vim.wo[win][0].foldexpr = "v:lua.vim.lsp.foldexpr()"
