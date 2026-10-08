@@ -32,10 +32,6 @@ local function on_attach(args)
 	if client:supports_method("textDocument/definition") then
 		vim.keymap.set("n", "grd", vim.lsp.buf.definition, { buffer = bufnr, desc = "Go to Definition" })
 	end
-
-	if client:supports_method("textDocument/codeLens") then
-		vim.lsp.codelens.enable(true, { bufnr = bufnr })
-	end
 end
 
 vim.api.nvim_create_autocmd("LspAttach", {
