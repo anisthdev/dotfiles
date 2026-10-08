@@ -6,6 +6,7 @@ local servers = {
 	"cssls",
 	"tailwindcss",
 	"kotlin_lsp",
+	"jdtls",
 	"jsonls",
 	"copilot",
 }
