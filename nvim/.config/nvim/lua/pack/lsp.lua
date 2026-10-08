@@ -43,8 +43,14 @@ vim.api.nvim_create_autocmd("LspAttach", {
 vim.lsp.config("*", {
 	capabilities = require("blink.cmp").get_lsp_capabilities(),
 	root_markers = { ".git" },
-	cmd = {},
 })
+
+-- inlay hints: enabled globally rather than per attach, because some servers (e.g. dartls)
+-- register the capability dynamically after LspAttach has already fired
+vim.lsp.inlay_hint.enable(true)
+vim.keymap.set("n", "<leader>th", function()
+	vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
+end, { desc = "Toggle inlay hints" })
 
 -- diagnostic configuration
 vim.diagnostic.config({
