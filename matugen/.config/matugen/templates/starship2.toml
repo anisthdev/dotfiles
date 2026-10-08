@@ -89,7 +89,7 @@ format = '·[ $symbol($version) ](fg:#00ADD8)'
 
 [lua]
 symbol = "󰢱 "
-format = '·[ $symbol($version) ](fg:#03037E)'
+format = '·[ $symbol($version) ](fg:#51a0cf)'
 
 [php]
 symbol = " "

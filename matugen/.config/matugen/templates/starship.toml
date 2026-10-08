@@ -104,7 +104,7 @@ format = '[[ $symbol($version) ](fg:#00ADD8 bg:#32302f)]($style)'
 [lua]
 symbol = "󰢱 "
 style = "bg:#32302f"
-format = '[[ $symbol($version) ](fg:#03037E bg:#32302f)]($style)'
+format = '[[ $symbol($version) ](fg:#51a0cf bg:#32302f)]($style)'
 
 [php]
 symbol = " "
