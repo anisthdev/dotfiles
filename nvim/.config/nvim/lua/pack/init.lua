@@ -32,8 +32,6 @@ vim.pack.add({
 	gh("tpope/vim-fugitive"),
 	gh("lewis6991/gitsigns.nvim"),
 	gh("nvim-tree/nvim-web-devicons"),
-	gh("nvim-lualine/lualine.nvim"),
-	gh("arkav/lualine-lsp-progress"),
 	-- batch 2: telescope
 	gh("nvim-lua/plenary.nvim"),
 	gh("nvim-telescope/telescope.nvim"),
@@ -57,7 +55,7 @@ vim.pack.add({
 })
 
 require("pack.colorscheme")
-for _, mod in ipairs({ "snacks", "surround", "autopairs", "autotag", "oil", "git", "lualine", "telescope", "treesitter", "blink", "lsp", "conform", "flutter", "toggleterm", "indent", "ufo" }) do
+for _, mod in ipairs({ "snacks", "surround", "autopairs", "autotag", "oil", "git", "telescope", "treesitter", "blink", "lsp", "conform", "flutter", "toggleterm", "indent", "ufo" }) do
 	require("pack." .. mod)
 end
 

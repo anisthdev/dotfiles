@@ -2,4 +2,5 @@
 require("core.options")
 require("core.keymaps")
 require("pack")
+require("core.statusline")
 require("core.ui")
