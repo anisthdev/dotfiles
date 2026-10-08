@@ -11,27 +11,36 @@ local servers = {
 	"copilot",
 }
 
+local set_tab_completion = function(bufnr)
+	vim.keymap.set("i", "<Tab>", function()
+		if not vim.lsp.inline_completion.get() then
+			return "<Tab>"
+		end
+	end, { buffer = bufnr, expr = true, desc = "Accept the current inline completion" })
+end
+
 -- define all the keymaps and other settings on lsp attach
 local function on_attach(args)
 	local bufnr = args.buf
-	local client = vim.lsp.get_client_by_id(args.data.client_id)
-	if not client then
-		return
-	end
+	local client = assert(vim.lsp.get_client_by_id(args.data.client_id))
 
-	if vim.lsp.document_color and client:supports_method("textDocument/documentColor") then
+	-- color highlights
+	if client:supports_method("textDocument/documentColor") then
 		vim.lsp.document_color.enable(true, { bufnr = bufnr }, { style = " 󱓻 " })
 	end
 
-	if vim.lsp.inline_completion and client:supports_method("textDocument/inlineCompletion") then
-		vim.lsp.inline_completion.enable()
-		vim.keymap.set("i", "<Tab>", function()
-			if not vim.lsp.inline_completion.get() then
-				return "<Tab>"
-			end
-		end, { buffer = bufnr, expr = true, desc = "Accept the current inline completion" })
+	-- completion menu
+	if client:supports_method("textDocument/completion") and client.name ~= "copilot" then
+		vim.lsp.completion.enable(true, client.id, bufnr, { autotrigger = true })
 	end
 
+	-- inline completion
+	if client:supports_method("textDocument/inlineCompletion") then
+		vim.lsp.inline_completion.enable()
+		set_tab_completion(bufnr)
+	end
+
+	-- go to definition
 	if client:supports_method("textDocument/definition") then
 		vim.keymap.set("n", "grd", vim.lsp.buf.definition, { buffer = bufnr, desc = "Go to Definition" })
 	end
@@ -42,11 +51,8 @@ vim.api.nvim_create_autocmd("LspAttach", {
 	callback = on_attach,
 })
 
--- default capabilities and root_markers for all servers
-vim.lsp.config("*", {
-	capabilities = require("blink.cmp").get_lsp_capabilities(),
-	root_markers = { ".git" },
-})
+-- default root_markers for all servers
+vim.lsp.config("*", { root_markers = { ".git" } })
 
 -- inlay hints: enabled globally rather than per attach, because some servers (e.g. dartls)
 -- register the capability dynamically after LspAttach has already fired

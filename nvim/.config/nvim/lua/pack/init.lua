@@ -42,8 +42,6 @@ vim.pack.add({
 	{ src = gh("nvim-treesitter/nvim-treesitter-textobjects"), version = "main" },
 	-- batch 4: lsp stack (servers/formatters come from mise, no mason)
 	gh("neovim/nvim-lspconfig"),
-	{ src = gh("saghen/blink.cmp"), version = vim.version.range("1.*") },
-	gh("rafamadriz/friendly-snippets"),
 	gh("stevearc/conform.nvim"),
 	-- batch 5: the rest
 	gh("nvim-flutter/flutter-tools.nvim"),
@@ -55,7 +53,7 @@ vim.pack.add({
 })
 
 require("pack.colorscheme")
-for _, mod in ipairs({ "snacks", "surround", "autopairs", "autotag", "oil", "git", "telescope", "treesitter", "blink", "lsp", "conform", "flutter", "toggleterm", "indent", "ufo" }) do
+for _, mod in ipairs({ "snacks", "surround", "autopairs", "autotag", "oil", "git", "telescope", "treesitter", "lsp", "conform", "flutter", "toggleterm", "indent", "ufo" }) do
 	require("pack." .. mod)
 end
 

@@ -23,3 +23,8 @@ vim.o.ignorecase = true
 vim.o.smartcase = true
 vim.o.splitright = true
 vim.o.splitbelow = true
+
+-- completion
+vim.o.autocomplete = true
+vim.opt.complete:prepend("o")
+vim.o.completeopt = "menuone,noselect,popup"
