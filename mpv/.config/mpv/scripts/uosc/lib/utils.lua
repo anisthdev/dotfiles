@@ -1034,7 +1034,7 @@ function render()
 	local ass = assdraw.ass_new()
 
 	-- Idle indicator
-	if state.is_idle and not Manager.disabled.idle_indicator then
+	if state.is_idle and not Manager.disabled.idle_indicator and not Elements:v('library', 'enabled') then
 		local smaller_side = math.min(display.width, display.height)
 		local center_x, center_y, icon_size = display.width / 2, display.height / 2, math.max(smaller_side / 4, 56)
 		ass:icon(center_x, center_y - icon_size / 4, icon_size, 'not_started', {

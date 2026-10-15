@@ -57,8 +57,12 @@ function ass_mt:txt(x, y, align, value, opts)
 	tags = tags .. '\\fn' .. (opts.font or config.font)
 	-- font size
 	tags = tags .. '\\fs' .. opts.size
-	-- bold
-	if opts.bold or (opts.bold == nil and options.font_bold) then tags = tags .. '\\b1' end
+	-- bold, or an explicit font weight (100-900)
+	if opts.weight then
+		tags = tags .. '\\b' .. opts.weight
+	elseif opts.bold or (opts.bold == nil and options.font_bold) then
+		tags = tags .. '\\b1'
+	end
 	-- italic
 	if opts.italic then tags = tags .. '\\i1' end
 	-- rotate
