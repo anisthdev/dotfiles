@@ -32,7 +32,6 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
-from guessit import guessit
 
 VIDEOS = Path("~/Videos").expanduser()
 ROWS_FILE = Path(__file__).resolve().parent / "library.toml"
@@ -51,6 +50,7 @@ TMDB_CACHE = CACHE / "tmdb"
 IMAGES = CACHE / "images"
 THUMBS = CACHE / "thumbs"
 PROBE_CACHE = CACHE / "probe.json"
+GUESS_CACHE = CACHE / "guess.json"
 LIBRARY = CACHE / "library.json"
 
 POSTER_SIZE = (220, 330)
@@ -71,6 +71,39 @@ def normalize(text):
     text = unicodedata.normalize("NFKC", str(text or "")).casefold().replace("&", " and ")
     text = re.sub(r"['’`]", "", text)
     return " ".join(re.sub(r"[^\w]+", " ", text).split())
+
+
+# guessit is ~20 ms per name and the names never change, so results are cached
+# by name and guessit is only imported when there's something new to parse.
+GUESS_VERSION = 1
+_guess_cache = None
+
+
+def guess(name):
+    global _guess_cache
+    if _guess_cache is None:
+        try:
+            data = json.loads(GUESS_CACHE.read_text())
+            _guess_cache = data["names"] if data.get("version") == GUESS_VERSION else {}
+        except (OSError, ValueError, KeyError):
+            _guess_cache = {}
+    if name not in _guess_cache:
+        from guessit import guessit
+
+        g = guessit(name)
+        _guess_cache[name] = {
+            "title": str(g["title"]) if g.get("title") else None,
+            "year": first_int(g.get("year")),
+            "season": first_int(g.get("season")),
+            "episode": first_int(g.get("episode")),
+            "episode_title": str(g["episode_title"]) if g.get("episode_title") else None,
+        }
+    return _guess_cache[name]
+
+
+def save_guess_cache():
+    if _guess_cache is not None:
+        GUESS_CACHE.write_text(json.dumps({"version": GUESS_VERSION, "names": _guess_cache}))
 
 
 def first_int(value):
@@ -205,7 +238,7 @@ def season_from_parents(path, stop):
     for parent in path.parents:
         if parent == stop.parent:
             break
-        season = first_int(guessit(parent.name).get("season"))
+        season = first_int(guess(parent.name)["season"])
         if season is not None:
             return season
     return None
@@ -354,10 +387,10 @@ def scan_movies(row, tmdb, overrides, probes, jobs):
         if not files:
             continue
         video = max(files, key=lambda f: f.stat().st_size)
-        guess = guessit(entry.name if entry.is_dir() else entry.stem)
+        parsed = guess(entry.name if entry.is_dir() else entry.stem)
         override = overrides.get(f"{row['name']}/{entry.name}", {})
-        title = override.get("title") or guess.get("title") or entry.stem
-        year = override.get("year") or guess.get("year")
+        title = override.get("title") or parsed["title"] or entry.stem
+        year = override.get("year") or parsed["year"]
 
         details = None
         if row["tmdb"]:
@@ -399,17 +432,17 @@ def scan_series(row, tmdb, overrides, probes, jobs):
         if not files:
             continue
         override = overrides.get(f"{category}/{entry.name}", {})
-        guess = guessit(entry.name if entry.is_dir() else entry.stem)
-        title = override.get("title") or guess.get("title") or entry.name
+        parsed = guess(entry.name if entry.is_dir() else entry.stem)
+        title = override.get("title") or parsed["title"] or entry.name
         show = shows.setdefault(normalize(title), {"title": title, "year": override.get("year"), "tmdb_id": override.get("tmdb_id"), "files": [], "folders": []})
         show["folders"].append(entry.name)
         for f in files:
-            g = guessit(f.name)
-            episode = first_int(g.get("episode"))
+            g = guess(f.name)
+            episode = g["episode"]
             if episode is None:
                 continue  # extras, NCOP/NCED, samples
-            season = first_int(g.get("season")) or season_from_parents(f, entry) or first_int(guess.get("season")) or 1
-            show["files"].append((season, episode, f, g.get("episode_title")))
+            season = g["season"] or season_from_parents(f, entry) or parsed["season"] or 1
+            show["files"].append((season, episode, f, g["episode_title"]))
 
     items = []
     for key, show in sorted(shows.items()):
@@ -483,6 +516,7 @@ def main():
         scan = scan_movies if row["type"] == "movies" else scan_series
         items += scan(row, tmdb, overrides, probes, jobs)
     PROBE_CACHE.write_text(json.dumps(probes))
+    save_guess_cache()
 
     log(f"Making {len(jobs)} thumbnails")
     thumbs, sources = {}, {}
@@ -497,21 +531,27 @@ def main():
             ep["thumb"] = thumbs.get(ep["id"])
 
     library = {
-        "generated": int(time.time()),
         "rows": [row["name"] for row in rows],
         "poster_size": POSTER_SIZE,
         "card_size": CARD_SIZE,
         "still_size": STILL_SIZE,
         "items": items,
     }
-    tmp = LIBRARY.with_suffix(".tmp")
-    tmp.write_text(json.dumps(library, indent=1, ensure_ascii=False))
-    tmp.replace(LIBRARY)
+    # Only rewrite when something changed; mpv reloads the library when its mtime changes.
+    text = json.dumps(library, indent=1, ensure_ascii=False)
+    try:
+        unchanged = LIBRARY.read_text() == text
+    except OSError:
+        unchanged = False
+    if not unchanged:
+        tmp = LIBRARY.with_suffix(".tmp")
+        tmp.write_text(text)
+        tmp.replace(LIBRARY)
 
     episodes = sum(len(i.get("episodes", [])) for i in items)
     tmdb_rows = {row["name"] for row in rows if row["tmdb"]}
     unmatched = [i["title"] for i in items if i["category"] in tmdb_rows and not i.get("tmdb_id")]
-    log(f"Done: {len(items)} titles, {episodes} episodes; thumbnails {sources}")
+    log(f"Done: {len(items)} titles, {episodes} episodes; thumbnails {sources}; library {'unchanged' if unchanged else 'updated'}")
     if unmatched:
         log("Not found on TMDB: " + ", ".join(unmatched))
 

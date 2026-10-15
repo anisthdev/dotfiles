@@ -37,17 +37,30 @@ end
 
 local function episode_code(ep) return string.format('S%02dE%02d', ep.season, ep.episode) end
 
--- Shorten text with an ellipsis so it fits in `width` pixels.
+-- Shorten text with an ellipsis so it fits in `width` pixels. Results are cached,
+-- and the search starts from a proportional estimate, since every new string
+-- measured is a round trip to libass.
+local fit_cache = {}
 local function fit_text(text, width, opts)
-	if text_width(text, opts) <= width then return text end
-	local chars = {}
-	for _, char in utf8_iter(text) do chars[#chars + 1] = char end
-	local low, high = 0, #chars
-	while low < high do
-		local mid = math.ceil((low + high) / 2)
-		if text_width(table.concat(chars, '', 1, mid) .. '…', opts) <= width then low = mid else high = mid - 1 end
+	local key = table.concat({text, round(width), opts.size, opts.bold and 1 or 0}, '\0')
+	if fit_cache[key] then return fit_cache[key] end
+
+	local full = text_width(text, opts)
+	local result = text
+	if full > width then
+		local chars = {}
+		for _, char in utf8_iter(text) do chars[#chars + 1] = char end
+		local function fits(n) return text_width(table.concat(chars, '', 1, n) .. '…', opts) <= width end
+		local n = math.max(0, math.floor(#chars * width / full) - 1)
+		if fits(n) then
+			while n < #chars and fits(n + 1) do n = n + 1 end
+		else
+			repeat n = n - 1 until n <= 0 or fits(n)
+		end
+		result = table.concat(chars, '', 1, math.max(0, n)) .. '…'
 	end
-	return table.concat(chars, '', 1, low) .. '…'
+	fit_cache[key] = result
+	return result
 end
 
 -- Wrap text to `width` pixels, keeping at most `max_lines` (the last one ellipsized).
@@ -103,8 +116,8 @@ function Library:init()
 	mp.register_script_message('library-rescan', function() self:scan() end)
 	mp.register_event('shutdown', function() self:clear_overlays() end)
 
-	self:load()
-	self:scan()
+	-- Only load and scan once mpv is idle; playing a file directly costs nothing.
+	self:on_prop_is_idle(state.is_idle)
 end
 
 function Library:destroy()
@@ -125,7 +138,7 @@ function Library:scan()
 	}, function(success, result)
 		self.scanning = false
 		if success and result.status == 0 then
-			self:load()
+			self:load() -- no-op when the scan didn't change library.json
 		else
 			msg.warn('library scan failed: ' .. tostring(result and result.stderr or result))
 		end
@@ -133,6 +146,10 @@ function Library:scan()
 end
 
 function Library:load()
+	local info = utils.file_info(LIBRARY_FILE)
+	local stamp = info and (info.mtime .. ':' .. info.size)
+	if not stamp or stamp == self.loaded_stamp then return end
+	self.loaded_stamp = stamp
 	local file = io.open(LIBRARY_FILE, 'r')
 	if not file then return end
 	local data = utils.parse_json(file:read('*a'))
@@ -286,7 +303,13 @@ function Library:decide_enabled()
 	request_render()
 end
 
-function Library:on_prop_is_idle() self:decide_enabled() end
+function Library:on_prop_is_idle(idle)
+	if idle then
+		self:load()
+		self:scan()
+	end
+	self:decide_enabled()
+end
 function Library:on_display() request_render() end
 
 -- Overlays and key bindings must step aside while a menu is open.
@@ -460,7 +483,7 @@ end
 --[[ OVERLAYS ]]
 
 function Library:clear_overlays()
-	for id in pairs(self.overlays) do mp.commandv('overlay-remove', tostring(id)) end
+	for id in pairs(self.overlays) do mp.command_native_async({'overlay-remove', id}, function() end) end
 	self.overlays = {}
 end
 
@@ -473,14 +496,15 @@ function Library:set_overlays(images)
 		local signature = table.concat({image.file, image.x, image.y, image.w, image.h}, '|')
 		wanted[id] = true
 		if self.overlays[id] ~= signature then
+			-- Async so rendering never waits on mpv reading the image file.
 			local sw, sh = image.size[1], image.size[2]
-			mp.command_native({'overlay-add', id, image.x, image.y, image.file, 0, 'bgra', sw, sh, sw * 4, image.w, image.h})
+			mp.command_native_async({'overlay-add', id, image.x, image.y, image.file, 0, 'bgra', sw, sh, sw * 4, image.w, image.h}, function() end)
 			self.overlays[id] = signature
 		end
 	end
 	for id in pairs(self.overlays) do
 		if not wanted[id] then
-			mp.commandv('overlay-remove', tostring(id))
+			mp.command_native_async({'overlay-remove', id}, function() end)
 			self.overlays[id] = nil
 		end
 	end
@@ -705,7 +729,7 @@ function Library:render()
 	if #self.rows > self.visible_rows then
 		local s = state.scale
 		local more_below = self.row_scroll + self.visible_rows - 1 < #self.rows
-		ass:icon(display.width / 2, L.bottom - round(12 * s), round(28 * s), more_below and 'expand_more' or 'expand_less', {
+		ass:icon(display.width / 2, L.bottom + round(18 * s), round(28 * s), more_below and 'expand_more' or 'expand_less', {
 			color = fg, opacity = 0.35,
 		})
 	end
@@ -903,7 +927,7 @@ function Library:render_series()
 	cursor:zone('wheel_up', area, function() self:scroll_episodes(-1) end)
 	if total_rows > self.ep_rows_visible then
 		local more_below = self.ep_scroll + self.ep_rows_visible < total_rows
-		ass:icon(display.width / 2, bottom - round(12 * s), round(28 * s), more_below and 'expand_more' or 'expand_less', {
+		ass:icon(display.width / 2, bottom + round(18 * s), round(28 * s), more_below and 'expand_more' or 'expand_less', {
 			color = fg, opacity = 0.35,
 		})
 	end
