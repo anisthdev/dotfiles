@@ -8,6 +8,7 @@ hl.bind(mainMod .. "B", hl.dsp.exec_cmd("uwsm app -- firefox -P asif"), { descri
 hl.bind(mainMod .. "Return", hl.dsp.exec_cmd("uwsm app -- ghostty"), { description = "Terminal" })
 hl.bind(mainMod .. "Y", hl.dsp.exec_cmd("uwsm app -- ghostty --title=yazi -e yazi"), { description = "Yazi" })
 hl.bind(mainMod .. "T", hl.dsp.exec_cmd("uwsm app -- ghostty --title=tremc -e tremc"), { description = "Tremc" })
+hl.bind(mainMod .. "M", hl.dsp.exec_cmd("uwsm app -- mpv --player-operation-mode=pseudo-gui"), { description = "mpv" })
 hl.bind(mainMod .. "SHIFT + B", hl.dsp.exec_cmd("uwsm app -- firefox --private-window"), { description = "Incognito" })
 hl.bind(mainMod .. "V", hl.dsp.exec_cmd("clipse-gui"), { description = "Clipboard manager" })
 
