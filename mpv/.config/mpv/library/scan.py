@@ -17,6 +17,7 @@ missing falls back to a frame grabbed from the video.
 """
 
 import concurrent.futures
+import fcntl
 import hashlib
 import json
 import os
@@ -75,7 +76,7 @@ def normalize(text):
 
 # guessit is ~20 ms per name and the names never change, so results are cached
 # by name and guessit is only imported when there's something new to parse.
-GUESS_VERSION = 1
+GUESS_VERSION = 2
 _guess_cache = None
 
 
@@ -92,6 +93,7 @@ def guess(name):
 
         g = guessit(name)
         _guess_cache[name] = {
+            "type": g.get("type"),
             "title": str(g["title"]) if g.get("title") else None,
             "year": first_int(g.get("year")),
             "season": first_int(g.get("season")),
@@ -363,6 +365,7 @@ def load_rows():
             "type": row["type"],
             "paths": [Path(p).expanduser() for p in paths],
             "tmdb": row.get("tmdb", True),
+            "sort": row.get("sort"),
         })
     return result
 
@@ -504,6 +507,9 @@ def scan_series(row, tmdb, overrides, probes, jobs):
 def main():
     for d in (TMDB_CACHE, IMAGES, THUMBS):
         d.mkdir(parents=True, exist_ok=True)
+    # mpv and the torrent sorter can start scans at the same time; never overlap them.
+    lock = open(CACHE / "scan.lock", "w")
+    fcntl.flock(lock, fcntl.LOCK_EX)
     tmdb = Tmdb()
     overrides = load_overrides()
     probes = load_probe_cache()

@@ -6,21 +6,26 @@
 #         "series": every folder is a show; folders with the same show title
 #                   (e.g. one per season) are merged
 #   tmdb  false to skip TMDB: titles come from file names, images from frames
+#   sort  where finished torrents go (sort.py): "movies", "series" (non-anime
+#         shows) or "anime"; the row's first path is the destination
 
 [[rows]]
 name = "Movies"
 path = "~/Videos/Movies"
 type = "movies"
+sort = "movies"
 
 [[rows]]
 name = "TV"
 path = "~/Videos/TV"
 type = "series"
+sort = "series"
 
 [[rows]]
 name = "Anime"
 path = "~/Videos/Anime"
 type = "series"
+sort = "anime"
 
 [[rows]]
 name = "Others"
