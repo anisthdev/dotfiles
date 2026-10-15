@@ -83,8 +83,15 @@ wifi_handle_selection() {
 wifi_connect_worker() {
   local target_ssid="$1"
   local security="$2"
+  local connecting=(busy --body "$target_ssid" "Connecting to Wi-Fi" --)
+  local quiet=()
 
-  if nmcli device wifi connect "$target_ssid" >/dev/null 2>&1; then
+  # Secured networks fall back to a saved profile or a password prompt, so the
+  # first attempt failing isn't an error yet.
+  [[ -z "${security// }" || "$security" == -- ]] || quiet=(--no-error)
+
+  if busy "${quiet[@]}" --body "$target_ssid" "Connecting to Wi-Fi" -- \
+    nmcli device wifi connect "$target_ssid" >/dev/null 2>&1; then
     return 0
   fi
 
@@ -93,7 +100,8 @@ wifi_connect_worker() {
   fi
 
   # Fall back to prompting only when NetworkManager cannot reuse a saved profile.
-  if nmcli connection up "$target_ssid" >/dev/null 2>&1; then
+  if busy --no-error --body "$target_ssid" "Connecting to Wi-Fi" -- \
+    nmcli connection up "$target_ssid" >/dev/null 2>&1; then
     return 0
   fi
 
@@ -101,7 +109,7 @@ wifi_connect_worker() {
   password="$(rofi -dmenu -password -p "󰌾" -theme "$THEME" -theme-str 'mainbox { children: [ "inputbar" ]; }' -theme-str 'inputbar { enabled: true; }')"
   [[ -z "$password" ]] && return 0
 
-  nmcli device wifi connect "$target_ssid" password "$password" >/dev/null 2>&1 || true
+  "${connecting[@]}" nmcli device wifi connect "$target_ssid" password "$password" >/dev/null 2>&1 || true
 }
 
 vpn_toggle_detached() {
@@ -115,11 +123,13 @@ vpn_toggle_worker() {
   local is_active="${2:-0}"
 
   if [[ "$is_active" -eq 1 ]]; then
-    nmcli connection down "$vpn_name" >/dev/null 2>&1 || true
+    busy --body "$vpn_name" "Disconnecting VPN" -- \
+      nmcli connection down "$vpn_name" >/dev/null 2>&1 || true
     return 0
   fi
 
-  nmcli connection up "$vpn_name" >/dev/null 2>&1 || true
+  busy --body "$vpn_name" "Connecting VPN" -- \
+    nmcli connection up "$vpn_name" >/dev/null 2>&1 || true
 }
 
 ensure_vpn_indicator() {

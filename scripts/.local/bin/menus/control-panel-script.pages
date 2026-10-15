@@ -162,7 +162,9 @@ render_wifi_page() {
   declare -A active_ssid=()
   declare -A ssid_security=()
 
-  mapfile -t lines < <(nmcli -t -f IN-USE,SSID,SIGNAL,SECURITY device wifi list --rescan "$rescan" 2>/dev/null || true)
+  local scan=(nmcli -t -f IN-USE,SSID,SIGNAL,SECURITY device wifi list --rescan "$rescan")
+  [[ "$rescan" == "yes" ]] && scan=(busy "Scanning Wi-Fi" -- "${scan[@]}")
+  mapfile -t lines < <("${scan[@]}" 2>/dev/null || true)
 
   local line inuse rest ssid signal security
   for line in "${lines[@]}"; do

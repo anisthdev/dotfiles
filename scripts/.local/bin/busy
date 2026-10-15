@@ -1,0 +1,129 @@
+#!/usr/bin/env bash
+# Run a command and show a spinner notification while it is still running.
+#
+#   busy [options] TITLE -- COMMAND [ARGS...]
+#
+# Nothing is shown if the command finishes within the delay. On success the
+# notification is closed; on failure it turns into an error notification with
+# the last line of stderr. stdin, stdout, stderr and the exit code of COMMAND
+# are passed through, so busy can wrap commands inside pipelines and $(...).
+#
+# Options:
+#   -b, --body TEXT    secondary text, e.g. the search query
+#   -i, --icon NAME    notification icon
+#   -d, --delay SECS   time before the spinner appears (default: 0.3)
+#   -q, --no-error     don't show a notification on failure
+set -uo pipefail
+
+usage() {
+    sed -n '2,/^set /{/^#/s/^# \{0,1\}//p}' "$0" >&2
+    exit 2
+}
+
+body=""
+icon=""
+delay="0.3"
+show_error=1
+
+while (($#)); do
+    case "$1" in
+        -b | --body) body="${2-}"; shift 2 ;;
+        -i | --icon) icon="${2-}"; shift 2 ;;
+        -d | --delay) delay="${2-}"; shift 2 ;;
+        -q | --no-error) show_error=0; shift ;;
+        -h | --help) usage ;;
+        -*) usage ;;
+        *) break ;;
+    esac
+done
+
+(($# >= 3)) && [[ "$2" == "--" ]] || usage
+title="$1"
+shift 2
+
+state_dir="$(mktemp -d --tmpdir busy.XXXXXX)"
+id_file="$state_dir/id"
+err_file="$state_dir/stderr"
+spinner_pid=""
+
+notify() {
+    # Prints the notification id; replaces the existing one when known.
+    local id
+    id="$(cat "$id_file" 2>/dev/null)"
+    notify-send --app-name=busy --print-id ${id:+--replace-id="$id"} "$@"
+}
+
+spinner() {
+    # USR1 interrupts the sleeps right away; a running notify-send finishes first.
+    local stopped=0
+    trap 'stopped=1' USR1
+
+    nap() {
+        sleep "$1" &
+        local pid=$!
+        wait "$pid"
+        kill "$pid" 2>/dev/null
+    }
+
+    local frames=(⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏)
+    local start=$SECONDS i=0
+
+    nap "$delay"
+    while ((!stopped)); do
+        notify --urgency=low --expire-time=0 ${icon:+--icon="$icon"} \
+            "${frames[i % ${#frames[@]}]}  $title" \
+            "$body${body:+  ·  }$((SECONDS - start))s" >"$id_file.new" \
+            && mv "$id_file.new" "$id_file"
+        i=$((i + 1))
+        nap 0.15
+    done
+}
+
+close_notification() {
+    local id
+    id="$(cat "$id_file" 2>/dev/null)"
+    [[ -n "$id" ]] || return 0
+    gdbus call --session \
+        --dest org.freedesktop.Notifications \
+        --object-path /org/freedesktop/Notifications \
+        --method org.freedesktop.Notifications.CloseNotification "$id" >/dev/null 2>&1
+}
+
+stop_spinner() {
+    [[ -n "$spinner_pid" ]] || return 0
+    kill -USR1 "$spinner_pid" 2>/dev/null
+    wait "$spinner_pid" 2>/dev/null
+    spinner_pid=""
+}
+
+cleanup() {
+    stop_spinner
+    close_notification
+    rm -rf "$state_dir"
+}
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
+# The spinner must not hold the caller's stdout, or $(busy ...) would hang.
+spinner </dev/null >/dev/null 2>&1 &
+spinner_pid=$!
+
+# Copy stderr to a file for the error notification while still passing it on.
+exec {err_fd}> >(tee "$err_file" >&2)
+tee_pid=$!
+"$@" 2>&"$err_fd" {err_fd}>&-
+status=$?
+exec {err_fd}>&-
+wait "$tee_pid" 2>/dev/null # let tee flush stderr
+
+stop_spinner
+
+if ((status != 0 && show_error)); then
+    reason="$(grep -v '^[[:space:]]*$' "$err_file" | tail -n 1)"
+    notify --urgency=normal --expire-time=10000 --icon=dialog-error \
+        "$title failed" "${reason:-exit code $status}" >/dev/null
+    rm -f "$id_file" # keep the error notification open
+fi
+
+exit "$status"

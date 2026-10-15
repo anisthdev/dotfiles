@@ -11,6 +11,7 @@ JACKETT_SEARCH_TYPE="${JACKETT_SEARCH_TYPE:-movie}"
 JACKETT_CATEGORY="${JACKETT_CATEGORY:-}"
 JACKETT_TV_CATEGORY="${JACKETT_TV_CATEGORY:-}"
 JACKETT_LIMIT="${JACKETT_LIMIT:-30}"
+JACKETT_TIMEOUT="${JACKETT_TIMEOUT:-120}"
 JACKETT_THEME="${JACKETT_THEME:-$SCRIPT_DIR/styles/jackett-search.rasi}"
 JACKETT_SEARCH_LABEL="${JACKETT_SEARCH_LABEL:-movies}"
 JACKETT_SELECT_LABEL="${JACKETT_SELECT_LABEL:-result}"
@@ -84,7 +85,12 @@ fetch_results() {
         curl_args+=(--data-urlencode "ep=$episode")
     fi
 
-    curl -fsS --get \
+    local body="$query"
+    [[ -n "$season" ]] && body+=" S$season"
+    [[ -n "$episode" ]] && body+=" E$episode"
+
+    busy --no-error --body "$body" "Searching $JACKETT_SEARCH_LABEL" -- \
+        curl -fsS --get --max-time "$JACKETT_TIMEOUT" \
         "${curl_args[@]}" \
         "$JACKETT_URL/api/v2.0/indexers/$JACKETT_INDEXER/results/torznab/api"
 }
@@ -252,6 +258,7 @@ select_result() {
 }
 
 main() {
+    require busy
     require curl
     require jq
     require rofi
