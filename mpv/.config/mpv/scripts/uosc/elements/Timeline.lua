@@ -305,12 +305,12 @@ function Timeline:render()
 
 	-- Background
 	local background_opts = {color = bg, opacity = config.opacity.timeline}
-	draw_segmented_rect(bax, bay, fax, bby, {
+	draw_segmented_rect(bax, fay, fax, fby, {
 		color = config.color.position or fg,
 		opacity = config.opacity.position,
 	}) --left of progress
-	draw_segmented_rect(fbx, bay, bbx, bby, background_opts) --right of progress
-	draw_segmented_rect(fax, bay, fbx, fay, background_opts) --above progress
+	draw_segmented_rect(fbx, fay, bbx, fby, background_opts) --right of progress
+	draw_segmented_rect(bax, bay, bbx, fay, background_opts) --top border
 
 	-- Progress
 	local function draw_progress()
