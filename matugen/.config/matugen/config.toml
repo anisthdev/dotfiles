@@ -82,7 +82,7 @@ output_path = '~/.config/gtk-4.0/gtk-dark.css'
 
 [templates.firefox_private]
 input_path = './templates/firefox-private.css'
-output_path = '~/.mozilla/firefox/RiJIKUI2.Profile 1/chrome/userContent.css'
+output_path = '~/.mozilla/firefox/asif/chrome/userContent.css'
 
 [templates.nvim]
 input_path = './templates/background.lua'
