@@ -6,7 +6,8 @@ local SCAN_SCRIPT = mp.command_native({'expand-path', '~~/library/scan.py'})
 local LIBRARY_FILE = mp.command_native({'expand-path', '~/.cache/mpv-library/library.json'})
 local WATCH_LATER_DIR = mp.command_native({'expand-path', '~~state/watch_later'})
 local WATCH_HISTORY = mp.command_native({'expand-path', mp.get_property('watch-history-path', '~~state/watch_history.jsonl')})
-local CATEGORIES = {'Movies', 'TV', 'Anime'}
+-- Row order comes from library.json (library.toml); this is the fallback.
+local DEFAULT_ROWS = {'Movies', 'TV', 'Anime'}
 
 -- libass picks the matching face by weight; falls back to the OSD font if missing.
 local FONT_FAMILY = 'SF Pro Display'
@@ -138,15 +139,16 @@ function Library:load()
 	file:close()
 	if not data or not data.items then return end
 
+	local categories = data.rows or DEFAULT_ROWS
 	local by_category = {}
-	for _, category in ipairs(CATEGORIES) do by_category[category] = {} end
+	for _, category in ipairs(categories) do by_category[category] = {} end
 	for _, item in ipairs(data.items) do
 		local list = by_category[item.category]
 		if list then list[#list + 1] = item end
 	end
 	local selected_id = self:selected_item() and self:selected_item().id
 	self.rows = {}
-	for _, category in ipairs(CATEGORIES) do
+	for _, category in ipairs(categories) do
 		if #by_category[category] > 0 then self.rows[#self.rows + 1] = category end
 	end
 	self.by_category = by_category
@@ -608,8 +610,10 @@ function Library:render_cell(ass, item, row, col, cx, cy, L, images)
 	})
 	local sub
 	if item.kind == 'movie' then
-		sub = (item.year and item.year ~= 0) and tostring(item.year) or ''
-		if item.duration then sub = sub .. '  ·  ' .. format_runtime(item.duration) end
+		local parts = {}
+		if item.year and item.year ~= 0 then parts[#parts + 1] = tostring(item.year) end
+		parts[#parts + 1] = format_runtime(item.duration)
+		sub = table.concat(parts, '  ·  ')
 	elseif item.continue then
 		sub = t('Continue') .. ' ' .. episode_code(item.continue.ep)
 	else

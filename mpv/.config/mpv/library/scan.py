@@ -1,13 +1,14 @@
 #!/usr/bin/env -S uv run --quiet --script
 # /// script
-# requires-python = ">=3.10"
+# requires-python = ">=3.11"
 # dependencies = ["guessit"]
 # ///
-"""Scan ~/Videos into a library for the mpv start screen.
+"""Scan video folders into a library for the mpv start screen.
 
-Movies/<file or folder>     one movie per entry
-TV/<show>, Anime/<show>     one series per show title; folders with the same
-                            title (e.g. separate season folders) are merged
+Rows come from library.toml next to this script (see there), each one either
+  type = "movies"   one title per file or folder
+  type = "series"   one show per folder; folders with the same title
+                    (e.g. separate season folders) are merged
 
 Writes ~/.cache/mpv-library/library.json plus BGRA thumbnails ready for
 mpv's overlay-add. Posters, details and episode stills come from TMDB when
@@ -24,6 +25,7 @@ import socket
 import subprocess
 import sys
 import time
+import tomllib
 import unicodedata
 import urllib.error
 import urllib.parse
@@ -32,8 +34,13 @@ from pathlib import Path
 
 from guessit import guessit
 
-VIDEOS = Path(os.environ.get("MPV_LIBRARY_ROOT", "~/Videos")).expanduser()
-CATEGORIES = ("Movies", "TV", "Anime")
+VIDEOS = Path("~/Videos").expanduser()
+ROWS_FILE = Path(__file__).resolve().parent / "library.toml"
+DEFAULT_ROWS = [
+    {"name": "Movies", "path": str(VIDEOS / "Movies"), "type": "movies"},
+    {"name": "TV", "path": str(VIDEOS / "TV"), "type": "series"},
+    {"name": "Anime", "path": str(VIDEOS / "Anime"), "type": "series"},
+]
 VIDEO_EXTS = {".mkv", ".mp4", ".m4v", ".avi", ".webm", ".mov"}
 SKIP_DIRS = {"extras", "extra", "featurettes", "specials", "sample", "samples"}
 
@@ -306,6 +313,33 @@ def make_thumb(job):
 # --- library ----------------------------------------------------------------
 
 
+def load_rows():
+    try:
+        rows = tomllib.loads(ROWS_FILE.read_text()).get("rows") or []
+    except FileNotFoundError:
+        rows = DEFAULT_ROWS
+    result = []
+    for row in rows:
+        paths = row.get("path") or []
+        paths = [paths] if isinstance(paths, str) else paths
+        if not row.get("name") or row.get("type") not in ("movies", "series"):
+            log(f"Skipping row without name or with an unknown type: {row}")
+            continue
+        result.append({
+            "name": row["name"],
+            "type": row["type"],
+            "paths": [Path(p).expanduser() for p in paths],
+            "tmdb": row.get("tmdb", True),
+        })
+    return result
+
+
+def row_entries(row):
+    for root in row["paths"]:
+        if root.exists():
+            yield from sorted(root.iterdir())
+
+
 def load_overrides():
     try:
         return json.loads(OVERRIDES.read_text())
@@ -313,31 +347,28 @@ def load_overrides():
         return {}
 
 
-def scan_movies(tmdb, overrides, probes, jobs):
+def scan_movies(row, tmdb, overrides, probes, jobs):
     items = []
-    root = VIDEOS / "Movies"
-    for entry in sorted(root.iterdir()) if root.exists() else []:
+    for entry in row_entries(row):
         files = video_files(entry)
         if not files:
             continue
         video = max(files, key=lambda f: f.stat().st_size)
         guess = guessit(entry.name if entry.is_dir() else entry.stem)
-        override = overrides.get(f"Movies/{entry.name}", {})
+        override = overrides.get(f"{row['name']}/{entry.name}", {})
         title = override.get("title") or guess.get("title") or entry.stem
         year = override.get("year") or guess.get("year")
 
-        match = None
-        if override.get("tmdb_id"):
-            match = {"id": override["tmdb_id"]}
-        else:
-            match = tmdb.search("movie", title, year)
-        details = tmdb.get(f"/movie/{match['id']}") if match else None
+        details = None
+        if row["tmdb"]:
+            match = {"id": override["tmdb_id"]} if override.get("tmdb_id") else tmdb.search("movie", title, year)
+            details = tmdb.get(f"/movie/{match['id']}") if match else None
 
         info = probe(video, probes)
         item = {
-            "id": f"movie:{entry.name}",
+            "id": f"movie:{row['name']}/{entry.name}",
             "kind": "movie",
-            "category": "Movies",
+            "category": row["name"],
             "title": (details or {}).get("title") or title,
             "year": int(((details or {}).get("release_date") or "")[:4] or 0) or year,
             "overview": (details or {}).get("overview") or "",
@@ -360,10 +391,10 @@ def scan_movies(tmdb, overrides, probes, jobs):
     return items
 
 
-def scan_series(category, tmdb, overrides, probes, jobs):
-    root = VIDEOS / category
+def scan_series(row, tmdb, overrides, probes, jobs):
+    category = row["name"]
     shows = {}
-    for entry in sorted(root.iterdir()) if root.exists() else []:
+    for entry in row_entries(row):
         files = video_files(entry)
         if not files:
             continue
@@ -382,11 +413,10 @@ def scan_series(category, tmdb, overrides, probes, jobs):
 
     items = []
     for key, show in sorted(shows.items()):
-        if show["tmdb_id"]:
-            match = {"id": show["tmdb_id"]}
-        else:
-            match = tmdb.search("tv", show["title"], show["year"])
-        details = tmdb.get(f"/tv/{match['id']}") if match else None
+        details = None
+        if row["tmdb"]:
+            match = {"id": show["tmdb_id"]} if show["tmdb_id"] else tmdb.search("tv", show["title"], show["year"])
+            details = tmdb.get(f"/tv/{match['id']}") if match else None
 
         seasons = {}
         if details:
@@ -446,10 +476,12 @@ def main():
     probes = load_probe_cache()
     jobs = []
 
-    log(f"Scanning {VIDEOS} ({'online' if tmdb.online else 'offline: no TMDB token'})")
-    items = scan_movies(tmdb, overrides, probes, jobs)
-    for category in ("TV", "Anime"):
-        items += scan_series(category, tmdb, overrides, probes, jobs)
+    rows = load_rows()
+    log(f"Scanning {', '.join(r['name'] for r in rows)} ({'online' if tmdb.online else 'offline: no TMDB token'})")
+    items = []
+    for row in rows:
+        scan = scan_movies if row["type"] == "movies" else scan_series
+        items += scan(row, tmdb, overrides, probes, jobs)
     PROBE_CACHE.write_text(json.dumps(probes))
 
     log(f"Making {len(jobs)} thumbnails")
@@ -466,7 +498,7 @@ def main():
 
     library = {
         "generated": int(time.time()),
-        "root": str(VIDEOS),
+        "rows": [row["name"] for row in rows],
         "poster_size": POSTER_SIZE,
         "card_size": CARD_SIZE,
         "still_size": STILL_SIZE,
@@ -477,7 +509,8 @@ def main():
     tmp.replace(LIBRARY)
 
     episodes = sum(len(i.get("episodes", [])) for i in items)
-    unmatched = [i["title"] for i in items if not i.get("tmdb_id")]
+    tmdb_rows = {row["name"] for row in rows if row["tmdb"]}
+    unmatched = [i["title"] for i in items if i["category"] in tmdb_rows and not i.get("tmdb_id")]
     log(f"Done: {len(items)} titles, {episodes} episodes; thumbnails {sources}")
     if unmatched:
         log("Not found on TMDB: " + ", ".join(unmatched))

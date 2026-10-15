@@ -1,0 +1,29 @@
+# Rows on the mpv start screen, top to bottom.
+#
+#   name  row heading (also the prefix for keys in overrides.json)
+#   path  a folder, or a list of folders merged into one row
+#   type  "movies": every file or folder is one title
+#         "series": every folder is a show; folders with the same show title
+#                   (e.g. one per season) are merged
+#   tmdb  false to skip TMDB: titles come from file names, images from frames
+
+[[rows]]
+name = "Movies"
+path = "~/Videos/Movies"
+type = "movies"
+
+[[rows]]
+name = "TV"
+path = "~/Videos/TV"
+type = "series"
+
+[[rows]]
+name = "Anime"
+path = "~/Videos/Anime"
+type = "series"
+
+[[rows]]
+name = "Others"
+path = "~/Videos/Others"
+type = "movies"
+tmdb = false
