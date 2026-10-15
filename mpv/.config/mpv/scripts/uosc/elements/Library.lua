@@ -115,9 +115,14 @@ function Library:init()
 	mp.register_script_message('library-play', function(id, index) self:play(id, tonumber(index)) end)
 	mp.register_script_message('library-rescan', function() self:scan() end)
 	mp.register_event('shutdown', function() self:clear_overlays() end)
-
-	-- Only load and scan once mpv is idle; playing a file directly costs nothing.
-	self:on_prop_is_idle(state.is_idle)
+	-- Back to the start screen, saving the position; only if mpv opened on it.
+	mp.add_key_binding(nil, 'library-back', function()
+		if self.library_session and not state.is_idle then
+			mp.command('write-watch-later-config')
+			mp.command('stop')
+		end
+	end)
+	-- Loading and scanning wait until mpv is idle, so playing a file directly costs nothing.
 end
 
 function Library:destroy()
@@ -304,6 +309,12 @@ function Library:decide_enabled()
 end
 
 function Library:on_prop_is_idle(idle)
+	-- The first idle state tells how this mpv started: idle means on the start screen.
+	if self.library_session == nil then
+		self.library_session = idle
+		-- pseudo-gui mode (Super+M) starts with idle=once, which would exit on `stop`.
+		if idle then mp.set_property('idle', 'yes') end
+	end
 	if idle then
 		self:load()
 		self:scan()
@@ -395,6 +406,8 @@ end
 function Library:activate(item)
 	if not item then return end
 	if item.kind == 'movie' then
+		-- `pause` outlives the previous file (paused before Backspace, or keep-open at EOF).
+		mp.set_property_native('pause', false)
 		mp.commandv('loadfile', item.path)
 	else
 		self:open_series(item)
@@ -475,6 +488,7 @@ end
 function Library:play(id, index)
 	local item = self:find(id)
 	if not item or not index then return end
+	mp.set_property_native('pause', false)
 	mp.commandv('playlist-clear')
 	for _, ep in ipairs(item.episodes) do mp.commandv('loadfile', ep.path, 'append') end
 	mp.commandv('playlist-play-index', tostring(index - 1))
