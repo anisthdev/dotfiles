@@ -1,23 +1,8 @@
+/* Firefox private browsing page: grey background, matugen text color, no promos. */
 @-moz-document url("about:privatebrowsing") {
-  :root {
-    color-scheme: dark !important;
-    --base-color: #343333 !important;
-    --backup-main-color: #343333 !important;
-    --in-content-page-background: #343333 !important;
-    --in-content-page-color: {{colors.on_surface.default.rgba}} !important;
-    --in-content-text-color: {{colors.on_surface.default.rgba}} !important;
-    --in-content-box-background: {{colors.surface_container.default.rgba}} !important;
-    --in-content-banner-background: {{colors.surface_container.default.rgba}} !important;
-    --in-content-banner-text-color: {{colors.on_surface.default.rgba}} !important;
-    --in-content-button-background: {{colors.surface_container.default.rgba}} !important;
-    --in-content-button-background-hover: {{colors.surface_container_high.default.rgba}} !important;
-    --in-content-button-background-active: {{colors.surface_container_highest.default.rgba}} !important;
-    --in-content-primary-button-background: {{colors.surface_container_high.default.rgba}} !important;
-    --in-content-primary-button-background-hover: {{colors.surface_container_highest.default.rgba}} !important;
-    --in-content-primary-button-background-active: {{colors.surface_container_highest.default.rgba}} !important;
-    --in-content-primary-button-text-color: {{colors.on_surface.default.rgba}} !important;
-    --ppb-search-focused-outline-color: {{colors.outline_variant.default.rgba}} !important;
-    --ppb-search-background: {{colors.surface_container.default.rgba}} !important;
+  /* Firefox paints the page background on html; keep it transparent so the body grey fills the page. */
+  html {
+    background-color: transparent !important;
   }
 
   body {
@@ -25,7 +10,6 @@
     color: {{colors.on_surface.default.rgba}} !important;
   }
 
-  html,
   .container,
   .showPrivate,
   .showSearch,
@@ -47,6 +31,8 @@
     padding: 0 !important;
   }
 
+  /* The search box lives in the shadow DOM of <content-search-handoff-ui>; user
+     stylesheets still reach into it, page stylesheets don't. */
   .search-handoff-button,
   .search-handoff-button:hover,
   .search-handoff-button:active,
@@ -66,10 +52,5 @@
 
   .search-handoff-button .fake-caret {
     background-color: {{colors.on_surface.default.rgba}} !important;
-  }
-
-  /* Optional: Change the color of the Private Mask icon */
-  .private-mask {
-    fill: {{colors.on_surface_variant.default.rgba}} !important;
   }
 }
