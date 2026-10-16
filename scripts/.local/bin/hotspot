@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# Join the phone hotspot, rescanning once if it isn't visible yet.
+
+export SSID="${1:-Pixel10A}"
+
+connect() {
+    nmcli --wait 20 connection up "$SSID" >/dev/null ||
+        { nmcli device wifi rescan 2>/dev/null; sleep 3; nmcli --wait 20 connection up "$SSID" >/dev/null; }
+}
+export -f connect  # busy runs it in its own bash
+
+if nmcli -t -f NAME connection show --active | grep -qxF "$SSID"; then
+    notify-send "Already connected" "$SSID" -i network-wireless-hotspot
+    exit 0
+fi
+
+if busy --icon network-wireless-hotspot --body "$SSID" "Connecting to hotspot" -- connect; then
+    notify-send "Connected" "$SSID" -i network-wireless-hotspot
+fi

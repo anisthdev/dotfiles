@@ -16,6 +16,7 @@ hl.bind(mainMod .. "V", hl.dsp.exec_cmd("clipse-gui"), { description = "Clipboar
 hl.bind(mainMod .. "SHIFT + SPACE", hl.dsp.exec_cmd("pkill -SIGUSR1 waybar"), { description = "Toggle waybar" })
 hl.bind(mainMod .. "comma", hl.dsp.exec_cmd("makoctl dismiss"), { description = "Close notification" })
 hl.bind(mainMod .. "CTRL + I", hl.dsp.exec_cmd(scriptDir .. "toggle-idle"), { description = "Toggle idle" })
+hl.bind(mainMod .. "CTRL + H", hl.dsp.exec_cmd(scriptDir .. "hotspot"), { description = "Join phone hotspot" })
 
 --menus
 hl.bind(mainMod .. "SPACE", hl.dsp.exec_cmd("rofi -show drun"), { description = "App launcher" })
