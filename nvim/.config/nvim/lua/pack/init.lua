@@ -45,6 +45,7 @@ vim.pack.add({
 	gh("stevearc/conform.nvim"),
 	-- batch 5: the rest
 	{ src = gh("akinsho/toggleterm.nvim"), version = vim.version.range("*") },
+	{ src = gh("stevearc/overseer.nvim"), version = vim.version.range("*") },
 })
 
 require("pack.colorscheme")
@@ -59,6 +60,7 @@ for _, mod in ipairs({
 	"lsp",
 	"conform",
 	"toggleterm",
+	"overseer",
 }) do
 	require("pack." .. mod)
 end
