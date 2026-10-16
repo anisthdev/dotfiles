@@ -1,0 +1,14 @@
+font-family = SF Mono
+font-size = 14
+font-style = semibold
+adjust-cell-width = -5%
+adjust-cell-height = 12
+adjust-underline-thickness = 1
+window-padding-x = 20
+window-padding-y = 20
+window-padding-balance = true
+keybind = shift+enter=text:\x1b\r
+theme = Gruvbox Dark
+
+config-file = colors.conf
+

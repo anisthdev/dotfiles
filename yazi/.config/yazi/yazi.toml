@@ -1,0 +1,22 @@
+[plugin]
+prepend_previewers = [
+  { mime = "{audio,video,image}/*", run = "mediainfo" },
+  { mime = "application/subrip", run = "mediainfo" },
+  { mime = "application/postscript", run = "mediainfo" },
+  { mime = "application/illustrator", run = "mediainfo" },
+  { mime = "application/dvb.ait", run = "mediainfo" },
+  { mime = "application/vnd.adobe.illustrator", run = "mediainfo" },
+  { mime = "image/x-eps", run = "mediainfo" },
+  { mime = "application/eps", run = "mediainfo" },
+  { url = "*.{ai,eps,ait}", run = "mediainfo" },
+  { url = "*.md", run = "glow" },
+  { url = "*.markdown", run = "glow" },
+  { url = "*.csv", run = "duckdb" },
+  { url = "*.tsv", run = "duckdb" },
+  { url = "*.json", run = "duckdb" },
+  { url = "*.parquet", run = "duckdb" },
+  { url = "*.txt", run = "duckdb" },
+  { url = "*.xlsx", run = "duckdb" },
+  { url = "*.db", run = "duckdb" },
+  { url = "*.duckdb", run = "duckdb" },
+]
