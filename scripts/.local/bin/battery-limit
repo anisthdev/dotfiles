@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Toggle the battery charge cap between 80% (daily) and 100% (full charge).
+# Write access comes from system/etc/udev/rules.d/90-battery-charge-limit.rules.
+
+FILE=/sys/class/power_supply/BAT0/charge_control_end_threshold
+LIMIT=80
+
+current=$(<"$FILE")
+case $1 in
+    get) echo "$current"; exit ;;
+    on) target=$LIMIT ;;
+    off) target=100 ;;
+    ""|toggle) (( current < 100 )) && target=100 || target=$LIMIT ;;
+    *) echo "Usage: $0 [toggle|on|off|get]"; exit 1 ;;
+esac
+
+if ! echo "$target" > "$FILE" 2>/dev/null; then
+    notify-send -u critical "Charge limit" "No write access to $FILE (udev rule installed?)" -i battery
+    exit 1
+fi
+
+if (( target < 100 )); then
+    notify-send "Charge limit" "Charging stops at $target%" -i battery-good-charging
+else
+    notify-send "Charge limit" "Charging to 100% until toggled or rebooted" -i battery-full-charging
+fi

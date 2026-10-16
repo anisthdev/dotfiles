@@ -10,6 +10,7 @@ dispatch_external_action() {
     screenshot) run_external_cmd "$SCRIPT_DIR/screenshot" ;;
     screenrecord) run_external_cmd "$SCRIPT_DIR/screenrecord" ;;
     nightlight) run_external_cmd "$SCRIPT_DIR/../toggle-nightlight" ;;
+    charge-limit) run_external_cmd "$SCRIPT_DIR/../battery-limit" ;;
     vpn-indicator) start_vpn_indicator ;;
     *) ;;
   esac

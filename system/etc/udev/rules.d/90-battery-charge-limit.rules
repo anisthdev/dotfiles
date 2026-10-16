@@ -1,0 +1,5 @@
+# Cap charging at 80% on boot and let wheel users change it (~/.local/bin/battery-limit)
+ACTION=="add", SUBSYSTEM=="power_supply", KERNEL=="BAT0", \
+  ATTR{charge_control_end_threshold}="80", \
+  RUN+="/usr/bin/chgrp wheel /sys%p/charge_control_end_threshold", \
+  RUN+="/usr/bin/chmod g+w /sys%p/charge_control_end_threshold"

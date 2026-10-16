@@ -11,6 +11,7 @@ render_root() {
   row "<span font_family='SF Pro Display' font_weight='bold'>Screenshot</span>" "cmd:screenshot" "" "applets-screenshooter"
   row "<span font_family='SF Pro Display' font_weight='bold'>Screenrecord</span>" "cmd:screenrecord" "" "green-recorder"
   row "<span font_family='SF Pro Display' font_weight='bold'>Nightlight</span>" "cmd:nightlight" "" "cs-nightlight"
+  row "<span font_family='SF Pro Display' font_weight='bold'>Charge Limit</span> · $("$SCRIPT_DIR/../battery-limit" get)%" "cmd:charge-limit" "" "battery"
   emit_page "root" " " "Quick Actions"
 }
 
