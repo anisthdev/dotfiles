@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# Append a one-line note to ~/Notes/inbox.md under today's heading.
+set -euo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+THEME="$SCRIPT_DIR/styles/quick-note.rasi"
+INBOX="$HOME/Notes/inbox.md"
+
+note="$(rofi -dmenu -p "󰏫 " -mesg "    Quick note" -theme "$THEME" || true)"
+note="$(printf '%s' "$note" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+
+[[ -n "$note" ]] || exit 0
+
+heading="## $(date +%d-%m-%y)"
+[[ -f "$INBOX" ]] || printf '# Inbox\n' >"$INBOX"
+grep -qxF "$heading" "$INBOX" || printf '\n%s\n\n' "$heading" >>"$INBOX"
+printf -- '- %s %s\n' "$(date +%H:%M)" "$note" >>"$INBOX"
+
+notify-send "Note saved" "$note" -i accessories-text-editor

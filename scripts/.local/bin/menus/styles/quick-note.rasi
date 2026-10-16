@@ -1,0 +1,17 @@
+@import "common-menu.rasi"
+
+window {
+  width: 540px;
+}
+
+mainbox {
+  children: [ message, inputbar ];
+}
+
+listview {
+  enabled: false;
+}
+
+entry {
+  placeholder: "Jot it down...";
+}
