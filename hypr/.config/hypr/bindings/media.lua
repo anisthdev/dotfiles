@@ -22,8 +22,10 @@ hl.bind(
 hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%+"), { locked = true, repeating = true })
 hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%-"), { locked = true, repeating = true })
 
--- Requires playerctl
-hl.bind("XF86AudioNext", hl.dsp.exec_cmd("mpc next"), { locked = true })
-hl.bind("XF86AudioStop", hl.dsp.exec_cmd("mpc stop"), { locked = true })
-hl.bind("XF86AudioPlay", hl.dsp.exec_cmd("mpc toggle"), { locked = true })
-hl.bind("XF86AudioPrev", hl.dsp.exec_cmd("mpc previous"), { locked = true })
+-- Media keys go to the active player (mpv, firefox, or mpd), see ~/.local/bin/media
+local media = os.getenv("HOME") .. "/.local/bin/media "
+hl.bind("XF86AudioNext", hl.dsp.exec_cmd(media .. "next"), { locked = true })
+hl.bind("XF86AudioStop", hl.dsp.exec_cmd(media .. "stop"), { locked = true })
+hl.bind("XF86AudioPlay", hl.dsp.exec_cmd(media .. "toggle"), { locked = true })
+hl.bind("XF86AudioPause", hl.dsp.exec_cmd(media .. "toggle"), { locked = true })
+hl.bind("XF86AudioPrev", hl.dsp.exec_cmd(media .. "prev"), { locked = true })

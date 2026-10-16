@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Route media keys to whichever player matters right now:
+# a playing MPRIS player (mpv, firefox), then a playing mpd,
+# then a paused MPRIS player, then mpd.
+
+usage() {
+    echo "Usage: $0 {toggle|next|prev|stop}"
+    exit 1
+}
+
+case $1 in
+    toggle) pc=play-pause; mc=toggle ;;
+    next)   pc=next;       mc=next ;;
+    prev)   pc=previous;   mc=prev ;;
+    stop)   pc=stop;       mc=stop ;;
+    *) usage ;;
+esac
+
+mpris_with_status() {
+    playerctl -a -f '{{playerInstance}} {{status}}' status 2>/dev/null |
+        awk -v s="$1" '$2 == s { print $1; exit }'
+}
+
+mpd_playing() {
+    mpc status 2>/dev/null | grep -q '^\[playing\]'
+}
+
+if player=$(mpris_with_status Playing) && [[ -n $player ]]; then
+    playerctl -p "$player" "$pc"
+elif mpd_playing; then
+    mpc -q "$mc"
+elif player=$(mpris_with_status Paused) && [[ -n $player ]]; then
+    playerctl -p "$player" "$pc"
+else
+    mpc -q "$mc"
+fi
