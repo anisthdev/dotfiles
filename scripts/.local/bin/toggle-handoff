@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 # Turn phone sync (handoffd and its notification popup) on or off.
-# It doesn't start at login; this and Quick Actions switch it.
+# It doesn't start at login; this and Quick Actions switch it. Turning it on
+# also wakes the phone app over adb when the phone is reachable; turning it
+# off makes handoffd tell the phone to stop.
 
 # The Quick Actions row's icon; mako needs a file, it doesn't search Papirus
 icon=/usr/share/icons/Papirus/48x48/devices/phone.svg
+adb="$HOME/.sdks/android/platform-tools/adb"
 
 if systemctl --user is-active --quiet handoffd; then
     systemctl --user stop handoffd
@@ -11,4 +14,9 @@ if systemctl --user is-active --quiet handoffd; then
 else
     systemctl --user start handoffd
     notify-send "Phone sync" "On" -i "$icon"
+    # Best effort and in the background: phone-connect can take seconds to give up
+    (
+        serial="$("$HOME/.local/bin/phone-connect" 2>/dev/null)" &&
+            timeout 5 "$adb" -s "$serial" shell am broadcast -n dev.asif.handoff/.StartReceiver </dev/null
+    ) >/dev/null 2>&1 &
 fi
