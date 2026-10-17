@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
 # Turn phone sync (handoffd and its notification popup) on or off.
 # It doesn't start at login; this and Quick Actions switch it.
+
+# The Quick Actions row's icon; mako needs a file, it doesn't search Papirus
+icon=/usr/share/icons/Papirus/48x48/devices/phone.svg
+
 if systemctl --user is-active --quiet handoffd; then
     systemctl --user stop handoffd
-    notify-send "Phone sync" "Off" -i phone
+    notify-send "Phone sync" "Off" -i "$icon"
 else
     systemctl --user start handoffd
-    notify-send "Phone sync" "On" -i phone
+    notify-send "Phone sync" "On" -i "$icon"
 fi
