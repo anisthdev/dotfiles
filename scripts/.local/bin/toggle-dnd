@@ -1,10 +1,10 @@
 #!/bin/bash
-# Toggle Do Not Disturb via mako
-STATE=$(makoctl mode 2>/dev/null | grep -q "dnd" && echo "on" || echo "off")
-if [ "$STATE" = "on" ]; then
-    makoctl mode default
+# Toggle mako's do-not-disturb mode; the mako template hides everything in it
+# except notify-send and busy notifications. handoff-popup honours it too.
+if makoctl mode | grep -qx do-not-disturb; then
+    makoctl mode -r do-not-disturb >/dev/null
     notify-send "DND" "Disabled"
 else
-    makoctl mode dnd
+    makoctl mode -a do-not-disturb >/dev/null
     notify-send "DND" "Enabled"
 fi
