@@ -101,24 +101,6 @@ window#waybar {
   margin-right: 10px;
 }
 
-#custom-phone {
-  border-radius: 8px;
-  background-color: @background;
-  color: @on_background;
-  padding: 0px 12px;
-  margin-right: 5px;
-}
-
-#custom-phone.connected {
-  color: @primary;
-}
-
-#custom-phone.disconnected,
-#custom-phone.unpaired,
-#custom-phone.off {
-  opacity: 0.45;
-}
-
 #network {
   border-radius: 8px 0 0 8px;
 }

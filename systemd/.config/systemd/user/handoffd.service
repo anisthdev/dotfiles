@@ -7,6 +7,8 @@ After=graphical-session.target
 ExecStart=%h/.local/share/go/bin/handoffd
 # Reloads ~/.config/handoff/config.toml (mute list)
 ExecReload=/bin/kill -HUP $MAINPID
+# Remove the tray icon however the daemon stops, crashes included
+ExecStopPost=-/usr/bin/tray hide --id phone
 Restart=on-failure
 RestartSec=3
 

@@ -17,7 +17,6 @@
   ],
   "modules-right": [
     "tray",
-    "custom/phone",
     "network",
     "bluetooth",
     "pulseaudio",
@@ -152,15 +151,6 @@
     "format": "{}",
     "tooltip": true,
     "interval": 600
-  },
-  "custom/phone": {
-    // handoffd sends SIGRTMIN+9 on every link change; the interval keeps "last seen" fresh
-    "exec": "/home/asif/.local/share/go/bin/handoffd status --waybar",
-    "return-type": "json",
-    "format": "{}",
-    "tooltip": true,
-    "signal": 9,
-    "interval": 60
   },
   "tray": {
     "spacing": 8
