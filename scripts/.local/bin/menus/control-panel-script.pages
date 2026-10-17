@@ -11,6 +11,11 @@ render_root() {
   row "<span font_family='SF Pro Display' font_weight='bold'>Screenshot</span>" "cmd:screenshot" "" "applets-screenshooter"
   row "<span font_family='SF Pro Display' font_weight='bold'>Screenrecord</span>" "cmd:screenrecord" "" "green-recorder"
   row "<span font_family='SF Pro Display' font_weight='bold'>Nightlight</span>" "cmd:nightlight" "" "cs-nightlight"
+  if systemctl --user is-active --quiet handoffd; then
+    row "<span font_family='SF Pro Display' font_weight='bold'>Phone Sync</span> · On" "cmd:handoff" "active" "phone"
+  else
+    row "<span font_family='SF Pro Display' font_weight='bold'>Phone Sync</span> · Off" "cmd:handoff" "" "phone"
+  fi
   row "<span font_family='SF Pro Display' font_weight='bold'>Charge Limit</span> · $("$SCRIPT_DIR/../battery-limit" get)%" "cmd:charge-limit" "" "battery"
   emit_page "root" " " "Quick Actions"
 }

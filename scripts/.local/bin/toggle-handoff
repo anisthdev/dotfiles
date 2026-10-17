@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Turn phone sync (handoffd and its notification popup) on or off.
+# It doesn't start at login; this and Quick Actions switch it.
+if systemctl --user is-active --quiet handoffd; then
+    systemctl --user stop handoffd
+    notify-send "Phone sync" "Off" -i phone
+else
+    systemctl --user start handoffd
+    notify-send "Phone sync" "On" -i phone
+fi

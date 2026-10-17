@@ -2,6 +2,9 @@
 Description=handoff phone link (~/Projects/handoff)
 PartOf=graphical-session.target
 After=graphical-session.target
+# Off by default; toggle-handoff (Quick Actions) starts and stops it, and the
+# popup with it
+Wants=handoff-popup.service
 
 [Service]
 ExecStart=%h/.local/share/go/bin/handoffd
@@ -11,6 +14,3 @@ ExecReload=/bin/kill -HUP $MAINPID
 ExecStopPost=-/usr/bin/tray hide --id phone
 Restart=on-failure
 RestartSec=3
-
-[Install]
-WantedBy=graphical-session.target
