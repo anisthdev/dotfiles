@@ -9,6 +9,8 @@
     "clock",
     "hyprland/workspaces",
     "custom/weather",
+    "image#phone-live",
+    "custom/phone-live",
     "hyprland/submap",
     "mpd"
   ],
@@ -144,6 +146,24 @@
       "5": []
     },
     "sort-by-number": true
+  },
+  // The phone's Live Update chip (e.g. a delivery's "4 mins") from handoffd;
+  // both refresh on SIGRTMIN+10 and hide when nothing is live
+  "image#phone-live": {
+    "exec": "/home/asif/.local/share/go/bin/handoffd live --icon",
+    "size": 16,
+    "interval": "once",
+    "signal": 10,
+    "tooltip": false,
+    "on-click": "/home/asif/.local/bin/phone-scratchpad"
+  },
+  "custom/phone-live": {
+    "exec": "/home/asif/.local/share/go/bin/handoffd live",
+    "return-type": "json",
+    "format": "{}",
+    "interval": "once",
+    "signal": 10,
+    "on-click": "/home/asif/.local/bin/phone-scratchpad"
   },
   "custom/weather": {
     "exec": "/home/asif/.config/waybar/weather/waybar-weather",

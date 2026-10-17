@@ -101,6 +101,25 @@ window#waybar {
   margin-right: 10px;
 }
 
+/* Phone Live Update chip: app icon + text in one pill, like Android's.
+   With nothing live, waybar hides the image inside its module but keeps a
+   1px module box, so the pill's left half is drawn on the image itself and
+   the box stays unstyled. The vertical padding matches the module height. */
+#image.phone-live image {
+  background-color: @primary_container;
+  border-radius: 10px 0 0 10px;
+  padding: 7px 6px 7px 10px;
+}
+
+#custom-phone-live {
+  background-color: @primary_container;
+  color: @on_primary_container;
+  font-weight: bold;
+  border-radius: 0 10px 10px 0;
+  padding: 0 10px 0 0;
+  margin-right: 10px;
+}
+
 #network {
   border-radius: 8px 0 0 8px;
 }
