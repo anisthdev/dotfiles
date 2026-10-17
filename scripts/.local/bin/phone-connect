@@ -1,0 +1,111 @@
+#!/usr/bin/env bash
+# Get the phone onto adb over USB, wireless debugging or tcpip and print its serial.
+#
+#   phone-connect          connect (if needed) and print the serial, USB preferred
+#   phone-connect --tcpip  wait for the phone on USB and switch adbd to tcpip mode
+#                          so it keeps working once unplugged (run by udev)
+#
+# The phone's Wi-Fi address is remembered per network, so tcpip works on home
+# Wi-Fi without wireless debugging. On the hotspot the phone is the gateway.
+set -uo pipefail
+
+HOTSPOT_SSID="Pixel10A"
+PORT=5555
+ADB="$HOME/.sdks/android/platform-tools/adb"
+CACHE="${XDG_CACHE_HOME:-$HOME/.cache}/phone-connect"
+
+network() {
+    nmcli -t -f NAME,TYPE connection show --active | awk -F: '$2 == "802-11-wireless" { print $1; exit }'
+}
+
+online() {
+    # First authorised device that answers, USB first, then wireless debugging, then tcpip.
+    local serial
+    "$ADB" devices | awk 'NR > 1 && $2 == "device" {
+        rank = $1 ~ /_adb-tls-connect/ ? 1 : $1 ~ /:/ ? 2 : 0
+        print rank, $1
+    }' | sort -n | while read -r _ serial; do
+        # A phone that left the network stays listed as "device" for minutes
+        if [[ "$serial" == *:* || "$serial" == *_adb-tls-connect* ]] &&
+            ! timeout 3 "$ADB" -s "$serial" shell true </dev/null >/dev/null 2>&1; then
+            "$ADB" disconnect "$serial" >/dev/null 2>&1
+            continue
+        fi
+        printf '%s\n' "$serial"
+        break
+    done | grep .
+}
+
+remember() {
+    # Cache the phone's Wi-Fi address if it's on the same subnet as the laptop.
+    local net ip
+    net="$(network)"
+    [[ -n "$net" && "$net" != "$HOTSPOT_SSID" ]] || return 0
+    ip="$(timeout 3 "$ADB" -s "$1" shell ip -4 -o addr show wlan0 </dev/null 2>/dev/null | awk '{ sub("/.*", "", $4); print $4 }')"
+    [[ -n "$ip" ]] && ! ip route get "$ip" | grep -q ' via ' || return 0
+    mkdir -p "$CACHE" && printf '%s\n' "$ip" >"$CACHE/$net"
+}
+
+connect_tcpip() {
+    local net ip
+    net="$(network)"
+    [[ -n "$net" ]] || return 1
+    if [[ "$net" == "$HOTSPOT_SSID" ]]; then
+        ip="$(nmcli -g IP4.GATEWAY connection show "$net")"
+    else
+        ip="$(cat "$CACHE/$net" 2>/dev/null)"
+    fi
+    [[ -n "$ip" ]] || return 1
+    timeout 5 "$ADB" connect "$ip:$PORT" 2>&1 | grep -q '^connected\|^already connected'
+}
+
+connect_mdns() {
+    # adb auto-connects paired phones it discovers; give discovery a moment.
+    local _ service
+    for _ in {1..8}; do
+        online >/dev/null && return 0
+        service="$("$ADB" mdns services 2>/dev/null | awk '/_adb-tls-connect/ { print $NF; exit }')"
+        [[ -n "$service" ]] && timeout 5 "$ADB" connect "$service" >/dev/null 2>&1
+        sleep 0.5
+    done
+    online >/dev/null
+}
+
+connect() {
+    local serial net
+    "$ADB" start-server >/dev/null 2>&1
+
+    # A phone that went away leaves an offline tcp entry that blocks reconnecting.
+    "$ADB" devices | awk '$2 == "offline" && $1 ~ /:/ { print $1 }' | while read -r stale; do
+        "$ADB" disconnect "$stale" >/dev/null 2>&1
+    done
+
+    serial="$(online)" || { connect_tcpip || connect_mdns; serial="$(online)"; } || {
+        net="$(network)"
+        if [[ -n "$net" ]]; then
+            echo "Phone not found on $net — is it on this Wi-Fi? If so, plug it in once" >&2
+        else
+            echo "Laptop isn't on Wi-Fi — plug the phone in" >&2
+        fi
+        exit 1
+    }
+    remember "$serial"
+    printf '%s\n' "$serial"
+}
+
+enable_tcpip() {
+    # Unauthorised or adb-disabled phones never get past this, which is fine.
+    timeout 60 "$ADB" -d wait-for-device || exit 0
+    local serial
+    serial="$("$ADB" -d get-serialno)"
+    remember "$serial"
+    [[ "$("$ADB" -d shell getprop service.adb.tcp.port | tr -d '\r')" == "$PORT" ]] && exit 0
+    "$ADB" -d tcpip "$PORT" >/dev/null &&
+        notify-send -u low "Phone ready for wireless" "You can unplug the cable" -i phone
+}
+
+case "${1:-}" in
+    --tcpip) enable_tcpip ;;
+    "") connect ;;
+    *) sed -n '2,/^set /{/^#/s/^# \{0,1\}//p}' "$0" >&2; exit 2 ;;
+esac

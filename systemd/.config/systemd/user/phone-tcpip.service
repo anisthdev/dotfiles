@@ -1,0 +1,8 @@
+[Unit]
+Description=Switch the phone to adb tcpip mode after it's plugged in
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/phone-connect --tcpip
+# Keep the adb server this may start running after the unit exits
+KillMode=process

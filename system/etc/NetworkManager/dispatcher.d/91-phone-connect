@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Reconnect the phone over adb whenever Wi-Fi comes up (~/.local/bin/phone-connect).
+[[ "${1:-}" == wl* && "${2:-}" == up ]] || exit 0
+
+for user in $(loginctl list-users --no-legend | awk '{ print $2 }'); do
+    systemctl --user --machine="$user@" start --no-block phone-connect.service 2>/dev/null
+done
+exit 0
