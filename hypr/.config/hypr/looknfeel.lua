@@ -39,9 +39,9 @@ hl.config({
 	},
 })
 
--- blur for waybar, rofi and mako
+-- blur for waybar, rofi, mako and handoff's phone notifications
 hl.layer_rule({
-	match = { namespace = "waybar|rofi|notifications" },
+	match = { namespace = "waybar|rofi|notifications|handoff-popup" },
 	blur = true,
 	ignore_alpha = 0.2,
 	blur_popups = true,
