@@ -204,7 +204,7 @@ menu {
 menu menuitem {
   color: @on_background;
   border-radius: 6px;
-  padding: 6px 12px;
+  padding: 4px 8px;
 }
 
 menu menuitem:hover {
