@@ -30,6 +30,13 @@ window.nautilus-window .titlebar,
   box-shadow: none;
 }
 
+/* libadwaita paints the tab bar box with its stock headerbar grey, which
+   shows at both ends around the tabs' scrolledwindow */
+tabbar .box {
+  background-color: {{colors.surface_container_lowest.default.rgba}};
+  box-shadow: inset 0 -1px {{colors.outline_variant.default.rgba}};
+}
+
 window.nautilus-window windowhandle,
 window.nautilus-window windowhandle > box,
 window.nautilus-window toolbarview,
