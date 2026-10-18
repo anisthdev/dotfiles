@@ -181,3 +181,32 @@ window#waybar.empty #window {
   background-color: @inverse_primary;
   color: @on_surface;
 }
+
+/* Tray menus. GTK3 draws a menu inside a popup window that keeps the theme's
+   square background, so make that window clear and let the menu itself be
+   the one rounded shape, in the bar's colours. */
+window.popup,
+window.popup decoration {
+  background-color: transparent;
+  box-shadow: none;
+  border: none;
+}
+
+menu {
+  background-color: @background;
+  opacity: 1;
+  border: none;
+  border-radius: 10px;
+  padding: 4px;
+  margin: 0;
+}
+
+menu menuitem {
+  color: @on_background;
+  border-radius: 6px;
+  padding: 6px 12px;
+}
+
+menu menuitem:hover {
+  background-color: @surface_container_highest;
+}
