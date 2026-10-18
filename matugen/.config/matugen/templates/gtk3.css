@@ -1,0 +1,55 @@
+/* GTK3 only. The shared rules (also used for GTK4) are rendered to
+   matugen.css; this file layers the bits GTK3 draws differently on top. */
+@import url("matugen.css");
+
+/* GTK3 popovers have no contents node: the popover itself is the surface,
+   so the shared "popover.background { transparent }" leaves it see-through. */
+popover.background {
+  background-color: {{colors.surface_container.default.rgba}};
+  color: {{colors.on_surface.default.rgba}};
+  border: 1px solid {{colors.outline_variant.default.rgba}};
+  border-radius: 14px;
+  padding: 4px;
+}
+
+popover.background modelbutton:hover {
+  background-color: {{colors.surface_container_highest.default.rgba}};
+  border-radius: 8px;
+}
+
+menu,
+.menu,
+menu.background {
+  opacity: 1;
+}
+
+/* The shared headerbar rule zeroes padding, which pins GTK3 dialog buttons
+   to the window edge; Materia also dims flat headerbar buttons. */
+headerbar,
+.titlebar {
+  padding: 6px 8px;
+}
+
+headerbar button:not(.suggested-action):not(.destructive-action):not(.titlebutton),
+.titlebar button:not(.suggested-action):not(.destructive-action):not(.titlebutton) {
+  background-color: {{colors.surface_container_highest.default.rgba}};
+  color: {{colors.on_surface.default.rgba}};
+  border-radius: 8px;
+  padding: 4px 12px;
+}
+
+headerbar button:not(.suggested-action):not(.destructive-action):not(.titlebutton):hover,
+.titlebar button:not(.suggested-action):not(.destructive-action):not(.titlebutton):hover {
+  background-color: {{colors.surface_bright.default.rgba}};
+}
+
+headerbar button.suggested-action,
+.titlebar button.suggested-action {
+  border-radius: 8px;
+  padding: 4px 14px;
+}
+
+headerbar button label,
+.titlebar button label {
+  color: inherit;
+}

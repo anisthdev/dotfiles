@@ -24,7 +24,7 @@ hl.window_rule({ match = { tag = "noop" }, opacity = "1.0 override 0.88" })
 hl.window_rule({ match = { title = videoWebsites .. browserTitleExtensions }, opacity = "1.0 override 0.88" })
 
 -- floating windows
-hl.window_rule({ match = { class = "xdg-desktop-portal-gtk" }, float = true, size = { "900", "500" }, animation = "gnomed", })
+hl.window_rule({ match = { class = "xdg-desktop-portal-gtk" }, float = true, size = { "1000", "640" }, animation = "gnomed", })
 hl.window_rule({ match = { class = "thunar", title = "Rename.*" }, float = true, size = { "500", "80" }, animation = "gnomed", })
 hl.window_rule({ match = { class = "hyprland-share-picker" }, float = true, size = { "400", "400" }, animation = "gnomed", })
 hl.window_rule({ match = { class = "clipse-gui" }, float = true, size = { "500", "600" }, animation = "gnomed" })

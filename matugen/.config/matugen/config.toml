@@ -65,6 +65,10 @@ output_path = '~/.config/glow/matugen-style.json'
 
 [templates.gtk3]
 input_path = './templates/gtk.css'
+output_path = '~/.config/gtk-3.0/matugen.css'
+
+[templates.gtk3_overrides]
+input_path = './templates/gtk3.css'
 output_path = '~/.config/gtk-3.0/gtk.css'
 post_hook = 'systemctl --user restart xdg-desktop-portal.service xdg-desktop-portal-gtk.service xdg-desktop-portal-hyprland.service'
 

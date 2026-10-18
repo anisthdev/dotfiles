@@ -1,0 +1,72 @@
+/* Spacing for the xdg-desktop-portal-gtk file chooser. Loaded only by the
+   portal service (GTK_THEME drop-in); colours still come from the matugen
+   gtk.css in ~/.config/gtk-3.0. */
+
+/* file list */
+filechooser treeview.view {
+  padding: 0 6px;
+  -GtkTreeView-horizontal-separator: 4;
+  -GtkTreeView-vertical-separator: 14;
+}
+
+filechooser treeview.view header button {
+  padding: 8px 10px;
+  font-weight: 600;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+/* places sidebar */
+placessidebar.sidebar list {
+  padding: 6px;
+}
+
+placessidebar.sidebar row {
+  min-height: 32px;
+  margin: 1px 0;
+  padding: 0 10px;
+  border-radius: 10px;
+}
+
+placessidebar.sidebar row image.sidebar-icon {
+  margin-right: 10px;
+}
+
+placessidebar.sidebar separator {
+  margin: 6px 4px;
+}
+
+/* path bar and location entry */
+filechooser .path-bar,
+filechooser #pathbarbox {
+  padding: 8px 10px;
+}
+
+filechooser .path-bar button {
+  padding: 4px 10px;
+  border-radius: 8px;
+}
+
+filechooser entry {
+  min-height: 34px;
+  border-radius: 8px;
+}
+
+/* bottom bar (filter combo, read-only check) */
+filechooser actionbar,
+filechooser .dialog-action-box,
+filechooser #extra_and_filters {
+  padding: 8px 12px;
+}
+
+/* right-click menu */
+filechooser popover modelbutton {
+  min-height: 30px;
+  padding: 0 12px;
+  border-radius: 8px;
+}
+
+paned > separator {
+  background-color: transparent;
+  background-image: none;
+}

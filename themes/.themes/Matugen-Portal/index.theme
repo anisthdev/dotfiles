@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=X-GNOME-Metatheme
+Name=Matugen-Portal
+Comment=Matugen plus roomier file chooser spacing, used only by xdg-desktop-portal-gtk
+
+[X-GNOME-Metatheme]
+GtkTheme=Matugen-Portal
