@@ -4,16 +4,17 @@
 # also wakes the phone app over adb when the phone is reachable; turning it
 # off makes handoffd tell the phone to stop.
 
-# The Quick Actions row's icon; mako needs a file, it doesn't search Papirus
-icon=/usr/share/icons/Papirus/48x48/devices/phone.svg
+# handoff's icon, which handoffd installs; mako needs a file, as it only
+# searches /usr/share/icons/hicolor by name
+icon="${XDG_DATA_HOME:-$HOME/.local/share}/icons/hicolor/scalable/apps/handoff.svg"
 adb="$HOME/.sdks/android/platform-tools/adb"
 
 if systemctl --user is-active --quiet handoffd; then
     systemctl --user stop handoffd
-    notify-send "Phone sync" "Off" -i "$icon"
+    notify-send "Handoff" "Off" -i "$icon"
 else
     systemctl --user start handoffd
-    notify-send "Phone sync" "On" -i "$icon"
+    notify-send "Handoff" "On" -i "$icon"
     # Best effort and in the background: phone-connect can take seconds to give up
     (
         serial="$("$HOME/.local/bin/phone-connect" 2>/dev/null)" &&
