@@ -1,0 +1,12 @@
+# Sites to offer "Play with MPV" on, beyond yt-dlp's dedicated extractors.
+# List sites here that yt-dlp's generic extractor handles (pages embedding a
+# plain video, HLS/DASH manifest, etc.).
+#
+# One entry per line:
+#   example.com                 any page on example.com or its subdomains
+#   example.com/videos/*        only paths matching the glob (* spans /)
+#   video.example.com/watch?*   the query string is part of the path
+#
+# The scheme and a leading "*." are optional. Changes apply on the next
+# right-click; nothing needs restarting.
+
