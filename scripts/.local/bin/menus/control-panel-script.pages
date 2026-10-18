@@ -45,7 +45,8 @@ import json, sys
 for s in json.load(sys.stdin):
     name = s.get("name", "")
     desc = s.get("description", "")
-    print(f"{name}\t{desc}")
+    form = s.get("properties", {}).get("device.form_factor", "")
+    print(f"{name}\t{desc}\t{form}")
 ' 2>/dev/null || true)
 
   mapfile -t source_lines < <(pactl --format=json list sources 2>/dev/null | python3 -c '
@@ -60,20 +61,27 @@ for s in json.load(sys.stdin):
     print(f"{name}\t{desc}")
 ' 2>/dev/null || true)
 
-  local line name desc icon label
+  local line name desc form icon label
+  local icon_dir="$SCRIPT_DIR/icons"
   if [[ ${#sink_lines[@]} -eq 0 ]]; then
     row "<span font_family='SF Pro Display' font_weight='bold'>No sinks found</span>" "noop" "" "dialog-information"
   else
     for line in "${sink_lines[@]}"; do
-      IFS=$'\t' read -r name desc <<<"$line"
+      IFS=$'\t' read -r name desc form <<<"$line"
       [[ -z "$name" ]] && continue
 
-      icon="audio-card"
+      # Bluetooth speakers often report themselves as headsets, so match names first.
+      icon="computer-laptop"
       case "${name,,} ${desc,,}" in
-        *headphone*|*headset*) icon="audio-headphones" ;;
+        *buds*|*airpods*|*earbud*|*earphone*) icon="$icon_dir/audio-earbuds.svg" ;;
+        *headphone*|*rockerz*) icon="audio-headphones" ;;
         *hdmi*|*display*|*monitor*|*dp\ *) icon="video-display" ;;
-        *bluetooth*|*bluez*) icon="bluetooth" ;;
-        *speaker*|*analog*) icon="audio-speakers" ;;
+        *bluez*|*bluetooth*)
+          case "$form" in
+            headphone) icon="audio-headphones" ;;
+            *) icon="$icon_dir/audio-speaker.svg" ;;
+          esac
+          ;;
       esac
 
       label="<span font_family='SF Pro Display' font_weight='bold'>$(escape_markup "$desc")</span>"
