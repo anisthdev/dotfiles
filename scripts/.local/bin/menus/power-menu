@@ -29,8 +29,11 @@ $option_5" | rofi_cmd
 }
 
 run_cmd() {
+	# let rofi's close animation (layersOut, 400ms) finish, or the lock screen
+	# freezes a half-faded menu that reappears on unlock / resume
+	sleep 0.45
 	if [[ "$1" == '--opt1' ]]; then
-		hyprlock
+		pidof hyprlock || systemd-cat -t hyprlock hyprlock
 	elif [[ "$1" == '--opt2' ]]; then
 		mpc -q pause && systemctl suspend
 	elif [[ "$1" == '--opt3' ]]; then
