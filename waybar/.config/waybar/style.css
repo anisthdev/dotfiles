@@ -210,3 +210,10 @@ menu menuitem {
 menu menuitem:hover {
   background-color: @surface_container_highest;
 }
+
+/* Tooltips. The GTK theme's tooltip > box has margin: -6px over the
+   tooltip's own padding, so the box's padding is the real space around
+   the text. */
+tooltip > box {
+  padding: 10px 14px;
+}
