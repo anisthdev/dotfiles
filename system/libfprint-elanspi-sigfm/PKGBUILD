@@ -1,0 +1,46 @@
+# Local build: goodix-fp-linux-dev libfprint fork (SIGFM matcher) for the
+# Asus Vivobook X1502ZA ELAN7001 / 04f3:3104 / eFSA80SC SPI sensor.
+pkgname=libfprint-elanspi-sigfm
+_commit=07306bbc9256942595e31fb0f407b364ffa24d07
+pkgver=1.94.5.sigfm
+pkgrel=5
+pkgdesc="libfprint with SIGFM matcher, patched for ELAN eFSA80SC (04f3:3104)"
+arch=('x86_64')
+url="https://github.com/goodix-fp-linux-dev/libfprint"
+license=('LGPL-2.1-or-later')
+depends=(libgudev libgusb nss pixman opencv)
+makedepends=(git meson glib2-devel doctest)
+provides=("libfprint=1.94.5" 'libfprint-2.so')
+conflicts=(libfprint libfprint-git)
+source=("libfprint::git+$url.git#commit=$_commit"
+        elanspi-3104-sigfm.patch)
+sha256sums=('SKIP' 'SKIP')
+
+prepare() {
+  cd libfprint
+  git apply "$srcdir/elanspi-3104-sigfm.patch"
+  # Arch ships OpenCV 5, whose pkg-config module is opencv5
+  sed -i "s/dependency('opencv4', required: true, version: '>=4.5.0')/dependency('opencv5', required: true)/" libfprint/sigfm/meson.build
+  # HV capture clobbered hv_data.gdac_value through the old_data union member
+  sed -i '/case ELANSPI_CAPTHV_WRITE_CAPTURE:/,/capture_timeout/{/old_data.line_ptr = 0;/d}' libfprint/drivers/elanspi.c
+  # More templates per print: swipe strips only cover part of the finger
+  sed -i 's/nr_enroll_stages = 7;/nr_enroll_stages = 15;/' libfprint/drivers/elanspi.c
+  # Measured on this unit: impostors score 0, genuine near-misses land at 35..99
+  sed -i 's/bz3_threshold = 100;/bz3_threshold = 50;/' libfprint/drivers/elanspi.c
+  # The default 3 min "too hot" model cut off hyprlock's continuous verify.
+  # Keep a cap so an all-night lock stops polling: hot after ~20 min, cool in ~10
+  sed -i 's/^\(  dev_class->nr_enroll_stages = 15;.*\)$/\1\n  dev_class->temp_hot_seconds = 20 * 60;\n  dev_class->temp_cold_seconds = 10 * 60;/' libfprint/drivers/elanspi.c
+}
+
+build() {
+  arch-meson libfprint build \
+    -Ddrivers=elanspi \
+    -Dintrospection=false \
+    -Ddoc=false \
+    -Dgtk-examples=false
+  meson compile -C build
+}
+
+package() {
+  DESTDIR="$pkgdir" meson install -C build
+}
