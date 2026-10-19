@@ -23,6 +23,13 @@ menu.background {
   opacity: 1;
 }
 
+/* GTK3 menus sit in a "window.background.popup" toplevel, which the shared
+   "window, .background" rule paints as a square behind the rounded menu. */
+window.popup,
+.background.popup {
+  background-color: transparent;
+}
+
 /* The shared headerbar rule zeroes padding, which pins GTK3 dialog buttons
    to the window edge; Materia also dims flat headerbar buttons. */
 headerbar,
