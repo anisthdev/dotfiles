@@ -91,3 +91,8 @@ output_path = '~/.mozilla/firefox/asif/chrome/userContent.css'
 [templates.nvim]
 input_path = './templates/background.lua'
 output_path = '~/.config/nvim/lua/core/ui/background.lua'
+
+[templates.sysaud]
+input_path = './templates/sysaud.yaml'
+output_path = '~/.config/sysaud/config.yaml'
+post_hook = 'systemctl --user reload sysaud.service'
