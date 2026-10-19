@@ -12,6 +12,14 @@
   --accent-bg-color: {{colors.inverse_primary.default.rgba}};
   --accent-fg-color: {{colors.on_surface.default.rgba}};
   --accent-color: {{colors.inverse_primary.default.rgba}};
+  --sidebar-bg-color: {{colors.surface_container_low.default.rgba}};
+  --sidebar-backdrop-color: {{colors.surface_container_low.default.rgba}};
+  --sidebar-fg-color: {{colors.on_surface.default.rgba}};
+  --sidebar-border-color: {{colors.outline_variant.default.rgba}};
+  --secondary-sidebar-bg-color: {{colors.surface_container_low.default.rgba}};
+  --secondary-sidebar-backdrop-color: {{colors.surface_container_low.default.rgba}};
+  --secondary-sidebar-fg-color: {{colors.on_surface.default.rgba}};
+  --secondary-sidebar-border-color: {{colors.outline_variant.default.rgba}};
 }
 
 headerbar,
@@ -23,10 +31,16 @@ window.nautilus-window .titlebar,
 .nautilus-window .titlebar {
   background-color: {{colors.surface_container_high.default.rgba}};
   color: {{colors.on_surface.default.rgba}};
-  margin: 0;
-  padding: 0;
   border-width: 0;
   border-style: none;
+  box-shadow: none;
+}
+
+/* libadwaita header bars inside a toolbarview (split views like Foliate's
+   sidebar + content) must stay transparent so each pane's colour shows
+   through and the two bars line up */
+toolbarview > .top-bar headerbar {
+  background: none;
   box-shadow: none;
 }
 
