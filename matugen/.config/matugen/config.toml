@@ -10,6 +10,10 @@ input_path = './templates/colors.css'
 output_path = '~/.config/waybar/colors.css'
 post_hook = 'pkill -SIGUSR2 waybar'
 
+[templates.inflight]
+input_path = './templates/inflight-colors.css'
+output_path = '~/.config/inflight/colors.css'
+
 [templates.starship]
 input_path = './templates/starship2.toml'
 output_path = '~/.config/starship.toml'

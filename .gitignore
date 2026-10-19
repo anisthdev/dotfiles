@@ -6,6 +6,7 @@ secrets.fish
 colors.conf
 mako/.config/mako/config
 waybar/.config/waybar/colors.css
+inflight/.config/inflight/colors.css
 rofi/.config/rofi/colors.rasi
 scripts/.local/bin/claude
 node_modules/
