@@ -3,7 +3,7 @@
 
 * {
   font-family: "SF Pro Display", "lucide", sans-serif;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: bold;
 }
 
@@ -35,7 +35,7 @@ window#waybar {
 }
 
 #workspaces button:hover {
-  background: @surface_container;
+  background: @surface_container_low;
 }
 
 #workspaces button.urgent {
@@ -50,6 +50,7 @@ window#waybar {
 
 #workspaces button.empty:hover {
   box-shadow: none;
+  background: @surface_container_lowest;
 }
 
 #workspaces button.active {
