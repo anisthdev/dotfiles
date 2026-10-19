@@ -1,23 +1,28 @@
-hl.curve("linear", { type = "bezier", points = { { 1, 1 }, { 1, 1 } } })
-hl.curve("spring", { type = "bezier", points = { { 0.05, 0.9 }, { 0.1, 1.05 } } })
-hl.curve("bouncy", { type = "bezier", points = { { 0.68, -0.6 }, { 0.27, 1.4 } } })
-hl.curve("whip", { type = "bezier", points = { { 0.22, 1 }, { 0.36, 1.1 } } })
-hl.curve("overshoot", { type = "bezier", points = { { 0.34, 1.56 }, { 0.64, 1.0 } } })
+-- Material 3 Expressive motion: https://m3.material.io/styles/motion/overview/how-it-works
+-- springs from Compose's MotionScheme.expressive(). M3 gives a damping ratio, hyprland wants
+-- the damping coefficient, which is 2 * ratio * sqrt(stiffness * mass).
+-- spatial springs (position, size) bounce a little, effects springs (opacity) never do.
+hl.curve("spatialFast", { type = "spring", mass = 1, stiffness = 800, dampening = 33.94 }) -- ratio 0.6
+hl.curve("spatialDefault", { type = "spring", mass = 1, stiffness = 380, dampening = 31.19 }) -- ratio 0.8
+hl.curve("spatialSlow", { type = "spring", mass = 1, stiffness = 200, dampening = 22.63 }) -- ratio 0.8
+hl.curve("effectsFast", { type = "spring", mass = 1, stiffness = 3800, dampening = 123.29 }) -- ratio 1
+hl.curve("effectsDefault", { type = "spring", mass = 1, stiffness = 1600, dampening = 80 }) -- ratio 1
 
--- example spring curve
-hl.curve("easy", { type = "spring", mass = 1, stiffness = 71.2633, dampening = 15.8273644 })
+-- windows pop out of their spot and overshoot a touch, then shrink away without bouncing
+hl.animation({ leaf = "windowsIn", enabled = true, speed = 4.0, spring = "spatialDefault", style = "popin 80%" })
+hl.animation({ leaf = "windowsOut", enabled = true, speed = 4.0, spring = "effectsDefault", style = "popin 80%" })
+hl.animation({ leaf = "windowsMove", enabled = true, speed = 4.0, spring = "spatialFast", style = "slide" })
 
-hl.animation({ leaf = "windowsIn", enabled = true, speed = 4.0, bezier = "whip", style = "slide" })
-hl.animation({ leaf = "windowsOut", enabled = true, speed = 4.0, bezier = "whip", style = "slide" })
-hl.animation({ leaf = "windowsMove", enabled = true, speed = 4.0, bezier = "whip", style = "slide" })
-hl.animation({ leaf = "fade", enabled = true, speed = 4.0, bezier = "spring" })
-hl.animation({ leaf = "fadePopups", enabled = true, speed = 2.0, bezier = "spring" })
-hl.animation({ leaf = "fadePopupsIn", enabled = true, speed = 2.0, bezier = "spring" })
-hl.animation({ leaf = "fadePopupsOut", enabled = false, speed = 2.0, bezier = "spring" })
-hl.animation({ leaf = "layersIn", enabled = true, speed = 4.0, bezier = "whip", style = "slide" })
-hl.animation({ leaf = "layersOut", enabled = true, speed = 4.0, bezier = "whip", style = "slide" })
-hl.animation({ leaf = "fadeLayersIn", enabled = true, speed = 3.5, bezier = "bouncy" })
-hl.animation({ leaf = "fadeLayersOut", enabled = true, speed = 3.5, bezier = "bouncy" })
-hl.animation({ leaf = "workspaces", enabled = true, speed = 4.5, bezier = "whip", style = "slidevert" })
-hl.animation({ leaf = "specialWorkspace", enabled = true, speed = 3.0, bezier = "whip", style = "slidevert 70%" })
-hl.animation({ leaf = "zoomFactor", enabled = true, speed = 7, bezier = "whip" })
+hl.animation({ leaf = "fade", enabled = true, speed = 4.0, spring = "effectsDefault" })
+hl.animation({ leaf = "fadeOut", enabled = true, speed = 4.0, spring = "effectsFast" })
+hl.animation({ leaf = "fadePopupsOut", enabled = true, speed = 4.0, spring = "effectsFast" })
+
+-- bars, menus and notifications spring in from their edge
+hl.animation({ leaf = "layersIn", enabled = true, speed = 4.0, spring = "spatialDefault", style = "slide" })
+hl.animation({ leaf = "layersOut", enabled = true, speed = 4.0, spring = "effectsFast", style = "slide" })
+hl.animation({ leaf = "fadeLayersOut", enabled = true, speed = 4.0, spring = "effectsFast" })
+
+hl.animation({ leaf = "workspaces", enabled = true, speed = 4.0, spring = "spatialDefault", style = "slidevert" })
+hl.animation({ leaf = "specialWorkspace", enabled = true, speed = 4.0, spring = "spatialSlow", style = "slidevert 70%" })
+
+hl.animation({ leaf = "zoomFactor", enabled = true, speed = 4.0, spring = "spatialDefault" })
