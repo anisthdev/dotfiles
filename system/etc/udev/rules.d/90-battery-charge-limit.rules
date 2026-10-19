@@ -1,5 +1,12 @@
 # Cap charging at 80% on boot and let wheel users change it (~/.local/bin/battery-limit)
-ACTION=="add", SUBSYSTEM=="power_supply", KERNEL=="BAT0", \
+# charge_control_end_threshold is added by asus-nb-wmi's battery hook, which can
+# register after BAT0's add event, so apply on whichever of the two comes last.
+ACTION=="add", SUBSYSTEM=="power_supply", KERNEL=="BAT0", TEST=="charge_control_end_threshold", \
   ATTR{charge_control_end_threshold}="80", \
   RUN+="/usr/bin/chgrp wheel /sys%p/charge_control_end_threshold", \
   RUN+="/usr/bin/chmod g+w /sys%p/charge_control_end_threshold"
+ACTION=="bind", SUBSYSTEM=="platform", DRIVER=="asus-nb-wmi", \
+  TEST=="/sys/class/power_supply/BAT0/charge_control_end_threshold", \
+  RUN+="/bin/sh -c 'echo 80 > /sys/class/power_supply/BAT0/charge_control_end_threshold'", \
+  RUN+="/usr/bin/chgrp wheel /sys/class/power_supply/BAT0/charge_control_end_threshold", \
+  RUN+="/usr/bin/chmod g+w /sys/class/power_supply/BAT0/charge_control_end_threshold"
