@@ -42,9 +42,9 @@ hl.config({
 	},
 })
 
--- blur for waybar, rofi, mako and handoff's phone notifications
+-- blur for waybar, rofi, mako, handoff's phone notifications and inflight's progress cards
 hl.layer_rule({
-	match = { namespace = "waybar|rofi|notifications|handoff-popup" },
+	match = { namespace = "waybar|rofi|notifications|handoff-popup|inflight" },
 	blur = true,
 	ignore_alpha = 0.2,
 	blur_popups = true,
