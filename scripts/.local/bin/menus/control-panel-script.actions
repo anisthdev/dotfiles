@@ -12,7 +12,6 @@ dispatch_external_action() {
     nightlight) run_external_cmd "$SCRIPT_DIR/../toggle-nightlight" ;;
     charge-limit) run_external_cmd "$SCRIPT_DIR/../battery-limit" ;;
     handoff) run_external_cmd "$SCRIPT_DIR/../toggle-handoff" ;;
-    vpn-indicator) start_vpn_indicator ;;
     *) ;;
   esac
   exit 0
@@ -132,23 +131,6 @@ vpn_toggle_worker() {
 
   busy --body "$vpn_name" "Connecting VPN" -- \
     nmcli connection up "$vpn_name" >/dev/null 2>&1 || true
-}
-
-ensure_vpn_indicator() {
-  if command -v systemctl >/dev/null 2>&1 \
-    && systemctl --user start vpn-indicator.service >/dev/null 2>&1; then
-    return 0
-  fi
-
-  if pgrep -f "$VPN_INDICATOR" >/dev/null 2>&1; then
-    return 0
-  fi
-
-  nohup "$VPN_INDICATOR" >/dev/null 2>&1 </dev/null &
-}
-
-start_vpn_indicator() {
-  ensure_vpn_indicator
 }
 
 bluetooth_toggle() {

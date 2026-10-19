@@ -3,7 +3,6 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 THEME="$SCRIPT_DIR/styles/common-menu.rasi"
-VPN_INDICATOR="$SCRIPT_DIR/../vpn-bypass.d/vpn-indicator"
 
 source "$SCRIPT_DIR/control-panel-script.lib"
 source "$SCRIPT_DIR/control-panel-script.pages"
@@ -24,8 +23,6 @@ if [[ -z "${ROFI_RETV:-}" ]]; then
   if [[ "${1:-}" == "--page" && -n "${2:-}" ]]; then
     start_page="$2"
   fi
-
-  ensure_vpn_indicator
 
   CONTROL_PANEL_START_PAGE="$start_page" exec rofi \
     -show control-panel-script \

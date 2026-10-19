@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# Show a tray icon while a VPN is up (vpn-tray@.service in the user session).
+case "${2:-}" in
+    vpn-up) verb=start ;;
+    vpn-down) verb=stop ;;
+    *) exit 0 ;;
+esac
+unit=$(systemd-escape --template=vpn-tray@.service "$CONNECTION_ID")
+
+for user in $(loginctl list-users --no-legend | awk '{ print $2 }'); do
+    systemctl --user --machine="$user@" "$verb" --no-block "$unit" 2>/dev/null
+done
+exit 0

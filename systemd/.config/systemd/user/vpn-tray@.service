@@ -1,0 +1,8 @@
+[Unit]
+Description=Tray icon for the active VPN %I
+
+[Service]
+# Started and stopped on vpn-up/vpn-down by /etc/NetworkManager/dispatcher.d/92-vpn-tray
+ExecStart=/usr/bin/tray run --id vpn-%i --icon network-vpn --tooltip "VPN: %I" -- sleep infinity
+# tray run passes on sleep's SIGTERM exit code when the unit is stopped
+SuccessExitStatus=143
