@@ -51,6 +51,13 @@ tabbar .box {
   box-shadow: inset 0 -1px {{colors.outline_variant.default.rgba}};
 }
 
+/* libadwaita shrinks a header bar stacked above a tab bar (collapse-spacing),
+   which leaves nautilus's content header 3px shorter than the sidebar's;
+   keep it the sidebar header's height so the two line up */
+window.nautilus-window toolbarview > .top-bar .collapse-spacing headerbar {
+  min-height: 43px;
+}
+
 window.nautilus-window windowhandle,
 window.nautilus-window windowhandle > box,
 window.nautilus-window toolbarview,
