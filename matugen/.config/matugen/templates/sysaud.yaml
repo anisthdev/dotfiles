@@ -109,7 +109,11 @@ notify:
 
 events:
   power.ac-plugged:
+    notify: false
     script: glint --origin bottom-right --primary-color '{{colors.primary.default.hex}}'
+
+  power.ac-unplugged:
+    notify: false
 
   audio.volume-changed:
     icon: gnome-volume-control
