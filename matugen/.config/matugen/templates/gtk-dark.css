@@ -142,6 +142,12 @@ popover.background {
   box-shadow: none;
 }
 
+/* the arrow is a sibling of the contents, so it misses their opacity and
+   keeps libadwaita's popover colour; match the contents at 80% alpha */
+popover > arrow {
+  background-color: {{colors.surface_container.default.rgba | set_alpha: 0.8}};
+}
+
 tooltip,
 tooltip.background {
   background-color: {{colors.surface_container.default.rgba}};
