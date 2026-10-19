@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-# Show or hide the phone mirror scratchpad, starting the mirror if it isn't
-# running; what SUPER+CTRL+P does, for the handoff tray icon.
-if hyprctl -j clients | jq -e 'any(.[]; .class == "scrcpy" and .title == "Pixel 10a")' >/dev/null; then
-    hyprctl dispatch 'hl.dsp.workspace.toggle_special("phone")' >/dev/null
-else
-    uwsm app -- "$HOME/.local/bin/mirror-phone"
-fi

@@ -2,7 +2,7 @@ local mainMod = "SUPER + "
 
 local name = "phone"
 local window_query = "title:Pixel 10a"
-local command = "uwsm app -- /home/asif/.local/bin/mirror-phone"
+local command = "uwsm app -- /home/asif/.local/bin/phone-mirror"
 
 local function toggle()
 	if hl.get_window(window_query) then
@@ -21,3 +21,5 @@ hl.window_rule({
 })
 
 hl.bind(mainMod .. "CTRL + P", toggle, { description = "Toggle phone mirror" })
+
+return { toggle = toggle }

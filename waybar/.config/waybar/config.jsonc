@@ -155,7 +155,7 @@
     "interval": "once",
     "signal": 10,
     "tooltip": false,
-    "on-click": "/home/asif/.local/bin/phone-scratchpad"
+    "on-click": "hyprctl eval 'require(\"scratchpads.phone\").toggle()'"
   },
   "custom/phone-live": {
     "exec": "/home/asif/.local/share/go/bin/handoffd live",
@@ -163,7 +163,7 @@
     "format": "{}",
     "interval": "once",
     "signal": 10,
-    "on-click": "/home/asif/.local/bin/phone-scratchpad"
+    "on-click": "hyprctl eval 'require(\"scratchpads.phone\").toggle()'"
   },
   "custom/weather": {
     "exec": "/home/asif/.config/waybar/weather/waybar-weather",
