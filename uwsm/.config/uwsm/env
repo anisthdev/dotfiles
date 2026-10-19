@@ -10,6 +10,9 @@ export MOZ_ENABLE_WAYLAND=1
 export ELECTRON_OZONE_PLATFORM_HINT=wayland
 export OZONE_PLATFORM=wayland
 export XCOMPOSEFILE="$HOME/.XCompose"
+# GTK 4.24+ uses ext-background-effect to turn blur off on its windows, overriding Hyprland's blur
+# https://github.com/hyprwm/Hyprland/discussions/16507
+export GDK_WAYLAND_DISABLE=ext_background_effect_manager_v1
 
 # Session-wide so apps launched from Hyprland (yazi via Super+Y, etc.) see it
 export EDITOR=nvim
