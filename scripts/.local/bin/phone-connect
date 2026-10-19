@@ -61,10 +61,11 @@ connect_tcpip() {
 
 connect_mdns() {
     # adb auto-connects paired phones it discovers; give discovery a moment.
+    # A phone in tcpip mode advertises _adb._tcp, which finds it on a new network.
     local _ service
     for _ in {1..8}; do
         online >/dev/null && return 0
-        service="$("$ADB" mdns services 2>/dev/null | awk '/_adb-tls-connect/ { print $NF; exit }')"
+        service="$("$ADB" mdns services 2>/dev/null | awk '/_adb(-tls-connect)?\._tcp/ { print $NF; exit }')"
         [[ -n "$service" ]] && timeout 5 "$ADB" connect "$service" >/dev/null 2>&1
         sleep 0.5
     done
