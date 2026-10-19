@@ -1,4 +1,4 @@
-/* Firefox private browsing page: grey background, matugen text color, no promos. */
+/* Firefox private browsing and new tab pages: matugen colors, no promos. */
 @-moz-document url("about:privatebrowsing") {
   /* Firefox paints the page background on html; keep it transparent so the body grey fills the page. */
   html {
@@ -52,5 +52,21 @@
 
   .search-handoff-button .fake-caret {
     background-color: {{colors.on_surface.default.rgba}} !important;
+  }
+}
+
+/* New tab and home page: same background as ghostty, no wallpaper. */
+@-moz-document url("about:newtab"), url("about:home") {
+  :root,
+  body {
+    --newtab-background-color: {{colors.background.default.hex}} !important;
+    --newtab-background-color-secondary: {{colors.surface_container.default.hex}} !important;
+    --newtab-text-primary-color: {{colors.on_surface.default.hex}} !important;
+  }
+
+  /* the background shorthand also clears the wallpaper's background-image */
+  html,
+  body {
+    background: {{colors.background.default.hex}} !important;
   }
 }
