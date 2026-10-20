@@ -1,18 +1,124 @@
 #!/usr/bin/env bash
-# Run a command and show a progress card while it is still running.
+# Run a command and show a progress notification while it is still running.
 #
 #   busy [options] TITLE -- COMMAND [ARGS...]
 #
-# A wrapper for `inflight run` (~/Projects/inflight), kept so callers don't
-# change. Nothing is shown if the command finishes within the delay. On
-# success the card shows a check; on failure, the last line of stderr.
-# Clicking a running card cancels the command. stdin, stdout, stderr and the
-# exit code of COMMAND are passed through, so busy can wrap commands inside
-# pipelines and $(...).
+# Nothing is shown if the command finishes within the delay. While it runs
+# the notification shows indeterminate progress (`value` hint "busy", which
+# quickbar draws as a travelling wave). On success it fills up and goes; on
+# failure it shows the last line of stderr. Clicking the running
+# notification cancels the command. stdin, stdout, stderr and the exit code
+# of COMMAND pass through, so busy can wrap commands inside pipelines and
+# $(...).
 #
 # Options:
 #   -b, --body TEXT    secondary text, e.g. the search query
-#   -i, --icon NAME    icon shown inside the spinner
-#   -d, --delay SECS   time before the card appears (default: 0.3)
-#   -q, --no-error     don't show a card on failure
-exec inflight run "$@"
+#   -i, --icon NAME    icon shown with the notification
+#   -d, --delay SECS   time before the notification appears (default: 0.3)
+#   -q, --no-error     don't show a notification on failure
+
+usage() {
+    sed -n '2,/^$/s/^# \{0,1\}//p' "$0" >&2
+    exit 2
+}
+
+body="" icon="" delay=0.3 quiet=0
+while (($#)); do
+    case $1 in
+    -b | --body) body=$2; shift 2 ;;
+    -i | --icon) icon=$2; shift 2 ;;
+    -d | --delay) delay=$2; shift 2 ;;
+    -q | --no-error) quiet=1; shift ;;
+    -h | --help) usage ;;
+    --) shift; break ;;
+    -*) echo "busy: unknown option $1" >&2; usage ;;
+    *) title=$1; shift ;;
+    esac
+done
+[[ -z ${title:-} || $# -eq 0 ]] && usage
+
+tmp=$(mktemp -d)
+id=""
+pid=""
+
+# The app line says where things stand: In progress, Done, Cancelled, Failed
+state="In progress"
+notify() {
+    notify-send -a "$state" ${icon:+-i "$icon"} "$@" "$title" "$body"
+}
+
+close_card() {
+    [[ -n $id ]] && gdbus call --session --dest org.freedesktop.Notifications \
+        --object-path /org/freedesktop/Notifications \
+        --method org.freedesktop.Notifications.CloseNotification "$id" >/dev/null 2>&1
+}
+
+trap 'rm -rf "$tmp"' EXIT
+
+# busy itself being stopped takes the command and the notification with it
+on_signal() {
+    [[ -n $pid ]] && kill -TERM "$pid" 2>/dev/null
+    close_card
+    exit $((128 + $1))
+}
+trap 'on_signal 1' HUP
+trap 'on_signal 2' INT
+trap 'on_signal 15' TERM
+
+# stderr goes through as it comes, and into a file for the failure reason
+exec 3> >(tee "$tmp/stderr" >&2)
+tee_pid=$!
+
+# An explicit <&0: a background job would otherwise get /dev/null as stdin
+"$@" <&0 2>&3 &
+pid=$!
+
+# Show nothing for quick commands
+steps=$(awk -v d="$delay" 'BEGIN { print int(d * 20 + 0.5) }')
+for ((i = 0; i < steps; i++)); do
+    kill -0 "$pid" 2>/dev/null || break
+    sleep 0.05
+done
+
+if kill -0 "$pid" 2>/dev/null; then
+    # A click arrives as the default action. notify-send prints the id
+    # straight away, then waits and prints the action if one is taken. It
+    # can wait as long as the notification lives, so it holds none of our
+    # pipes: a caller reading our output would otherwise wait for it too.
+    notify -p -t 0 -h string:value:busy -A default=Cancel </dev/null 2>/dev/null 3>&- | {
+        read -r card && echo "$card" >"$tmp/id"
+        if read -r action && [[ $action == default && ! -e $tmp/done ]]; then
+            touch "$tmp/cancelled"
+            kill -TERM "$pid" 2>/dev/null
+        fi
+    } >/dev/null 2>&1 3>&- &
+    for _ in {1..40}; do
+        [[ -s $tmp/id ]] && break
+        sleep 0.025
+    done
+    [[ -s $tmp/id ]] && id=$(<"$tmp/id")
+fi
+
+wait "$pid"
+rc=$?
+touch "$tmp/done"
+exec 3>&-
+wait "$tee_pid" 2>/dev/null
+
+replace=()
+[[ -n $id ]] && replace=(-r "$id")
+
+if ((rc == 0)); then
+    # Fills up and goes
+    [[ -n $id ]] && state="Done" notify "${replace[@]}" -t 1400 -h int:value:100
+elif [[ -e $tmp/cancelled ]] || ((rc == 129 || rc == 130 || rc == 143)); then
+    [[ -n $id ]] && state="Cancelled" notify "${replace[@]}" -t 1400
+elif ((quiet)); then
+    close_card
+else
+    # Worth showing even when it came too quick for a running notification
+    reason=$(grep -v '^[[:space:]]*$' "$tmp/stderr" | tail -n 1)
+    state="Failed" body=${reason:-exit code $rc} icon=${icon:-dialog-error} notify "${replace[@]}" -t 6000 -u critical
+fi
+
+exit "$rc"
