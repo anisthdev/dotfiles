@@ -36,16 +36,15 @@ hl.config({
 	misc = {
 		force_default_wallpaper = -1, -- Set to 0 or 1 to disable the anime mascot wallpapers
 		disable_hyprland_logo = false, -- If true disables the random hyprland logo / anime girl background. :(
-		allow_session_lock_restore = true, -- lets a new hyprlock take over if the old one dies
+		allow_session_lock_restore = true, -- lets a new lock screen take over if the old one dies
 		key_press_enables_dpms = true, -- any key wakes a blanked screen
 		mouse_move_enables_dpms = true,
 	},
 })
 
--- blur for waybar, quickbar (and its full-screen overlays), rofi and
--- notifications (mako or quickbar's)
+-- blur for quickbar (and its full-screen overlays) and its notifications
 hl.layer_rule({
-	match = { namespace = "waybar|quickbar|quickbar-overlay|rofi|notifications" },
+	match = { namespace = "quickbar|quickbar-overlay|notifications" },
 	blur = true,
 	ignore_alpha = 0.2,
 	blur_popups = true,
@@ -55,4 +54,4 @@ hl.layer_rule({
 hl.layer_rule({ match = { namespace = "glint|selection|hyprpicker" }, no_anim = true })
 -- quickbar's full-screen overlays animate themselves; a layer slide would
 -- carry the whole screen-sized surface off
-hl.layer_rule({ match = { namespace = "quickbar-overlay" }, no_anim = true })
+hl.layer_rule({ match = { namespace = "quickbar-overlay|quickbar-dialog" }, no_anim = true })

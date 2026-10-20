@@ -1,7 +1,11 @@
 local mainMod = "SUPER + "
 local scriptDir = os.getenv("HOME") .. "/.local/bin/"
-local menuDir = scriptDir .. "menus/"
-local glyphMenu = "rofi -modi nerdy -show nerdy -theme $HOME/.config/rofi/nerdfont-selector.rasi"
+
+-- quickbar's windows, through its IPC
+local quickbar = "qs -p $HOME/Projects/quickbar ipc call "
+local function shell(call)
+	return hl.dsp.exec_cmd(quickbar .. call)
+end
 
 --launching
 hl.bind(mainMod .. "B", hl.dsp.exec_cmd("uwsm app -- firefox -P asif"), { description = "Browser" })
@@ -10,27 +14,40 @@ hl.bind(mainMod .. "Y", hl.dsp.exec_cmd("uwsm app -- ghostty --title=yazi -e yaz
 hl.bind(mainMod .. "T", hl.dsp.exec_cmd("uwsm app -- ghostty --title=tremc -e tremc"), { description = "Tremc" })
 hl.bind(mainMod .. "M", hl.dsp.exec_cmd("uwsm app -- mpv --player-operation-mode=pseudo-gui"), { description = "mpv" })
 hl.bind(mainMod .. "SHIFT + B", hl.dsp.exec_cmd("uwsm app -- firefox --private-window"), { description = "Incognito" })
-hl.bind(mainMod .. "V", hl.dsp.exec_cmd("clipse-gui"), { description = "Clipboard manager" })
+hl.bind(mainMod .. "V", shell("clipboard toggle"), { description = "Clipboard manager" })
 
 --Toggle switches
-hl.bind(mainMod .. "SHIFT + SPACE", hl.dsp.exec_cmd("pkill -SIGUSR1 waybar"), { description = "Toggle waybar" })
-hl.bind(mainMod .. "comma", hl.dsp.exec_cmd("makoctl dismiss"), { description = "Close notification" })
+hl.bind(mainMod .. "SHIFT + SPACE", shell("bar toggle"), { description = "Toggle bar" })
+hl.bind(mainMod .. "comma", shell("notifications dismiss"), { description = "Close notification" })
 hl.bind(mainMod .. "CTRL + I", hl.dsp.exec_cmd(scriptDir .. "toggle-idle"), { description = "Toggle idle" })
 hl.bind(mainMod .. "CTRL + H", hl.dsp.exec_cmd(scriptDir .. "hotspot"), { description = "Join phone hotspot" })
 
 --menus
-hl.bind(mainMod .. "SPACE", hl.dsp.exec_cmd("rofi -show drun"), { description = "App launcher" })
-hl.bind(mainMod .. "Q", hl.dsp.exec_cmd(menuDir .. "control-panel-script"), { description = "Control Panel" })
-hl.bind(mainMod .. "E", hl.dsp.exec_cmd(menuDir .. "entertainment"), { description = "Entertainment" })
-hl.bind(mainMod .. "R", hl.dsp.exec_cmd(menuDir .. "retroarch-nes"), { description = "RetroArch NES" })
-hl.bind(mainMod .. "CTRL + SPACE", hl.dsp.exec_cmd(menuDir .. "wallpaper-picker"), { description = "Wallpaper picker" })
-hl.bind(mainMod .. "ESCAPE", hl.dsp.exec_cmd(menuDir .. "power-menu"), { description = "Power menu" })
-hl.bind(mainMod .. "CTRL + N", hl.dsp.exec_cmd(glyphMenu), { description = "Glyph selector" })
-hl.bind(mainMod .. "CTRL + V", hl.dsp.exec_cmd(menuDir .. "play-video"), { description = "Play video from URL" })
-hl.bind(mainMod .. "SHIFT + N", hl.dsp.exec_cmd(menuDir .. "quick-note"), { description = "Quick note to inbox" })
-hl.bind(mainMod .. "CTRL + K", hl.dsp.exec_cmd(menuDir .. "keybindings"), { description = "Keybindings" })
-hl.bind("PRINT", hl.dsp.exec_cmd(menuDir .. "screenshot"), { description = "Screenshot" })
-hl.bind("ALT + PRINT", hl.dsp.exec_cmd(menuDir .. "screenrecord"), { description = "Screenrecord" })
+hl.bind(mainMod .. "SPACE", shell("launcher toggle"), { description = "App launcher" })
+hl.bind(mainMod .. "Q", shell("controlpanel toggle"), { description = "Control Panel" })
+hl.bind(mainMod .. "E", shell("entertainment toggle"), { description = "Entertainment" })
+hl.bind(mainMod .. "R", shell("games toggle"), { description = "RetroArch NES" })
+hl.bind(mainMod .. "CTRL + SPACE", shell("wallpaper toggle"), { description = "Wallpaper picker" })
+hl.bind(mainMod .. "ESCAPE", shell("power toggle"), { description = "Power menu" })
+hl.bind(mainMod .. "CTRL + N", shell("glyphs toggle"), { description = "Glyph selector" })
+hl.bind(mainMod .. "period", shell("emoji toggle"), { description = "Emoji picker" })
+hl.bind(mainMod .. "CTRL + V", shell("search open play"), { description = "Play video from URL" })
+hl.bind(mainMod .. "SHIFT + N", shell("note toggle"), { description = "Quick note to inbox" })
+hl.bind(mainMod .. "CTRL + K", shell("keybindings toggle"), { description = "Keybindings" })
+hl.bind("PRINT", shell("screenshot toggle"), { description = "Screenshot" })
+hl.bind("ALT + PRINT", shell("record toggle"), { description = "Screenrecord" })
+
+-- Hindi films, kept off the entertainment menu
+hl.bind(mainMod .. "SHIFT + E", shell("search open hindi"))
+
+--bar menus
+hl.bind(mainMod .. "ALT + W", shell("wifi toggle"), { description = "Wi-Fi menu" })
+hl.bind(mainMod .. "ALT + B", shell("bluetooth toggle"), { description = "Bluetooth menu" })
+hl.bind(mainMod .. "ALT + A", shell("audio toggle"), { description = "Sound menu" })
+hl.bind(mainMod .. "ALT + C", shell("calendar toggle"), { description = "Calendar" })
+hl.bind(mainMod .. "ALT + M", shell("media toggle"), { description = "Now playing" })
+hl.bind(mainMod .. "ALT + D", shell("downloads toggle"), { description = "Downloads" })
+hl.bind(mainMod .. "ALT + P", shell("battery toggle"), { description = "Battery and power profile" })
 
 --others
 hl.bind(mainMod .. "SHIFT + S", hl.dsp.exec_cmd(scriptDir .. "ocr-region"), { description = "OCR region" })
