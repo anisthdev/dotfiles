@@ -1,4 +1,13 @@
 #!/usr/bin/env bash
+# Search Jackett and add the pick to Transmission, or stream it with peerflix
+# (Ctrl+R), through rofi. Wrappers such as movie-search set the indexer,
+# categories and labels.
+#
+# Without rofi, for quickbar's own search window:
+#   jackett-search --json QUERY       matching results as JSON, best first
+#   jackett-search --add MAGNET TITLE add to Transmission
+#   jackett-search --stream MAGNET TITLE
+# QUERY takes the same s:N and ep:N as the rofi prompt.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
@@ -89,8 +98,10 @@ fetch_results() {
     [[ -n "$season" ]] && body+=" S$season"
     [[ -n "$episode" ]] && body+=" E$episode"
 
-    busy --no-error --body "$body" "Searching $JACKETT_SEARCH_LABEL" -- \
-        curl -fsS --get --max-time "$JACKETT_TIMEOUT" \
+    # Quiet when quickbar is the one showing progress
+    local runner=(busy --no-error --body "$body" "Searching $JACKETT_SEARCH_LABEL" --)
+    [[ -n "${JACKETT_QUIET:-}" ]] && runner=()
+    "${runner[@]}" curl -fsS --get --max-time "$JACKETT_TIMEOUT" \
         "${curl_args[@]}" \
         "$JACKETT_URL/api/v2.0/indexers/$JACKETT_INDEXER/results/torznab/api"
 }
@@ -257,7 +268,49 @@ select_result() {
         -theme "$JACKETT_THEME"
 }
 
+# Add to Transmission, or stream with peerflix (around the VPN, which slows
+# it); both tell the user how it went
+add_torrent() {
+    local magnet="$1" title="$2"
+    if transmission-remote -a "$magnet" >/dev/null 2>&1; then
+        notify-send --icon=video-x-generic "Transmission" "Added: $title"
+        return 0
+    fi
+    notify-send --icon=dialog-error "Transmission" "Failed to add: $title"
+    return 1
+}
+
+stream_torrent() {
+    local magnet="$1" title="$2"
+    if vpn_is_active; then
+        nohup vpn-bypass -- peerflix "$magnet" --mpv --remove >/dev/null 2>&1 </dev/null &
+    else
+        nohup peerflix "$magnet" --mpv --remove >/dev/null 2>&1 </dev/null &
+    fi
+    notify-send --icon=video-x-generic "Peerflix" "Streaming: $title"
+}
+
+# The results for QUERY as JSON on stdout; errors go to stderr with exit
+# codes 2 (no API key), 3 (Jackett unreachable) and 4 (bad response)
+json_results() {
+    local parsed_query parsed_season parsed_episode parsed_words response
+    load_jackett_config
+    [[ -n "$JACKETT_API_KEY" ]] || { echo "Missing Jackett API key" >&2; exit 2; }
+    parse_query "$1"
+    [[ -n "$parsed_query" ]] || { echo "[]"; exit 0; }
+    response="$(JACKETT_QUIET=1 fetch_results "$parsed_query" "$parsed_season" "$parsed_episode")" ||
+        { echo "Could not reach Jackett at $JACKETT_URL" >&2; exit 3; }
+    printf '%s' "$response" | normalize_results "$parsed_query" ||
+        { echo "Jackett returned an unreadable response" >&2; exit 4; }
+}
+
 main() {
+    case "${1:-}" in
+    --json) shift; json_results "$*"; exit 0 ;;
+    --add) add_torrent "$2" "${3:-$JACKETT_TITLE_FALLBACK}"; exit ;;
+    --stream) stream_torrent "$2" "${3:-$JACKETT_TITLE_FALLBACK}"; exit 0 ;;
+    esac
+
     require busy
     require curl
     require jq
@@ -354,22 +407,11 @@ main() {
     [[ -n "$magnet" ]] || exit 0
 
     if [[ "$retv" -eq 10 ]]; then
-        if vpn_is_active; then
-            nohup vpn-bypass -- peerflix "$magnet" --mpv --remove >/dev/null 2>&1 </dev/null &
-        else
-            nohup peerflix "$magnet" --mpv --remove >/dev/null 2>&1 </dev/null &
-        fi
-        notify-send --icon=video-x-generic "Peerflix" "Streaming: $title"
+        stream_torrent "$magnet" "$title"
         exit 0
     fi
 
-    if transmission-remote -a "$magnet" >/dev/null 2>&1; then
-        notify-send --icon=video-x-generic "Transmission" "Added: $title"
-        exit 0
-    fi
-
-    notify-send --icon=dialog-error "Transmission" "Failed to add: $title"
-    exit 1
+    add_torrent "$magnet" "$title"
 }
 
 main "$@"
