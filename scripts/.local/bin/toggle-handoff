@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Turn phone sync (handoffd and its notification popup) on or off.
+# Turn phone sync (handoffd) on or off.
 # It doesn't start at login; this and Quick Actions switch it. Turning it on
 # also wakes the phone app over adb when the phone is reachable; turning it
 # off makes handoffd tell the phone to stop.
