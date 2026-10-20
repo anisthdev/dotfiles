@@ -19,3 +19,4 @@ package-lock.json
 # Matugen-generated nvim background
 nvim/.config/nvim/lua/core/ui/background.lua
 __pycache__/
+reel/.config/reel/tmdb_token

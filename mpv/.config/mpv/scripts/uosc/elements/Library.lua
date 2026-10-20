@@ -1,9 +1,9 @@
 local Element = require('elements/Element')
 
--- Start screen: rows of cards for ~/Videos, built by ~~/library/scan.py.
+-- Start screen: rows of cards for ~/Videos, built by ~/Projects/reel/scan.py.
 
-local SCAN_SCRIPT = mp.command_native({'expand-path', '~~/library/scan.py'})
-local LIBRARY_FILE = mp.command_native({'expand-path', '~/.cache/mpv-library/library.json'})
+local SCAN_SCRIPT = mp.command_native({'expand-path', '~/Projects/reel/scan.py'})
+local LIBRARY_FILE = mp.command_native({'expand-path', '~/.cache/reel/library.json'})
 local WATCH_LATER_DIR = mp.command_native({'expand-path', '~~state/watch_later'})
 local WATCH_HISTORY = mp.command_native({'expand-path', mp.get_property('watch-history-path', '~~state/watch_history.jsonl')})
 -- Row order comes from library.json (library.toml); this is the fallback.

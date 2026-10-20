@@ -1,4 +1,5 @@
-# Rows on the mpv start screen, top to bottom.
+# The library's rows (scan.py in ~/Projects/reel), top to bottom, as mpv's
+# start screen shows them.
 #
 #   name  row heading (also the prefix for keys in overrides.json)
 #   path  a folder, or a list of folders merged into one row
