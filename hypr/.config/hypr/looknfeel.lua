@@ -42,9 +42,10 @@ hl.config({
 	},
 })
 
--- blur for waybar, quickbar, rofi and notifications (mako or quickbar's)
+-- blur for waybar, quickbar (and its full-screen overlays), rofi and
+-- notifications (mako or quickbar's)
 hl.layer_rule({
-	match = { namespace = "waybar|quickbar|rofi|notifications" },
+	match = { namespace = "waybar|quickbar|quickbar-overlay|rofi|notifications" },
 	blur = true,
 	ignore_alpha = 0.2,
 	blur_popups = true,
@@ -52,3 +53,6 @@ hl.layer_rule({
 
 -- no animation for these layers, since they are used for popups and selection and stuff
 hl.layer_rule({ match = { namespace = "glint|selection|hyprpicker" }, no_anim = true })
+-- quickbar's full-screen overlays animate themselves; a layer slide would
+-- carry the whole screen-sized surface off
+hl.layer_rule({ match = { namespace = "quickbar-overlay" }, no_anim = true })
