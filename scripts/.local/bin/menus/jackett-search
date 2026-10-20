@@ -5,7 +5,8 @@
 #
 # Without rofi, for quickbar's own search window:
 #   jackett-search --json QUERY       matching results as JSON, best first
-#   jackett-search --add MAGNET TITLE add to Transmission
+#   jackett-search --add MAGNET TITLE add to Transmission (JACKETT_QUIET=1:
+#                                     no notification unless it fails)
 #   jackett-search --stream MAGNET TITLE
 # QUERY takes the same s:N and ep:N as the rofi prompt.
 set -euo pipefail
@@ -269,11 +270,13 @@ select_result() {
 }
 
 # Add to Transmission, or stream with peerflix (around the VPN, which slows
-# it); both tell the user how it went
+# it); both tell the user how it went. With JACKETT_QUIET a successful add
+# says nothing: quickbar's downloads ring shows it instead.
 add_torrent() {
     local magnet="$1" title="$2"
     if transmission-remote -a "$magnet" >/dev/null 2>&1; then
-        notify-send --icon=video-x-generic "Transmission" "Added: $title"
+        [[ -n "${JACKETT_QUIET:-}" ]] ||
+            notify-send --icon=video-x-generic "Transmission" "Added: $title"
         return 0
     fi
     notify-send --icon=dialog-error "Transmission" "Failed to add: $title"
