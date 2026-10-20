@@ -166,7 +166,7 @@
     "on-click": "hyprctl eval 'require(\"scratchpads.phone\").toggle()'"
   },
   "custom/weather": {
-    "exec": "/home/asif/.config/waybar/weather/waybar-weather",
+    "exec": "/home/asif/.local/bin/weather",
     "return-type": "json",
     "format": "{}",
     "tooltip": true,
