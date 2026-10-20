@@ -19,8 +19,7 @@ hl.bind(mainMod .. "V", shell("clipboard toggle"), { description = "Clipboard ma
 --Toggle switches
 hl.bind(mainMod .. "SHIFT + SPACE", shell("bar toggle"), { description = "Toggle bar" })
 hl.bind(mainMod .. "comma", shell("notifications dismiss"), { description = "Close notification" })
-hl.bind(mainMod .. "CTRL + I", hl.dsp.exec_cmd(scriptDir .. "toggle-idle"), { description = "Toggle idle" })
-hl.bind(mainMod .. "CTRL + H", hl.dsp.exec_cmd(scriptDir .. "hotspot"), { description = "Join phone hotspot" })
+hl.bind(mainMod .. "CTRL + I", shell("keepawake toggle"), { description = "Keep awake" })
 
 --menus
 hl.bind(mainMod .. "SPACE", shell("launcher toggle"), { description = "App launcher" })
