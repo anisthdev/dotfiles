@@ -27,9 +27,3 @@ name = "Anime"
 path = "~/Videos/Anime"
 type = "series"
 sort = "anime"
-
-[[rows]]
-name = "Others"
-path = "~/Videos/Others"
-type = "movies"
-tmdb = false
