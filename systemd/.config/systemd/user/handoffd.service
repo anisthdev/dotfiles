@@ -10,6 +10,6 @@ ExecStart=%h/.local/share/go/bin/handoffd
 ExecReload=/bin/kill -HUP $MAINPID
 # Remove the tray icon however the daemon stops, crashes included
 ExecStopPost=-/usr/bin/tray hide --id phone
-ExecStopPost=-/bin/sh -c 'rm -f "$XDG_RUNTIME_DIR/handoff/live.json"; pkill -RTMIN+10 -x waybar'
+ExecStopPost=-/bin/rm -f %t/handoff/live.json
 Restart=on-failure
 RestartSec=3
