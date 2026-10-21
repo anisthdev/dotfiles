@@ -33,6 +33,7 @@ hl.bind(mainMod .. "CTRL + N", shell("glyphs toggle"), { description = "Glyph se
 hl.bind(mainMod .. "period", shell("emoji toggle"), { description = "Emoji picker" })
 hl.bind(mainMod .. "CTRL + V", shell("search open play"), { description = "Play video from URL" })
 hl.bind(mainMod .. "SHIFT + N", shell("note toggle"), { description = "Quick note to inbox" })
+hl.bind(mainMod .. "SHIFT + T", shell("tasks toggle"), { description = "To-do list" })
 hl.bind(mainMod .. "CTRL + K", shell("keybindings toggle"), { description = "Keybindings" })
 hl.bind("PRINT", shell("screenshot toggle"), { description = "Screenshot" })
 hl.bind("ALT + PRINT", shell("record toggle"), { description = "Screenrecord" })
@@ -50,6 +51,6 @@ hl.bind(mainMod .. "ALT + D", shell("downloads toggle"), { description = "Downlo
 hl.bind(mainMod .. "ALT + P", shell("battery toggle"), { description = "Battery and power profile" })
 
 --others
-hl.bind(mainMod .. "SHIFT + S", hl.dsp.exec_cmd(scriptDir .. "ocr-region"), { description = "OCR region" })
+hl.bind(mainMod .. "SHIFT + S", shell("region toggle"), { description = "Region: copy, text, translate, Lens" })
 hl.bind(mainMod .. "PRINT", hl.dsp.exec_cmd("hyprpicker -a"), { description = "Color picker" })
 hl.bind(mainMod .. "SHIFT + P", hl.dsp.window.tag({ tag = "noop" }), { description = "Tag window for no opacity" })
