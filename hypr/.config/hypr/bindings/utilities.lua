@@ -25,6 +25,7 @@ hl.bind(mainMod .. "CTRL + I", shell("keepawake toggle"), { description = "Keep 
 hl.bind(mainMod .. "SPACE", shell("launcher toggle"), { description = "App launcher" })
 hl.bind(mainMod .. "Q", shell("controlpanel toggle"), { description = "Control Panel" })
 hl.bind(mainMod .. "E", shell("entertainment toggle"), { description = "Entertainment" })
+hl.bind(mainMod .. "SHIFT + M", shell("musicmenu toggle"), { description = "Music library" })
 hl.bind(mainMod .. "R", shell("games toggle"), { description = "RetroArch NES" })
 hl.bind(mainMod .. "CTRL + SPACE", shell("wallpaper toggle"), { description = "Wallpaper picker" })
 hl.bind(mainMod .. "ESCAPE", shell("power toggle"), { description = "Power menu" })
