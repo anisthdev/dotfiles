@@ -2,6 +2,18 @@
    portal service (GTK_THEME drop-in); colours still come from the matugen
    gtk.css in ~/.config/gtk-3.0. */
 
+/* header bar: the theme's 48px min-height plus the 6px padding from
+   ~/.config/gtk-3.0/gtk.css made it 60px tall; let the buttons size it */
+headerbar {
+  min-height: 0;
+}
+
+headerbar button,
+headerbar entry {
+  margin-top: 3px;
+  margin-bottom: 3px;
+}
+
 /* file list */
 filechooser treeview.view {
   padding: 0 6px;
@@ -37,19 +49,31 @@ placessidebar.sidebar separator {
 }
 
 /* path bar and location entry */
-filechooser .path-bar,
 filechooser #pathbarbox {
-  padding: 8px 10px;
+  padding: 2px 10px;
 }
 
-filechooser .path-bar button {
-  padding: 4px 10px;
+/* the new-folder button and the path bar's scroll arrows */
+filechooser #pathbarbox button {
+  min-height: 24px;
+  min-width: 24px;
+  padding: 2px 6px;
+}
+
+filechooser #pathbarbox .path-bar button {
+  padding: 2px 10px;
   border-radius: 8px;
 }
 
 filechooser entry {
   min-height: 34px;
   border-radius: 8px;
+}
+
+/* the path row is a stack sized to its tallest layer, which includes the
+   search and location entries even while the path buttons show */
+filechooser #pathbarbox entry {
+  min-height: 24px;
 }
 
 /* bottom bar (filter combo, read-only check) */
