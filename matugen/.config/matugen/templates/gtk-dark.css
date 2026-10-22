@@ -110,6 +110,25 @@ window.nautilus-window gridview,
   color: {{colors.on_surface.default.rgba}};
 }
 
+/* the rule above paints the path bar's scrolledwindow/viewport as a square
+   block over nautilus's rounded .nautilus-pathbar pill */
+window.nautilus-window .nautilus-pathbar scrolledwindow,
+window.nautilus-window .nautilus-pathbar viewport {
+  background: none;
+}
+
+/* let nautilus's header bars show each pane's colour, like Foliate's, so
+   only the path bar pill stands out */
+window.nautilus-window windowhandle,
+window.nautilus-window windowhandle > box,
+window.nautilus-window toolbarview,
+window.nautilus-window toolbarview > box,
+window.nautilus-window .top-bar,
+window.nautilus-window .toolbar,
+window.nautilus-window headerbar {
+  background: none;
+}
+
 
 popover > contents,
 popover.background > contents,
