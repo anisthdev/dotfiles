@@ -29,6 +29,7 @@ hl.window_rule({ match = { class = "thunar", title = "Rename.*" }, float = true,
 hl.window_rule({ match = { class = "hyprland-share-picker" }, float = true, size = { "400", "400" }, animation = "gnomed", })
 hl.window_rule({ match = { class = "org.localsend.localsend_app" }, float = true, size = { "500", "700" }, animation = "gnomed" })
 hl.window_rule({ match = { class = "nwg-look" }, float = true, size = { "500", "700" }, animation = "gnomed" })
+hl.window_rule({ match = { class = "qalculate-gtk" }, float = true, size = { "420", "520" }, center = true, animation = "gnomed" })
 
 -- pseudo floating windows
 hl.window_rule({ match = { class = "firefox" }, pseudo = true, size = { "monitor_w * 0.65", "monitor_h" } })

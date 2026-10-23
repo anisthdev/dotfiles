@@ -12,8 +12,12 @@ hl.bind(mainMod .. "B", hl.dsp.exec_cmd("uwsm app -- firefox -P asif"), { descri
 hl.bind(mainMod .. "Return", hl.dsp.exec_cmd("uwsm app -- ghostty"), { description = "Terminal" })
 hl.bind(mainMod .. "Y", hl.dsp.exec_cmd("uwsm app -- ghostty --title=yazi -e yazi"), { description = "Yazi" })
 hl.bind(mainMod .. "T", hl.dsp.exec_cmd("uwsm app -- ghostty --title=tremc -e tremc"), { description = "Tremc" })
-hl.bind(mainMod .. "M", hl.dsp.exec_cmd("uwsm app -- mpv --player-operation-mode=pseudo-gui"), { description = "mpv" })
 hl.bind(mainMod .. "SHIFT + B", hl.dsp.exec_cmd("uwsm app -- firefox --private-window"), { description = "Incognito" })
+hl.bind("XF86Calculator", shell("calculator toggle"), { description = "Calculator" })
+hl.bind("XF86Explorer", hl.dsp.exec_cmd("uwsm app -- nautilus"), { description = "File manager" })
+hl.bind("XF86HomePage", shell("launcher toggle"), { description = "App launcher" })
+hl.bind("XF86Mail", hl.dsp.exec_cmd("uwsm app -- firefox -P asif https://mail.google.com"), { description = "Gmail" })
+hl.bind("XF86Tools", shell("musicmenu toggle"), { description = "Music library" })
 hl.bind(mainMod .. "V", shell("clipboard toggle"), { description = "Clipboard manager" })
 
 --Toggle switches
@@ -25,6 +29,7 @@ hl.bind(mainMod .. "CTRL + I", shell("keepawake toggle"), { description = "Keep 
 hl.bind(mainMod .. "SPACE", shell("launcher toggle"), { description = "App launcher" })
 hl.bind(mainMod .. "Q", shell("controlpanel toggle"), { description = "Control Panel" })
 hl.bind(mainMod .. "E", shell("entertainment toggle"), { description = "Entertainment" })
+hl.bind(mainMod .. "M", shell("reelmenu toggle"), { description = "Video library" })
 hl.bind(mainMod .. "SHIFT + M", shell("musicmenu toggle"), { description = "Music library" })
 hl.bind(mainMod .. "R", shell("games toggle"), { description = "RetroArch NES" })
 hl.bind(mainMod .. "CTRL + SPACE", shell("wallpaper toggle"), { description = "Wallpaper picker" })
