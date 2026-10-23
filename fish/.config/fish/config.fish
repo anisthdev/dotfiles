@@ -1,6 +1,8 @@
 # start hyprland
 if status is-interactive; and test "$XDG_VTNR" = 1; and test -z "$WAYLAND_DISPLAY"; and uwsm check may-start
-  exec uwsm start -e -D Hyprland hyprland.desktop
+  # Silent: the console would otherwise come up over the boot splash for
+  # its messages (they're in the journal too)
+  exec uwsm start -e -D Hyprland hyprland.desktop >/dev/null 2>&1
 end
 
 fish_add_path $HOME/.local/bin

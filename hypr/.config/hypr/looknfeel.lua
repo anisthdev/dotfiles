@@ -34,8 +34,12 @@ hl.config({
 		workspace_wraparound = true,
 	},
 	misc = {
-		force_default_wallpaper = -1, -- Set to 0 or 1 to disable the anime mascot wallpapers
-		disable_hyprland_logo = false, -- If true disables the random hyprland logo / anime girl background. :(
+		-- Plain black under everything: at login, between the boot splash
+		-- and the lock screen, nothing else shows
+		force_default_wallpaper = 0,
+		disable_hyprland_logo = true,
+		disable_splash_rendering = true,
+		background_color = 0xff000000,
 		allow_session_lock_restore = true, -- lets a new lock screen take over if the old one dies
 		key_press_enables_dpms = true, -- any key wakes a blanked screen
 		mouse_move_enables_dpms = true,

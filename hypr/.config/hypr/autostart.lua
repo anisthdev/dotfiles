@@ -4,12 +4,12 @@
 -- Or execute your favorite apps at launch like this:
 --
 hl.on("hyprland.start", function()
-	-- The shell: bar, notifications, menus, lock screen and polkit agent
-	hl.exec_cmd("uwsm app -- qs -p $HOME/Projects/quickbar")
-	-- Locked from the start: as soon as quickbar answers (up to 10 s)
-	hl.exec_cmd("sh -c 'for _ in $(seq 100); do qs -p $HOME/Projects/quickbar ipc call lock lock 2>/dev/null && exit; sleep 0.1; done'")
+	-- The wallpaper daemon (awww-daemon), once quickbar has locked
+	hl.exec_cmd("uwsm app -- $HOME/Projects/quickbar/scripts/boot")
+	-- The shell: bar, notifications, menus, lock screen and polkit agent;
+	-- locked from the start (QUICKBAR_BOOT)
+	hl.exec_cmd("uwsm app -- env QUICKBAR_BOOT=1 qs -p $HOME/Projects/quickbar")
 	hl.exec_cmd("uwsm app -- hypridle")
-	hl.exec_cmd("uwsm app -- awww-daemon")
 	hl.exec_cmd("clipse -listen")
 	hl.exec_cmd("hyprpm reload")
 end)
