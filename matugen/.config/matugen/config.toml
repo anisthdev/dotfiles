@@ -27,6 +27,10 @@ input_path = './templates/hyprland.conf'
 output_path = '~/.config/hypr/colors.conf'
 post_hook = 'hyprctl reload'
 
+[templates.share_picker]
+input_path = './templates/share-picker.qss'
+output_path = '~/.config/hypr/share-picker.qss'
+
 [templates.mako]
 input_path = './templates/mako.ini'
 output_path = '~/.config/mako/config'

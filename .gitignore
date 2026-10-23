@@ -4,6 +4,7 @@ nvim/.config/nvim/db_ui/
 openai.fish
 secrets.fish
 colors.conf
+hypr/.config/hypr/share-picker.qss
 mako/.config/mako/config
 waybar/.config/waybar/colors.css
 inflight/.config/inflight/colors.css

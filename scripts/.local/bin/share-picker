@@ -1,0 +1,5 @@
+#!/bin/sh
+# Screen share picker for xdg-desktop-portal-hyprland (custom_picker_binary in
+# ~/.config/hypr/xdph.conf), with matugen's colours. Fusion because
+# QT_STYLE_OVERRIDE asks for kvantum, which isn't installed.
+exec hyprland-share-picker -style Fusion -stylesheet "$HOME/.config/hypr/share-picker.qss" "$@"
