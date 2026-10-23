@@ -117,6 +117,12 @@ window.nautilus-window .nautilus-pathbar viewport {
   background: none;
 }
 
+/* same for GTK4's own file chooser (apps that skip the portal) */
+.filechooser pathbar scrolledwindow,
+.filechooser pathbar viewport {
+  background: none;
+}
+
 /* let nautilus's header bars show each pane's colour, like Foliate's, so
    only the path bar pill stands out */
 window.nautilus-window windowhandle,
