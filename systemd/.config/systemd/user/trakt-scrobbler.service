@@ -1,0 +1,11 @@
+[Unit]
+Description=Trakt scrobbler for mpv (trakt-scrobbler, installed with uv tool)
+After=default.target
+
+[Service]
+ExecStart=%h/.local/bin/trakts run
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=default.target
