@@ -12,6 +12,8 @@ $dart\
 $lua\
 \n~> """
 
+scan_timeout = 500
+
 
 palette= 'colors'
 
