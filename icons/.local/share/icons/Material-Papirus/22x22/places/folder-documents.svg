@@ -1,1 +1,9 @@
-/usr/share/icons/Papirus/22x22/places/folder-documents.svg
+<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" version="1">
+ <rect style="opacity:0.2" width="20" height="12" x="1" y="8.5" rx="1" ry="1"/>
+ <path style="fill:#4877b1" d="M 1,16 C 1,16.554 1.446,17 2,17 H 20 C 20.554,17 21,16.554 21,16 V 5 C 21,4.446 20.554,4 20,4 H 11 C 9.5,4 9,2 7.5,2 H 2 C 1.446,2 1,2.446 1,3"/>
+ <rect style="opacity:0.2" width="20" height="12" x="1" y="7.5" rx="1" ry="1"/>
+ <rect style="fill:#e4e4e4" width="16" height="8" x="3" y="6" rx="1" ry="1"/>
+ <rect style="fill:#5294e2" width="20" height="12" x="1" y="8" rx="1" ry="1"/>
+ <path style="opacity:0.1;fill:#ffffff" d="M 2,2 C 1.446,2 1,2.446 1,3 V 3.5 C 1,2.946 1.446,2.5 2,2.5 H 7.5 C 9,2.5 9.5,4.5 11,4.5 H 20 C 20.554,4.5 21,4.946 21,5.5 V 5 C 21,4.446 20.554,4 20,4 H 11 C 9.5,4 9,2 7.5,2 Z"/>
+<path style="fill:#1d344f" transform="translate(6.2,9.2) scale(0.01) translate(-0,960)" d="M349-250h262q13 0 21.5-8.5T641-280q0-13-8.5-21.5T611-310H349q-13 0-21.5 8.5T319-280q0 13 8.5 21.5T349-250Zm0-170h262q13 0 21.5-8.5T641-450q0-13-8.5-21.5T611-480H349q-13 0-21.5 8.5T319-450q0 13 8.5 21.5T349-420ZM220-80q-24 0-42-18t-18-42v-680q0-24 18-42t42-18h336q12 0 23.5 5t19.5 13l183 183q8 8 13 19.5t5 23.5v496q0 24-18 42t-42 18H220Zm331-584q0 13 8.5 21.5T581-634h159L551-820v156Z"/>
+</svg>

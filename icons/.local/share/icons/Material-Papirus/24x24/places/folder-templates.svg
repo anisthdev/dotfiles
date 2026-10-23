@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" version="1">
+ <rect style="opacity:0.2" width="20" height="12" x="2" y="9.5" rx="1" ry="1"/>
+ <path style="fill:#4877b1" d="M 2,17 C 2,17.554 2.446,18 3,18 H 21 C 21.554,18 22,17.554 22,17 V 6 C 22,5.446 21.554,5 21,5 H 12 C 10.5,5 10,3 8.5,3 H 3 C 2.446,3 2,3.446 2,4"/>
+ <rect style="opacity:0.2" width="20" height="12" x="2" y="8.5" rx="1" ry="1"/>
+ <rect style="fill:#e4e4e4" width="16" height="8" x="4" y="7" rx="1" ry="1"/>
+ <rect style="fill:#5294e2" width="20" height="12" x="2" y="9" rx="1" ry="1"/>
+ <path style="opacity:0.1;fill:#ffffff" d="M 3,3 C 2.446,3 2,3.446 2,4 V 4.5 C 2,3.946 2.446,3.5 3,3.5 H 8.5 C 10,3.5 10.5,5.5 12,5.5 H 21 C 21.554,5.5 22,5.946 22,6.5 V 6 C 22,5.446 21.554,5 21,5 H 12 C 10.5,5 10,3 8.5,3 Z"/>
+<path style="fill:#1d344f" transform="translate(7.2,10.2) scale(0.01) translate(-0,960)" d="M780-160H260q-24 0-42-18t-18-42v-640q0-24 18-42t42-18h323q12 0 23.5 5t19.5 13l196 196q8 8 13 19.5t5 23.5v443q0 24-18 42t-42 18Zm0-502L578-860v153q0 19 13 32t32 13h157ZM140-40q-24 0-42-18t-18-42v-589q0-13 8.5-21.5T110-719q13 0 21.5 8.5T140-689v589h468q13 0 21.5 8.5T638-70q0 13-8.5 21.5T608-40H140Z"/>
+</svg>

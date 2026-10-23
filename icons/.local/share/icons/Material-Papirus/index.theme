@@ -1,6 +1,6 @@
 [Icon Theme]
 Name=Material-Papirus
-Comment=Papirus, with Material Symbols (Rounded, filled) for the file manager sidebar icons
+Comment=Papirus, with Material Symbols (Rounded, filled) for the sidebar icons and folder glyphs
 Inherits=Papirus,breeze,hicolor
 Directories=symbolic/places,16x16/actions,16x16/devices,16x16/panel,16x16/places,22x22/actions,22x22/devices,22x22/panel,22x22/places,24x24/actions,24x24/devices,24x24/panel,24x24/places,32x32/devices,32x32/places,32x32/status,48x48/devices,48x48/places,48x48/status,64x64/devices,64x64/places
 
