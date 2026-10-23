@@ -2,5 +2,11 @@
     "liveIcons": {
         "com.application.zomato": "ramen_dining",
         "in.swiggy.android": "ramen_dining"
+    },
+    "scratchIcons": {
+        "gemini": "/home/asif/.local/share/applications/icons/Gemini.png",
+        "terminal": "terminal",
+        "notes": "sticky_note_2",
+        "jarvis": "auto_awesome"
     }
 }
