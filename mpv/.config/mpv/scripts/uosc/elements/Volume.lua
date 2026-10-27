@@ -128,20 +128,18 @@ function VolumeSlider:render()
 		end
 	end
 
-	-- Stop dots, skipped next to the handle; 100% gets a bigger one
+	-- Stop dots, skipped next to the handle
 	local step = STOP_EVERY
 	local stop_spacing = step > 0 and (self.handle_max_y - self.handle_min_y) * step / state.volume_max or 0
 	local stop_radius = math.max(1, STOP_RADIUS * state.scale)
 	if stop_spacing >= stop_radius * 4 then
 		for volume = step, state.volume_max - step / 2, step do
 			local y = volume_to_y(volume)
-			local is_mark = volume == 100 and mark_y ~= nil
-			local radius = is_mark and stop_radius * 1.6 or stop_radius
-			if math.abs(y - handle_y) > gap + radius then
+			if math.abs(y - handle_y) > gap + stop_radius then
 				local on_active = y > handle_y
 				-- Dark on the light active track, light on the grey inactive one
-				ass:circle(cx, y, radius, {
-					color = on_active and bg or fg, opacity = visibility * (is_mark and 0.45 or (on_active and 0.3 or 0.2)),
+				ass:circle(cx, y, stop_radius, {
+					color = on_active and bg or fg, opacity = visibility * (on_active and 0.3 or 0.2),
 				})
 			end
 		end
@@ -194,7 +192,7 @@ function Volume:update_dimensions()
 		or display.height - Elements:v('window_border', 'size', 0)
 	local available_height = max_y - min_y
 	local max_height = available_height * 0.85
-	local height = round(math.min(self.size * 11, max_height))
+	local height = round(math.min(self.size * 8, max_height))
 	self.enabled = height > self.size * 2 -- don't render if too small
 	-- Lines up with the controls row's edge
 	local margin = round(options.controls_margin * state.scale) + Elements:v('window_border', 'size', 0)

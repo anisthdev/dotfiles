@@ -5,6 +5,7 @@ local ManagedButton = require('elements/ManagedButton')
 local SpeedButton = require('elements/SpeedButton')
 local ChapterTitle = require('elements/ChapterTitle')
 local TimeDisplay = require('elements/TimeDisplay')
+local InlineVolume = require('elements/InlineVolume')
 
 -- sizing:
 --   static - shrink, have highest claim on available space, disappear when there's not enough of it
@@ -129,6 +130,15 @@ function Controls:init_options()
 
 		if kind == 'space' then
 			control.sizing = 'space'
+		elseif kind == 'mute' or kind == 'volume' then
+			-- Inline volume only with `volume=inline`; otherwise the side slider has it
+			if options.volume == 'inline' then
+				local Class_ = kind == 'mute' and InlineVolume.MuteButton or InlineVolume.InlineVolumeSlider
+				local element = Class_:new('control_' .. i, {render_order = self.render_order + 0.5, anchor_id = 'controls'})
+				table_assign(control, {element = element, sizing = 'static', scale = 1, ratio = kind == 'mute' and 1 or 3})
+			else
+				control.skip = true
+			end
 		elseif kind == 'time' then
 			local element = TimeDisplay:new('control_' .. i, {render_order = self.render_order + 0.5, anchor_id = 'controls'})
 			-- ratio is measured from the time format in update_dimensions
@@ -213,7 +223,7 @@ function Controls:init_options()
 				control.element:observe_mp_property(prop, function() self:reflow() end)
 			end
 		end
-		self.controls[#self.controls + 1] = control
+		if not control.skip then self.controls[#self.controls + 1] = control end
 	end
 
 	self:reflow()
@@ -252,6 +262,9 @@ function Controls:reflow()
 		if conditions_num == 0 then matches = true end
 		local show = matches and (not control.element or control.element.hide ~= true)
 		if control.element then control.element.enabled = show end
+		-- Gaps left next to each other by hidden controls collapse into one
+		local previous = self.layout[#self.layout]
+		if show and control.sizing == 'gap' and previous and previous.sizing == 'gap' then show = false end
 		if show then self.layout[#self.layout + 1] = control end
 	end
 
@@ -326,6 +339,15 @@ function Controls:update_dimensions()
 	for c, control in ipairs(self.layout) do
 		control.hide = false
 		if control.element then control.element.enabled = self.enabled end
+		-- The inline volume slider is as wide as it's slid out, and gone when tucked away
+		if control.kind == 'volume' then
+			local expansion = InlineVolume.get_expansion()
+			control.ratio = 3 * expansion
+			if expansion <= 0.01 then
+				control.hide = true
+				control.element.enabled = false
+			end
+		end
 	end
 
 	if not self.enabled then
@@ -349,7 +371,9 @@ function Controls:update_dimensions()
 
 	-- Calculate statics_width, min_content_width, and count spaces & gaps
 	for c, control in ipairs(self.layout) do
-		if control.sizing == 'space' then
+		if control.hide then
+			-- Tucked away, takes no room
+		elseif control.sizing == 'space' then
 			spaces = spaces + 1
 		elseif control.sizing == 'gap' then
 			gaps = gaps + control.scale * control.ratio

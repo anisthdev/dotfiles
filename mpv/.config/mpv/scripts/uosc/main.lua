@@ -872,7 +872,18 @@ bind_command('toggle-ui', function() Elements:toggle({'timeline', 'controls', 'v
 bind_command('flash-ui', function() Elements:flash({'timeline', 'controls', 'volume', 'top_bar'}) end)
 bind_command('flash-timeline', function() Elements:flash({'timeline'}) end)
 bind_command('flash-top-bar', function() Elements:flash({'top_bar'}) end)
-bind_command('flash-volume', function() Elements:flash({'volume'}) end)
+bind_command('flash-volume', function()
+	if options.volume == 'inline' then
+		-- Controls up: slide the inline slider out. Hidden: a toast, without bringing them back.
+		if (Elements:maybe('controls', 'get_visibility') or 0) > 0.5 then
+			Elements:trigger('volume_flash')
+		else
+			Elements:maybe('volume_toast', 'show')
+		end
+	else
+		Elements:flash({'volume'})
+	end
+end)
 bind_command('flash-speed', function() Elements:flash({'controls'}) end)
 bind_command('flash-pause-indicator', function() Elements:flash({'pause_indicator'}) end)
 bind_command('flash-progress', function() Elements:flash({'progress'}) end)
@@ -1218,6 +1229,7 @@ local constructors = {
 	library = require('elements/Library'),
 	controls = options.controls and options.controls ~= 'never' and require('elements/Controls'),
 	volume = itable_index_of({'left', 'right'}, options.volume) and require('elements/Volume'),
+	volume_toast = options.volume == 'inline' and require('elements/VolumeToast'),
 }
 
 -- Required elements

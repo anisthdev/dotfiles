@@ -39,6 +39,27 @@ function Button:handle_cursor_click()
 	mp.add_timeout(0.01, self.on_click)
 end
 
+-- Segment background: round outer corners, tight inner ones, fully round and lighter
+-- when highlighted
+---@param ass table
+---@param visibility number
+---@param is_highlighted boolean
+function Button:render_segment(ass, visibility, is_highlighted)
+	local outer, inner = round(UI_RADIUS * state.scale), round(UI_RADIUS_INNER * state.scale)
+	local corners = {
+		(self.group_first or is_highlighted) and outer or inner,
+		(self.group_last or is_highlighted) and outer or inner,
+	}
+	if config.opacity.controls > 0 then
+		ass:rect(self.ax, self.ay, self.bx, self.by, {
+			color = self.background, opacity = visibility * config.opacity.controls, corners = corners,
+		})
+	end
+	if is_highlighted then
+		ass:rect(self.ax, self.ay, self.bx, self.by, {color = self.foreground, opacity = visibility * 0.15, corners = corners})
+	end
+end
+
 function Button:render()
 	local visibility = self:get_visibility()
 	if visibility <= 0 then return end
@@ -50,21 +71,7 @@ function Button:render()
 	local foreground, background = self.foreground, self.background
 	local cx, cy = self.ax + (self.bx - self.ax) / 2, self.ay + (self.by - self.ay) / 2
 
-	-- Segment background: round outer corners, tight inner ones, fully round when hovered
-	local is_highlighted = is_hover and is_clickable
-	local outer, inner = round(UI_RADIUS * state.scale), round(UI_RADIUS_INNER * state.scale)
-	local corners = {
-		(self.group_first or is_highlighted) and outer or inner,
-		(self.group_last or is_highlighted) and outer or inner,
-	}
-	if config.opacity.controls > 0 then
-		ass:rect(self.ax, self.ay, self.bx, self.by, {
-			color = background, opacity = visibility * config.opacity.controls, corners = corners,
-		})
-	end
-	if is_highlighted then
-		ass:rect(self.ax, self.ay, self.bx, self.by, {color = foreground, opacity = visibility * 0.15, corners = corners})
-	end
+	self:render_segment(ass, visibility, is_hover and is_clickable)
 
 	-- Active: accent dot under the icon
 	if self.active then
