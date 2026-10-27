@@ -1,6 +1,6 @@
 local Element = require('elements/Element')
 
----@alias ButtonProps {icon: string; on_click?: function; is_clickable?: boolean; anchor_id?: string; active?: boolean; badge?: string|number; foreground?: string; background?: string; tooltip?: string}
+---@alias ButtonProps {icon?: string; label?: string; on_click?: function; is_clickable?: boolean; anchor_id?: string; active?: boolean; badge?: string|number; foreground?: string; background?: string; tooltip?: string}
 
 ---@class Button : Element
 local Button = class(Element)
@@ -12,18 +12,24 @@ function Button:new(id, props) return Class.new(self, id, props) --[[@as Button]
 ---@param props ButtonProps
 function Button:init(id, props)
 	self.icon = props.icon
+	---@type string|nil Text drawn in place of the icon
+	self.label = props.label
+	self.label_dim = false
 	self.active = props.active
 	self.tooltip = props.tooltip
 	self.badge = props.badge
 	self.foreground = props.foreground or fg
 	self.background = props.background or bg
 	self.is_clickable = true
+	-- Position in its group of buttons, set by Controls; the group's ends get the round corners
+	self.group_first = true
+	self.group_last = true
 	---@type fun()|nil
 	self.on_click = props.on_click
 	Element.init(self, id, props)
 end
 
-function Button:on_coordinates() self.font_size = round((self.by - self.ay) * 0.7) end
+function Button:on_coordinates() self.font_size = round((self.by - self.ay) * 0.66) end
 function Button:handle_cursor_click()
 	if not self.on_click or not self.is_clickable then return end
 	-- We delay the callback to next tick, otherwise we are risking race
@@ -41,18 +47,30 @@ function Button:render()
 	local ass = assdraw.ass_new()
 	local is_clickable = self.is_clickable and self.on_click ~= nil
 	local is_hover = self.proximity_raw <= 0
-	local foreground = self.active and self.background or self.foreground
-	local background = self.active and self.foreground or self.background
-	local background_opacity = self.active and 1 or config.opacity.controls
+	local foreground, background = self.foreground, self.background
+	local cx, cy = self.ax + (self.bx - self.ax) / 2, self.ay + (self.by - self.ay) / 2
 
-	if is_hover and is_clickable and background_opacity < 0.3 then background_opacity = 0.3 end
-
-	-- Background
-	if background_opacity > 0 then
+	-- Segment background: round outer corners, tight inner ones, fully round when hovered
+	local is_highlighted = is_hover and is_clickable
+	local outer, inner = round(UI_RADIUS * state.scale), round(UI_RADIUS_INNER * state.scale)
+	local corners = {
+		(self.group_first or is_highlighted) and outer or inner,
+		(self.group_last or is_highlighted) and outer or inner,
+	}
+	if config.opacity.controls > 0 then
 		ass:rect(self.ax, self.ay, self.bx, self.by, {
-			color = (self.active or not is_hover) and background or foreground,
-			radius = state.radius,
-			opacity = visibility * background_opacity,
+			color = background, opacity = visibility * config.opacity.controls, corners = corners,
+		})
+	end
+	if is_highlighted then
+		ass:rect(self.ax, self.ay, self.bx, self.by, {color = foreground, opacity = visibility * 0.15, corners = corners})
+	end
+
+	-- Active: accent dot under the icon
+	if self.active then
+		local dot_radius = math.max(1.5, 2 * state.scale)
+		ass:circle(cx, self.by - dot_radius * 1.5, dot_radius, {
+			color = config.color.position or foreground, opacity = visibility,
 		})
 	end
 
@@ -71,7 +89,7 @@ function Button:render()
 			color = foreground,
 			radius = state.radius,
 			opacity = visibility,
-			border = self.active and 0 or 1,
+			border = 1,
 			border_color = background,
 		})
 		ass:txt(bx - width / 2, by - height / 2, 5, self.badge, badge_opts)
@@ -84,15 +102,23 @@ function Button:render()
 		icon_clip = '\\iclip(' .. clip_path.scale .. ', ' .. clip_path.text .. ')'
 	end
 
-	-- Icon
-	local x, y = round(self.ax + (self.bx - self.ax) / 2), round(self.ay + (self.by - self.ay) / 2)
-	ass:icon(x, y, self.font_size, self.icon, {
-		color = foreground,
-		border = self.active and 0 or options.text_border * state.scale,
-		border_color = background,
-		opacity = visibility,
-		clip = icon_clip,
-	})
+	-- Icon or label, lifted slightly when active to make room for the dot
+	local y = round(cy - (self.active and 2 * state.scale or 0))
+	if self.label then
+		local opts = {
+			size = round((self.by - self.ay) * 0.5 * options.font_scale),
+			weight = 600,
+			color = foreground,
+			opacity = visibility * (self.label_dim and 0.65 or 1),
+		}
+		-- Shrink long labels to fit the button with a little padding
+		local max_width = (self.bx - self.ax) * 0.84
+		local width = text_width(self.label, opts)
+		if width > max_width then opts.size = math.floor(opts.size * max_width / width) end
+		ass:txt(round(cx), y, 5, self.label, opts)
+	elseif self.icon then
+		ass:icon(round(cx), y, self.font_size, self.icon, {color = foreground, opacity = visibility, clip = icon_clip})
+	end
 
 	return ass
 end

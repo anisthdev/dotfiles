@@ -299,7 +299,8 @@ function Menu:update_content_dimensions()
 	self.scrollbar_size = round(2 * state.scale)
 	self.padding = round(options.menu_padding * state.scale)
 	self.gap = round(2 * state.scale)
-	self.font_size = round(self.item_height * 0.48 * options.font_scale)
+	-- Not scaled by font_scale: menus keep uosc's original text size
+	self.font_size = round(self.item_height * 0.48)
 	self.font_size_hint = self.font_size - 1
 	self.item_padding = round((self.item_height - self.font_size) * 0.6)
 	self.scroll_step = self.item_height + self.item_spacing

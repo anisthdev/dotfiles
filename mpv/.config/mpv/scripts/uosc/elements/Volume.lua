@@ -9,16 +9,10 @@ function VolumeSlider:new(props) return Class.new(self, props) --[[@as VolumeSli
 function VolumeSlider:init(props)
 	Element.init(self, 'volume_slider', props)
 	self.pressed = false
-	self.nudge_y = 0 -- vertical position where volume overflows 100
-	self.nudge_size = 0
-	self.draw_nudge = false
-	self.spacing = 0
-	self.border_size = 0
-	self:update_dimensions()
-end
-
-function VolumeSlider:update_dimensions()
-	self.border_size = math.max(0, round(options.volume_border * state.scale))
+	-- Track bounds, set in on_coordinates
+	self.track_ay = 0
+	self.track_by = 0
+	self.font_size = 0
 end
 
 function VolumeSlider:get_visibility() return Elements.volume:get_visibility(self) end
@@ -30,19 +24,15 @@ function VolumeSlider:set_volume(volume)
 end
 
 function VolumeSlider:set_from_cursor()
-	local volume_fraction = (self.by - cursor.y - self.border_size) / (self.by - self.ay - self.border_size)
-	self:set_volume(volume_fraction * state.volume_max)
+	local fraction = (self.track_by - cursor.y) / math.max(1, self.track_by - self.track_ay)
+	self:set_volume(clamp(0, fraction, 1) * state.volume_max)
 end
 
-function VolumeSlider:on_display() self:update_dimensions() end
-function VolumeSlider:on_options() self:update_dimensions() end
 function VolumeSlider:on_coordinates()
-	if type(state.volume_max) ~= 'number' or state.volume_max <= 0 then return end
 	local width = self.bx - self.ax
-	self.nudge_y = self.by - round((self.by - self.ay) * (100 / state.volume_max))
-	self.nudge_size = round(width * 0.18)
-	self.draw_nudge = self.ay < self.nudge_y
-	self.spacing = round(width * 0.2)
+	self.font_size = round(width * 0.45 * options.font_scale)
+	self.track_ay = self.ay + round(self.font_size * 1.5)
+	self.track_by = self.by - round(width * 0.15)
 end
 function VolumeSlider:on_global_mouse_move()
 	if self.pressed then self:set_from_cursor() end
@@ -52,10 +42,11 @@ function VolumeSlider:handle_wheel_down() self:set_volume(state.volume - options
 
 function VolumeSlider:render()
 	local visibility = self:get_visibility()
-	local ax, ay, bx, by = self.ax, self.ay, self.bx, self.by
-	local width, height = bx - ax, by - ay
+	local width = self.bx - self.ax
+	local track_ay, track_by = self.track_ay, self.track_by
 
-	if width <= 0 or height <= 0 or visibility <= 0 then return end
+	if width <= 0 or track_by <= track_ay or visibility <= 0 then return end
+	if type(state.volume_max) ~= 'number' or state.volume_max <= 0 then return end
 
 	cursor:zone('primary_down', self, function()
 		self.pressed = true
@@ -66,131 +57,45 @@ function VolumeSlider:render()
 	cursor:zone('wheel_up', self, function() self:handle_wheel_up() end)
 
 	local ass = assdraw.ass_new()
-	local nudge_y, nudge_size = self.draw_nudge and self.nudge_y or -math.huge, self.nudge_size
-	local volume_y = self.ay + self.border_size +
-		((height - (self.border_size * 2)) * (1 - math.min(state.volume / state.volume_max, 1)))
-
-	-- Draws a rectangle with nudge at requested position
-	---@param p number Padding from slider edges.
-	---@param r number Border radius.
-	---@param cy? number A y coordinate where to clip the path from the bottom.
-	function create_nudged_path(p, r, cy)
-		cy = cy or ay + p
-		local ax, bx, by = ax + p, bx - p, by - p
-		local d, rh = r * 2, r / 2
-		local nudge_size = ((QUARTER_PI_SIN * (nudge_size - p)) + p) / QUARTER_PI_SIN
-		local path = assdraw.ass_new()
-		path:move_to(bx - r, by)
-		path:line_to(ax + r, by)
-		if cy > by - d then
-			local subtracted_radius = (d - (cy - (by - d))) / 2
-			local xbd = (r - subtracted_radius * 1.35) -- x bezier delta
-			path:bezier_curve(ax + xbd, by, ax + xbd, cy, ax + r, cy)
-			path:line_to(bx - r, cy)
-			path:bezier_curve(bx - xbd, cy, bx - xbd, by, bx - r, by)
-		else
-			path:bezier_curve(ax + rh, by, ax, by - rh, ax, by - r)
-			local nudge_bottom_y = nudge_y + nudge_size
-
-			if cy + rh <= nudge_bottom_y then
-				path:line_to(ax, nudge_bottom_y)
-				if cy <= nudge_y then
-					path:line_to((ax + nudge_size), nudge_y)
-					local nudge_top_y = nudge_y - nudge_size
-					if cy <= nudge_top_y then
-						local r, rh = r, rh
-						if cy > nudge_top_y - r then
-							r = nudge_top_y - cy
-							rh = r / 2
-						end
-						path:line_to(ax, nudge_top_y)
-						path:line_to(ax, cy + r)
-						path:bezier_curve(ax, cy + rh, ax + rh, cy, ax + r, cy)
-						path:line_to(bx - r, cy)
-						path:bezier_curve(bx - rh, cy, bx, cy + rh, bx, cy + r)
-						path:line_to(bx, nudge_top_y)
-					else
-						local triangle_side = cy - nudge_top_y
-						path:line_to((ax + triangle_side), cy)
-						path:line_to((bx - triangle_side), cy)
-					end
-					path:line_to((bx - nudge_size), nudge_y)
-				else
-					local triangle_side = nudge_bottom_y - cy
-					path:line_to((ax + triangle_side), cy)
-					path:line_to((bx - triangle_side), cy)
-				end
-				path:line_to(bx, nudge_bottom_y)
-			else
-				path:line_to(ax, cy + r)
-				path:bezier_curve(ax, cy + rh, ax + rh, cy, ax + r, cy)
-				path:line_to(bx - r, cy)
-				path:bezier_curve(bx - rh, cy, bx, cy + rh, bx, cy + r)
-			end
-			path:line_to(bx, by - r)
-			path:bezier_curve(bx, by - rh, bx - rh, by, bx - r, by)
-		end
-		return path
+	local is_active = self.pressed or self.proximity_raw <= 0
+	local cx = self.ax + width / 2
+	local track_width = round((is_active and 7 or 4) * state.scale)
+	local tax, tbx = cx - track_width / 2, cx + track_width / 2
+	local radius = track_width / 2
+	local function volume_to_y(volume)
+		return track_by - (track_by - track_ay) * clamp(0, volume / state.volume_max, 1)
 	end
 
-	-- BG & FG paths
-	local bg_path = create_nudged_path(0, state.radius + self.border_size)
-	local fg_path = create_nudged_path(self.border_size, state.radius, volume_y)
+	-- Track: same dark base under a light wash as the timeline
+	ass:rect(tax, track_ay, tbx, track_by, {color = bg, opacity = config.opacity.timeline * visibility, radius = radius})
+	ass:rect(tax, track_ay, tbx, track_by, {color = fg, opacity = 0.18 * visibility, radius = radius})
 
-	-- Background
-	ass:new_event()
-	ass:append('{\\rDefault\\an7\\blur0\\bord0\\1c&H' .. bg ..
-		'\\iclip(' .. fg_path.scale .. ', ' .. fg_path.text .. ')}')
-	ass:opacity(config.opacity.slider, visibility)
-	ass:pos(0, 0)
-	ass:draw_start()
-	ass:append(bg_path.text)
-	ass:draw_stop()
-
-	-- Foreground
-	ass:new_event()
-	ass:append('{\\rDefault\\an7\\blur0\\bord0\\1c&H' .. fg .. '}')
-	ass:opacity(config.opacity.slider_gauge, visibility)
-	ass:pos(0, 0)
-	ass:draw_start()
-	ass:append(fg_path.text)
-	ass:draw_stop()
-
-	-- Current volume value
-	local volume_string = tostring(round(state.volume * 10) / 10)
-	local font_size = round(((width * 0.6) - (#volume_string * (width / 20))) * options.font_scale)
-	if volume_y < self.by - self.spacing then
-		ass:txt(self.ax + (width / 2), self.by - self.spacing, 2, volume_string, {
-			size = font_size,
-			color = fgt,
-			opacity = visibility,
-			clip = '\\clip(' .. fg_path.scale .. ', ' .. fg_path.text .. ')',
-		})
-	end
-	if volume_y > self.by - self.spacing - font_size then
-		ass:txt(self.ax + (width / 2), self.by - self.spacing, 2, volume_string, {
-			size = font_size,
-			color = bgt,
-			opacity = visibility,
-			clip = '\\iclip(' .. fg_path.scale .. ', ' .. fg_path.text .. ')',
+	-- Level, greyed out when muted or there's no audio
+	local level_y = volume_to_y(state.volume)
+	if track_by - level_y > 0.5 then
+		local is_dim = state.mute or not state.has_audio
+		ass:rect(tax, math.min(level_y, track_by - track_width), tbx, track_by, {
+			color = is_dim and fg or (config.color.position or fg),
+			opacity = (is_dim and 0.45 or 1) * visibility,
+			radius = radius,
 		})
 	end
 
-	-- Disabled stripes for no audio
-	if not state.has_audio then
-		local fg_100_path = create_nudged_path(self.border_size, state.radius)
-		local texture_opts = {
-			size = 200,
-			color = 'ffffff',
-			opacity = visibility * 0.1,
-			anchor_x = ax,
-			clip = '\\clip(' .. fg_100_path.scale .. ',' .. fg_100_path.text .. ')',
-		}
-		ass:texture(ax, ay, bx, by, 'a', texture_opts)
-		texture_opts.color = '000000'
-		texture_opts.anchor_x = ax + texture_opts.size / 28
-		ass:texture(ax, ay, bx, by, 'a', texture_opts)
+	-- 100% mark when the volume can be boosted past it
+	if state.volume_max > 100 then
+		local y = round(volume_to_y(100))
+		local half = track_width / 2 + round(3 * state.scale)
+		ass:rect(cx - half, y, cx + half, y + math.max(1, round(state.scale)), {color = fg, opacity = 0.6 * visibility})
 	end
+
+	-- Value
+	ass:txt(cx, self.ay + (track_ay - self.ay) / 2, 5, tostring(round(state.volume)), {
+		size = self.font_size,
+		color = fg,
+		border = options.text_border * state.scale,
+		border_color = bg,
+		opacity = visibility * (is_active and 1 or 0.7),
+	})
 
 	return ass
 end
@@ -223,7 +128,7 @@ end
 function Volume:update_dimensions()
 	self.size = round(options.volume_size * state.scale)
 	local min_y = Elements:v('top_bar', 'by') or Elements:v('window_border', 'size', 0)
-	local max_y = Elements:v('controls', 'ay') or Elements:v('timeline', 'ay')
+	local max_y = Elements:v('timeline', 'ay') or Elements:v('controls', 'ay')
 		or display.height - Elements:v('window_border', 'size', 0)
 	local available_height = max_y - min_y
 	local max_height = available_height * 0.8
@@ -263,21 +168,17 @@ function Volume:render()
 	local width_half = (mute_rect.bx - mute_rect.ax) / 2
 	local height_half = (mute_rect.by - mute_rect.ay) / 2
 	local icon_size = math.min(width_half, height_half) * 1.5
-	local icon_name, horizontal_shift = 'volume_up', 0
+	local icon_name = 'volume_up'
 	if state.mute then
 		icon_name = 'volume_off'
 	elseif state.volume <= 0 then
-		icon_name, horizontal_shift = 'volume_mute', height_half * 0.25
+		icon_name = 'volume_mute'
 	elseif state.volume <= 60 then
-		icon_name, horizontal_shift = 'volume_down', height_half * 0.125
+		icon_name = 'volume_down'
 	end
-	local underlay_opacity = {main = visibility * 0.3, border = visibility}
-	ass:icon(mute_rect.ax + width_half, mute_rect.ay + height_half, icon_size, 'volume_up',
-		{border = options.text_border * state.scale, opacity = underlay_opacity, align = 5}
-	)
-	ass:icon(mute_rect.ax + width_half - horizontal_shift, mute_rect.ay + height_half, icon_size, icon_name,
-		{opacity = visibility, align = 5}
-	)
+	ass:icon(mute_rect.ax + width_half, mute_rect.ay + height_half, icon_size, icon_name, {
+		color = fg, border = options.text_border * state.scale, border_color = bg, opacity = visibility, align = 5,
+	})
 	return ass
 end
 

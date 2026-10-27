@@ -262,7 +262,7 @@ function update_config()
 	end
 
 	-- Adds `{element}_persistency` config properties with forced visibility states (e.g.: `{paused = true}`)
-	for _, name in ipairs({'timeline', 'controls', 'volume', 'top_bar', 'speed'}) do
+	for _, name in ipairs({'timeline', 'controls', 'volume', 'top_bar'}) do
 		local option_name = name .. '_persistency'
 		local value, flags = options[option_name], {}
 		if type(value) == 'string' then
@@ -510,10 +510,13 @@ function update_margins()
 	-- margins are normalized to window size
 	local left, right, top, bottom = 0, 0, 0, 0
 
-	if causes_margin(controls) then
-		bottom = (display.height - controls.ay) / display.height
-	elseif causes_margin(timeline) then
-		bottom = (display.height - timeline.ay) / display.height
+	-- The timeline sits above the controls, so whichever is up, the margin reaches the higher one
+	if causes_margin(controls) or causes_margin(timeline) then
+		local ay = math.min(
+			timeline and timeline.enabled and timeline.ay or display.height,
+			controls and controls.enabled and controls.ay or display.height
+		)
+		bottom = (display.height - ay) / display.height
 	end
 
 	if causes_margin(top_bar) then top = top_bar.title_by / display.height end
@@ -870,7 +873,7 @@ bind_command('flash-ui', function() Elements:flash({'timeline', 'controls', 'vol
 bind_command('flash-timeline', function() Elements:flash({'timeline'}) end)
 bind_command('flash-top-bar', function() Elements:flash({'top_bar'}) end)
 bind_command('flash-volume', function() Elements:flash({'volume'}) end)
-bind_command('flash-speed', function() Elements:flash({'speed'}) end)
+bind_command('flash-speed', function() Elements:flash({'controls'}) end)
 bind_command('flash-pause-indicator', function() Elements:flash({'pause_indicator'}) end)
 bind_command('flash-progress', function() Elements:flash({'progress'}) end)
 bind_command('skip-chapter-range', skip_active_chapter_range)

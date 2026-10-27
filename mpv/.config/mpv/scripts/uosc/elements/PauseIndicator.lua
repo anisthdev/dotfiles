@@ -72,7 +72,7 @@ function PauseIndicator:render()
 			{border = 1, opacity = self.base_icon_opacity * self.opacity}
 		)
 	else
-		ass:icon(display.width / 2, display.height / 2, size * 1.2, 'play_arrow',
+		ass:icon(display.width / 2, display.height / 2, size, 'play_arrow',
 			{border = 1, opacity = self.base_icon_opacity * self.opacity}
 		)
 	end

@@ -2,7 +2,9 @@ local Element = require('elements/Element')
 local Button = require('elements/Button')
 local CycleButton = require('elements/CycleButton')
 local ManagedButton = require('elements/ManagedButton')
-local Speed = require('elements/Speed')
+local SpeedButton = require('elements/SpeedButton')
+local ChapterTitle = require('elements/ChapterTitle')
+local TimeDisplay = require('elements/TimeDisplay')
 
 -- sizing:
 --   static - shrink, have highest claim on available space, disappear when there's not enough of it
@@ -38,25 +40,25 @@ function Controls:init_options()
 	local shorthands = {
 		['play-pause'] = 'cycle:pause:pause:no/yes=play_arrow?' .. t('Play/Pause'),
 		menu = 'command:menu:script-binding uosc/menu-blurred?' .. t('Menu'),
-		subtitles = 'command:subtitles:script-binding uosc/subtitles#sub>0?' .. t('Subtitles'),
-		audio = 'command:graphic_eq:script-binding uosc/audio#audio>1?' .. t('Audio'),
+		subtitles = 'command:subtitles:script-binding uosc/subtitles?' .. t('Subtitles'),
+		audio = 'command:graphic_eq:script-binding uosc/audio?' .. t('Audio'),
 		['audio-device'] = 'command:speaker:script-binding uosc/audio-device?' .. t('Audio device'),
-		video = 'command:theaters:script-binding uosc/video#video>1?' .. t('Video'),
-		playlist = 'command:list_alt:script-binding uosc/playlist?' .. t('Playlist'),
-		chapters = 'command:bookmark:script-binding uosc/chapters#chapters>0?' .. t('Chapters'),
-		['editions'] = 'command:bookmarks:script-binding uosc/editions#editions>1?' .. t('Editions'),
-		['stream-quality'] = 'command:high_quality:script-binding uosc/stream-quality?' .. t('Stream quality'),
-		['open-file'] = 'command:file_open:script-binding uosc/open-file?' .. t('Open file'),
-		['items'] = 'command:list_alt:script-binding uosc/items?' .. t('Playlist/Files'),
-		prev = 'command:arrow_back_ios:script-binding uosc/prev?' .. t('Previous'),
-		next = 'command:arrow_forward_ios:script-binding uosc/next?' .. t('Next'),
+		video = 'command:movie:script-binding uosc/video?' .. t('Video'),
+		playlist = 'command:playlist_play:script-binding uosc/playlist?' .. t('Playlist'),
+		chapters = 'command:bookmark:script-binding uosc/chapters?' .. t('Chapters'),
+		['editions'] = 'command:bookmarks:script-binding uosc/editions?' .. t('Editions'),
+		['stream-quality'] = 'command:tune:script-binding uosc/stream-quality?' .. t('Stream quality'),
+		['open-file'] = 'command:folder_open:script-binding uosc/open-file?' .. t('Open file'),
+		['items'] = 'command:video_library:script-binding uosc/items?' .. t('Playlist/Files'),
+		prev = 'command:skip_previous:script-binding uosc/prev?' .. t('Previous'),
+		next = 'command:skip_next:script-binding uosc/next?' .. t('Next'),
 		first = 'command:first_page:script-binding uosc/first?' .. t('First'),
 		last = 'command:last_page:script-binding uosc/last?' .. t('Last'),
 		['loop-playlist'] = 'cycle:repeat:loop-playlist:no/inf!?' .. t('Loop playlist'),
 		['loop-file'] = 'cycle:repeat_one:loop-file:no/inf!?' .. t('Loop file'),
 		shuffle = 'toggle:shuffle:shuffle?' .. t('Shuffle'),
 		autoload = 'toggle:hdr_auto:autoload@uosc?' .. t('Autoload'),
-		fullscreen = 'cycle:crop_free:fullscreen:no/yes=fullscreen_exit!?' .. t('Fullscreen'),
+		fullscreen = 'cycle:fullscreen:fullscreen:no/yes=fullscreen_exit?' .. t('Fullscreen'),
 	}
 
 	-- Parse out disposition/config pairs
@@ -127,6 +129,13 @@ function Controls:init_options()
 
 		if kind == 'space' then
 			control.sizing = 'space'
+		elseif kind == 'time' then
+			local element = TimeDisplay:new('control_' .. i, {render_order = self.render_order + 0.5, anchor_id = 'controls'})
+			-- ratio is measured from the time format in update_dimensions
+			table_assign(control, {element = element, sizing = 'static', scale = 1, ratio = 3})
+		elseif kind == 'chapter' then
+			local element = ChapterTitle:new('control_' .. i, {render_order = self.render_order + 0.5, anchor_id = 'controls'})
+			table_assign(control, {element = element, sizing = 'space'})
 		elseif kind == 'gap' then
 			table_assign(control, {sizing = 'gap', scale = 1, ratio = params[1] or 0.3, ratio_min = 0})
 		elseif kind == 'command' then
@@ -136,7 +145,7 @@ function Controls:init_options()
 				))
 			else
 				local element = Button:new('control_' .. i, {
-					render_order = self.render_order,
+					render_order = self.render_order + 0.5,
 					icon = params[1],
 					anchor_id = 'controls',
 					on_click = function() mp.command(params[2]) end,
@@ -168,7 +177,7 @@ function Controls:init_options()
 				end
 
 				local element = CycleButton:new('control_' .. i, {
-					render_order = self.render_order,
+					render_order = self.render_order + 0.5,
 					prop = params[2],
 					anchor_id = 'controls',
 					states = states,
@@ -185,22 +194,15 @@ function Controls:init_options()
 			else
 				local element = ManagedButton:new('control_' .. i, {
 					name = params[1],
-					render_order = self.render_order,
+					render_order = self.render_order + 0.5,
 					anchor_id = 'controls',
 					on_hide = function() self:reflow() end,
 				})
 				table_assign(control, {element = element, sizing = 'static', scale = 1, ratio = 1})
 			end
 		elseif kind == 'speed' then
-			if not Elements.speed then
-				local element = Speed:new({anchor_id = 'controls', render_order = self.render_order})
-				local scale = tonumber(params[1]) or 1.3
-				table_assign(control, {
-					element = element, sizing = 'dynamic', scale = scale, ratio = 3.5, ratio_min = 2,
-				})
-			else
-				msg.error('there can only be 1 speed slider')
-			end
+			local element = SpeedButton:new('control_' .. i, {render_order = self.render_order + 0.5, anchor_id = 'controls'})
+			table_assign(control, {element = element, sizing = 'static', scale = 1, ratio = 1})
 		else
 			msg.error('unknown element kind "' .. kind .. '"')
 			break
@@ -254,7 +256,6 @@ function Controls:reflow()
 	end
 
 	self:update_dimensions()
-	Elements:trigger('controls_reflow')
 end
 
 ---@param badge string
@@ -293,9 +294,21 @@ function Controls:register_badge_updater(badge, element)
 	end
 end
 
+-- Revealed anywhere below this fraction of the window height, not only near the row
+local REVEAL_FROM = 0.6
+
+function Controls:update_proximity()
+	Element.update_proximity(self)
+	if cursor.hidden then return end
+	-- Same fade range uosc uses for proximity, measured from the reveal line
+	local range = options.proximity_out - options.proximity_in
+	local distance = display.height * REVEAL_FROM - cursor.y
+	self.proximity = math.max(self.proximity, 1 - clamp(0, distance, range) / range)
+end
+
+-- Stays up while the timeline above it is hovered
 function Controls:get_visibility()
-	return Elements:v('speed', 'dragging') and 1 or Elements:maybe('timeline', 'get_is_hovered')
-		and -1 or Element.get_visibility(self)
+	return math.max(Elements:maybe('timeline', 'get_is_hovered') and 1 or 0, Element.get_visibility(self))
 end
 
 function Controls:update_dimensions()
@@ -315,12 +328,19 @@ function Controls:update_dimensions()
 		if control.element then control.element.enabled = self.enabled end
 	end
 
-	if not self.enabled then return end
+	if not self.enabled then
+		Elements:trigger('controls_reflow')
+		return
+	end
 
-	-- Container
+	-- Container, at the bottom of the window with the timeline above it
 	self.bx = display.width - window_border - margin
-	self.by = Elements:v('timeline', 'ay', display.height - window_border) - margin
+	self.by = display.height - window_border - margin
 	self.ax, self.ay = window_border + margin, self.by - size
+
+	for _, control in ipairs(self.layout) do
+		if control.kind == 'time' then control.ratio = control.element:measure(size) / size end
+	end
 
 	-- Controls
 	local available_width, statics_width = self.bx - self.ax, 0
@@ -379,13 +399,25 @@ function Controls:update_dimensions()
 	local width_for_gaps = math.min(empty_space_width, size * gaps)
 	local individual_space_width = spaces > 0 and ((empty_space_width - width_for_gaps) / spaces) or 0
 
+	-- Buttons next to each other form a group of segments: only the group's ends get
+	-- round corners. Anything else, like gaps and spaces, ends the group.
+	local previous_button = nil
+
 	for c, control in ipairs(self.layout) do
 		if not control.hide then
 			local sizing, element, scale, ratio = control.sizing, control.element, control.scale, control.ratio
 			local width, height = 0, 0
+			if element and element.group_first ~= nil then
+				element.group_first, element.group_last = previous_button == nil, true
+				if previous_button then previous_button.group_last = false end
+				previous_button = element
+			else
+				previous_button = nil
+			end
 
 			if sizing == 'space' then
 				if individual_space_width > 0 then width = individual_space_width end
+				if element then height = size end
 			elseif sizing == 'gap' then
 				if width_for_gaps > 0 then width = width_for_gaps * (ratio / gaps) end
 			elseif sizing == 'static' then
@@ -404,6 +436,7 @@ function Controls:update_dimensions()
 	end
 
 	Elements:update_proximities()
+	Elements:trigger('controls_reflow')
 	request_render()
 end
 

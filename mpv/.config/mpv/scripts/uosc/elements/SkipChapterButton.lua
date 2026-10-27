@@ -46,7 +46,7 @@ function SkipChapterButton:update_dimensions()
 	local label_width = text_width(self.label, {size = self.font_size, bold = options.font_bold})
 	local width = math.ceil(self.padding_x * 2 + label_width + self.gap + self.icon_size)
 	local x = display.width - Elements:v('window_border', 'size', 0) - self.margin - width
-	local anchor_y = Elements:v('controls', 'ay') or Elements:v('timeline', 'ay')
+	local anchor_y = Elements:v('timeline', 'ay') or Elements:v('controls', 'ay')
 		or (display.height - Elements:v('window_border', 'size', 0))
 	local y = anchor_y - self.margin - self.height
 

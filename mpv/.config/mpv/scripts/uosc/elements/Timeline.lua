@@ -1,12 +1,13 @@
 local Element = require('elements/Element')
 
 -- Track geometry in unscaled pixels. The track sits in a zone at the bottom of the
--- timeline, with the heatmap filling the space above it.
+-- timeline, with the heatmap filling the space above it. The timeline sits CONTROLS_GAP
+-- above the controls row.
 local TRACK_SIZE = 4
 local TRACK_HOVER_SIZE = 7
-local TRACK_ZONE = 26
+local TRACK_ZONE = 20
 local PLAYHEAD_RADIUS = 7
-local SIDE_PADDING = 14
+local CONTROLS_GAP = 4
 
 ---@class Timeline : Element
 local Timeline = class(Element)
@@ -23,6 +24,7 @@ function Timeline:init()
 	self.font_size = 0
 	self.track_ax = 0 -- track bounds from the last render, used to map cursor to time
 	self.track_bx = 0
+	self.rest_by = 0 -- the window's bottom edge, where the collapsed progress line sits
 	self.is_hovered = false
 	self.has_thumbnail = false
 	self.heatmap = nil
@@ -52,7 +54,6 @@ function Timeline:decide_enabled()
 end
 
 function Timeline:get_effective_size()
-	if Elements:v('speed', 'dragging') then return self.size end
 	local progress_size = math.max(self.min_progress_size, self.progress_size)
 	return progress_size + math.ceil((self.size - self.progress_size) * self:get_visibility())
 end
@@ -63,10 +64,12 @@ function Timeline:update_dimensions()
 	self.size = round(options.timeline_size * state.scale)
 	self.font_size = math.floor(math.min((self.size + 60 * state.scale) * 0.2, self.size * 0.96) * options.font_scale)
 	local window_border_size = Elements:v('window_border', 'size', 0)
+	local controls_ay = Elements:v('controls', 'enabled') and Elements:v('controls', 'ay')
+	self.rest_by = display.height - window_border_size
 	self.ax = window_border_size
-	self.ay = display.height - window_border_size - self.size
 	self.bx = display.width - window_border_size
-	self.by = display.height - window_border_size
+	self.by = controls_ay and controls_ay - round(CONTROLS_GAP * state.scale) or self.rest_by
+	self.ay = self.by - self.size
 	self.width = self.bx - self.ax
 	self.track_ax, self.track_bx = self.ax, self.bx
 
@@ -141,6 +144,7 @@ function Timeline:on_prop_fullormaxed()
 	self:update_dimensions()
 end
 function Timeline:on_display() self:update_dimensions() end
+function Timeline:on_controls_reflow() self:update_dimensions() end
 function Timeline:on_options()
 	self:decide_progress_size()
 	self:update_dimensions()
@@ -208,28 +212,18 @@ function Timeline:render()
 	-- 0 when collapsed to the progress line, 1 when fully revealed
 	local reveal = self.size > progress_size and clamp(0, (size - progress_size) / (self.size - progress_size), 1) or 1
 
-	-- Times sit outside the track, which shrinks in from the edges to make room for them
-	local time_opts = {
-		size = round(self.font_size * 0.8),
-		color = fg,
-		border = options.text_border * state.scale,
-		border_color = bg,
-		opacity = clamp(0, reveal * 2 - 1, 1),
-	}
-	local time_width = math.max(
-		state.time_human and timestamp_width(state.time_human, time_opts) or 0,
-		state.destination_time_human and timestamp_width(state.destination_time_human, time_opts) or 0
-	)
-	local side_padding = round(SIDE_PADDING * state.scale)
-	local inset = (side_padding * 2 + time_width) * reveal
+	-- Revealed, the track lines up with the controls row's edges and sits above it.
+	-- Collapsed, it's a full width line on the window's bottom edge.
+	local inset = round(options.controls_margin * state.scale) * reveal
 	local tax, tbx = self.ax + inset, self.bx - inset
+	local base_by = self.by + (self.rest_by - self.by) * (1 - reveal)
 	local track_width = tbx - tax
 	self.track_ax, self.track_bx = tax, tbx
 
 	local track_max = TRACK_HOVER_SIZE * state.scale
 	local track_size = progress_size
 		+ ((is_active and track_max or TRACK_SIZE * state.scale) - progress_size) * reveal
-	local cy = self.by - math.min(size, round(TRACK_ZONE * state.scale)) / 2
+	local cy = base_by - math.min(size, round(TRACK_ZONE * state.scale)) / 2
 	local tay, tby = cy - track_size / 2, cy + track_size / 2
 
 	local function t2x(time) return tax + track_width * clamp(0, time / state.duration, 1) end
@@ -310,7 +304,7 @@ function Timeline:render()
 	-- Heatmap: area graph above the track, shaded with a vertical gradient that fades
 	-- toward the track. ASS has no gradient fill, so the curve is drawn once per band of
 	-- rows, each clipped to its band with its own opacity.
-	local heatmap_ay = round(self.by - size)
+	local heatmap_ay = round(base_by - size)
 	local heatmap_by = round(cy - track_max / 2 - 3 * state.scale)
 	local has_heatmap = options.timeline_heatmap ~= 'no' and self.heatmap and config.opacity.heatmap > 0
 		and reveal > 0 and heatmap_by - heatmap_ay > 4
@@ -367,18 +361,9 @@ function Timeline:render()
 		ass:circle(progress_x, cy, PLAYHEAD_RADIUS * state.scale * reveal, {color = accent})
 	end
 
-	-- Times
-	if time_opts.opacity > 0 then
-		local func = options.time_precision > 0 and ass.timestamp or ass.txt
-		if state.time_human then func(ass, self.ax + side_padding, cy, 4, state.time_human, time_opts) end
-		if state.destination_time_human then
-			func(ass, self.bx - side_padding, cy, 6, state.destination_time_human, time_opts)
-		end
-	end
-
 	-- Hovered time and chapter
 	local rendered_thumbnail = false
-	if (hover_x or hovered_chapter) and not Elements:v('speed', 'dragging') then
+	if hover_x or hovered_chapter then
 		local cursor_x = hovered_chapter and t2x(hovered_chapter.time) or hover_x
 		local hovered_seconds = hovered_chapter and hovered_chapter.time or self:get_time_at_x(cursor_x)
 		local tooltip_gap = round(4 * state.scale)

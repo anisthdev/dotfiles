@@ -2,6 +2,15 @@
 
 local ass_mt = getmetatable(assdraw.ass_new())
 
+-- Icon font for the whole UI: filled Material Symbols Rounded in fonts/material-symbols-mpv.ttf,
+-- built by tools/build-icons.py. Icons are drawn by name.
+ICON_FONT = 'material-symbols-mpv'
+
+-- Corner radii from the quickbar shell: items and pills use UI_RADIUS, and grouped
+-- segments keep UI_RADIUS_INNER where they meet
+UI_RADIUS = 10
+UI_RADIUS_INNER = 3
+
 -- Opacity.
 ---@param self table|nil
 ---@param opacity number|{primary?: number; border?: number, shadow?: number, main?: number} Opacity of all elements.
@@ -35,10 +44,10 @@ end
 ---@param y number
 ---@param size number
 ---@param name string
----@param opts? {color?: string; border?: number; border_color?: string; opacity?: number; clip?: string; align?: number}
+---@param opts? {color?: string; border?: number; border_color?: string; opacity?: number; clip?: string; align?: number; font?: string}
 function ass_mt:icon(x, y, size, name, opts)
 	opts = opts or {}
-	opts.font, opts.size, opts.bold = 'MaterialIconsRound-Regular', size, false
+	opts.font, opts.size, opts.bold = opts.font or ICON_FONT, size, false
 	self:txt(x, y, opts.align or 5, name, opts)
 end
 
@@ -197,7 +206,7 @@ end
 ---@param ay number
 ---@param bx number
 ---@param by number
----@param opts? {color?: string; border?: number; border_color?: string; opacity?: number|{primary?: number; border?: number, shadow?: number, main?: number}; clip?: string, radius?: number}
+---@param opts? {color?: string; border?: number; border_color?: string; opacity?: number|{primary?: number; border?: number, shadow?: number, main?: number}; clip?: string, radius?: number, corners?: number[]} `corners` is {left, right} radii, for grouped segments
 function ass_mt:rect(ax, ay, bx, by, opts)
 	opts = opts or {}
 	local border_size = opts.border or 0
@@ -217,12 +226,32 @@ function ass_mt:rect(ax, ay, bx, by, opts)
 	self:new_event()
 	self.text = self.text .. '{' .. tags .. '}'
 	self:draw_start()
-	if opts.radius and opts.radius > 0 then
+	if opts.corners then
+		self:segment_cw(ax, ay, bx, by, opts.corners[1], opts.corners[2])
+	elseif opts.radius and opts.radius > 0 then
 		self:round_rect_cw(ax, ay, bx, by, opts.radius)
 	else
 		self:rect_cw(ax, ay, bx, by)
 	end
 	self:draw_stop()
+end
+
+-- Rectangle path with its own radius for the left and right corners.
+---@param left number
+---@param right number
+function ass_mt:segment_cw(ax, ay, bx, by, left, right)
+	local max = math.min(bx - ax, by - ay) / 2
+	local l, r = math.min(left, max), math.min(right, max)
+	local c = 1 - 0.551915024494 -- bezier control point inset for a quarter circle
+	self:move_to(ax + l, ay)
+	self:line_to(bx - r, ay)
+	self:bezier_curve(bx - r * c, ay, bx, ay + r * c, bx, ay + r)
+	self:line_to(bx, by - r)
+	self:bezier_curve(bx, by - r * c, bx - r * c, by, bx - r, by)
+	self:line_to(ax + l, by)
+	self:bezier_curve(ax + l * c, by, ax, by - l * c, ax, by - l)
+	self:line_to(ax, ay + l)
+	self:bezier_curve(ax, ay + l * c, ax + l * c, ay, ax + l, ay)
 end
 
 -- Circle.
