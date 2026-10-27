@@ -104,3 +104,7 @@ output_path = '~/.config/nvim/lua/core/ui/background.lua'
 input_path = './templates/sysaud.yaml'
 output_path = '~/.config/sysaud/config.yaml'
 post_hook = 'systemctl --user reload sysaud.service'
+
+[templates.mpv]
+input_path = './templates/mpv-colors.conf'
+output_path = '~/.config/mpv/colors.conf'
