@@ -1,0 +1,16 @@
+# The mic mute and camera keys' LEDs, and the webcam itself, switchable by wheel users.
+
+# The webcam's USB authorized attribute (~/.local/bin/webcam-toggle): 0 detaches
+# it from the system, 1 brings it back.
+ACTION=="add", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", \
+  ATTR{idVendor}=="3277", ATTR{idProduct}=="0029", \
+  RUN+="/usr/bin/chgrp wheel /sys%p/authorized", \
+  RUN+="/usr/bin/chmod g+w /sys%p/authorized"
+
+# The LEDs on the keys, lit while the mic is muted (quickbar's MicMuteLed) or the
+# webcam is off (webcam-toggle). The mic's audio-micmute trigger is dropped: it
+# follows ALSA's controls, which PipeWire's mute never touches.
+ACTION=="add", SUBSYSTEM=="leds", KERNEL=="platform::micmute|asus::camera", \
+  ATTR{trigger}="none", \
+  RUN+="/usr/bin/chgrp wheel /sys%p/brightness", \
+  RUN+="/usr/bin/chmod g+w /sys%p/brightness"

@@ -22,3 +22,6 @@ nvim/.config/nvim/lua/core/ui/background.lua
 __pycache__/
 reel/.config/reel/tmdb_token
 scripts/.local/bin/trakts
+
+# Secret iCal addresses
+quickbar/.config/quickbar/calendars

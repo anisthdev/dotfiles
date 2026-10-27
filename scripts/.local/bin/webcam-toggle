@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# Switch the built-in webcam off (detached from USB, so nothing can open it)
+# and back on, the camera key's LED lit while it's off. Write access comes
+# from system/etc/udev/rules.d/90-privacy-keys.rules.
+
+VENDOR=3277 PRODUCT=0029
+LED=/sys/class/leds/asus::camera/brightness
+
+dev=
+for d in /sys/bus/usb/devices/*; do
+    [[ -f $d/idVendor ]] || continue
+    if [[ $(<"$d/idVendor") == "$VENDOR" && $(<"$d/idProduct") == "$PRODUCT" ]]; then
+        dev=$d
+        break
+    fi
+done
+if [[ -z $dev ]]; then
+    notify-send -u critical "Webcam" "Built-in webcam not found" -i camera-web
+    exit 1
+fi
+FILE=$dev/authorized
+
+current=$(<"$FILE")
+case $1 in
+    get) echo "$current"; exit ;;
+    on) target=1 ;;
+    off) target=0 ;;
+    ""|toggle) (( current )) && target=0 || target=1 ;;
+    *) echo "Usage: $0 [toggle|on|off|get]"; exit 1 ;;
+esac
+
+if ! echo "$target" > "$FILE" 2>/dev/null; then
+    notify-send -u critical "Webcam" "No write access to $FILE (udev rule installed?)" -i camera-web
+    exit 1
+fi
+
+echo $(( !target )) > "$LED" 2>/dev/null
+
+notify-send -h string:x-canonical-private-synchronous:webcam "Webcam" \
+    "$( (( target )) && echo On || echo "Off: disconnected until switched back on" )" \
+    -i "$( (( target )) && echo camera-web || echo camera-disabled-symbolic )"

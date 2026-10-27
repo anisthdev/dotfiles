@@ -25,6 +25,18 @@ hl.bind(mainMod .. "SHIFT + SPACE", shell("bar toggle"), { description = "Toggle
 hl.bind(mainMod .. "comma", shell("notifications dismiss"), { description = "Close notification" })
 hl.bind(mainMod .. "CTRL + I", shell("keepawake toggle"), { description = "Keep awake" })
 
+-- The touchpad key (F21); back on with a config reload
+local touchpadOn = true
+hl.bind("XF86TouchpadToggle", function()
+	touchpadOn = not touchpadOn
+	hl.device({ name = "asue1300:00-04f3:3104-touchpad", enabled = touchpadOn })
+	hl.exec_cmd(
+		"notify-send -a Touchpad -i input-touchpad-symbolic -h string:x-canonical-private-synchronous:touchpad Touchpad "
+			.. (touchpadOn and "On" or "Off")
+	)
+end, { description = "Toggle touchpad" })
+hl.bind("XF86WebCam", hl.dsp.exec_cmd(scriptDir .. "webcam-toggle"), { description = "Toggle webcam" })
+
 --menus
 hl.bind(mainMod .. "SPACE", shell("launcher toggle"), { description = "App launcher" })
 hl.bind(mainMod .. "Q", shell("controlpanel toggle"), { description = "Control Panel" })
