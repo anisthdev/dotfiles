@@ -301,26 +301,27 @@ function Timeline:render()
 		draw_track_range(rax, rbx, {color = chapter_range.color, opacity = chapter_range.opacity})
 	end
 
-	-- Heatmap: area graph above the track, shaded with a vertical gradient that fades
-	-- toward the track. ASS has no gradient fill, so the curve is drawn once per band of
-	-- rows, each clipped to its band with its own opacity.
+	-- Heatmap, drawn like YouTube's: a thin line along the curve over a faint fill
 	local heatmap_ay = round(base_by - size)
 	local heatmap_by = round(cy - track_max / 2 - 3 * state.scale)
 	local has_heatmap = options.timeline_heatmap ~= 'no' and self.heatmap and config.opacity.heatmap > 0
 		and reveal > 0 and heatmap_by - heatmap_ay > 4
 	if has_heatmap then
 		local opacity = config.opacity.heatmap * reveal
-		local height = heatmap_by - heatmap_ay
-		local band = math.max(1, round(2 * state.scale))
-		for band_ay = heatmap_ay, heatmap_by - 1, band do
-			local band_by = math.min(band_ay + band, heatmap_by)
-			local depth = (band_ay + band_by) / 2 - heatmap_ay -- distance from the top of the strip
-			ass:smooth_curve(tax, heatmap_ay, tbx, heatmap_by, self.heatmap, {
-				color = fg,
-				opacity = opacity * (1 - 0.75 * depth / height),
-				clip = string.format('\\clip(%d,%d,%d,%d)', tax, band_ay, tbx, band_by),
-			})
-		end
+		local line_width = math.max(1, 1.5 * state.scale)
+		ass:smooth_curve(tax, heatmap_ay, tbx, heatmap_by, self.heatmap, {
+			color = fg, opacity = opacity * 0.25, base_y = heatmap_by,
+			clip = string.format('\\clip(%d,%d,%d,%d)', tax, heatmap_ay - line_width, tbx, heatmap_by),
+		})
+		-- The line is the area's outline. Closing the area below the clip keeps its baseline
+		-- and sides out of view, leaving only the top edge.
+		local base_y = heatmap_by + line_width * 3
+		ass:smooth_curve(tax, heatmap_ay, tbx, heatmap_by, self.heatmap, {
+			color = fg, border = line_width, border_color = fg, opacity = {primary = 0, border = opacity},
+			base_y = base_y,
+			clip = string.format('\\clip(%d,%d,%d,%d)', math.ceil(tax + line_width), heatmap_ay - line_width * 2,
+				math.floor(tbx - line_width), round(heatmap_by + line_width)),
+		})
 	end
 
 	-- Chapter hover targets

@@ -1003,21 +1003,15 @@ function load_youtube_heatmap()
 		for _, seg in ipairs(data) do
 			max_val = math.max(max_val, seg.value)
 		end
-		-- Normalize and clamp to avoid gaps in heatmap
-		local is_above = options.timeline_heatmap == 'above'
-		local min_height, graph_height = 4, is_above and 40 or options.timeline_size
-		local max_norm_y = 1 - (min_height / graph_height)
-		local norm = {0, 1}
+		-- The curve's top edge only, normalized to 0-1 with 1 at the bottom; whoever draws it
+		-- decides how to close it
+		local function y(seg) return 1 - (seg.value / max_val) end
+		local norm = {0, y(data[1])}
 		for _, seg in ipairs(data) do
 			local center_time = (seg.start_time + seg.end_time) / 2
-			local norm_x = center_time / vid_length
-			local norm_y = math.min(max_norm_y, 1 - (seg.value / max_val))
-			norm[#norm + 1], norm[#norm + 2] = norm_x, norm_y
+			norm[#norm + 1], norm[#norm + 2] = center_time / vid_length, y(seg)
 		end
-		-- Add final anchor
-		local last_y = math.min(max_norm_y, 1 - (data[#data].value / max_val))
-		norm[#norm + 1], norm[#norm + 2] = 1, last_y
-		norm[#norm + 1], norm[#norm + 2] = 1, 1
+		norm[#norm + 1], norm[#norm + 2] = 1, y(data[#data])
 		return points_to_bezier(norm)
 	end
 end

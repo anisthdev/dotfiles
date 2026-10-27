@@ -206,7 +206,7 @@ end
 ---@param ay number
 ---@param bx number
 ---@param by number
----@param opts? {color?: string; border?: number; border_color?: string; opacity?: number|{primary?: number; border?: number, shadow?: number, main?: number}; clip?: string, radius?: number, corners?: number[]} `corners` is {left, right} radii, for grouped segments
+---@param opts? {color?: string; border?: number; border_color?: string; opacity?: number|{primary?: number; border?: number, shadow?: number, main?: number}; clip?: string, radius?: number, corners?: number[]} `corners` is {left, right} or {top_left, top_right, bottom_right, bottom_left} radii, for grouped segments
 function ass_mt:rect(ax, ay, bx, by, opts)
 	opts = opts or {}
 	local border_size = opts.border or 0
@@ -227,7 +227,9 @@ function ass_mt:rect(ax, ay, bx, by, opts)
 	self.text = self.text .. '{' .. tags .. '}'
 	self:draw_start()
 	if opts.corners then
-		self:segment_cw(ax, ay, bx, by, opts.corners[1], opts.corners[2])
+		local c = opts.corners
+		if #c == 2 then c = {c[1], c[2], c[2], c[1]} end
+		self:segment_cw(ax, ay, bx, by, c[1], c[2], c[3], c[4])
 	elseif opts.radius and opts.radius > 0 then
 		self:round_rect_cw(ax, ay, bx, by, opts.radius)
 	else
@@ -236,22 +238,21 @@ function ass_mt:rect(ax, ay, bx, by, opts)
 	self:draw_stop()
 end
 
--- Rectangle path with its own radius for the left and right corners.
----@param left number
----@param right number
-function ass_mt:segment_cw(ax, ay, bx, by, left, right)
+-- Rectangle path with its own radius for each corner, clockwise from the top left.
+function ass_mt:segment_cw(ax, ay, bx, by, top_left, top_right, bottom_right, bottom_left)
 	local max = math.min(bx - ax, by - ay) / 2
-	local l, r = math.min(left, max), math.min(right, max)
+	local tl, tr = math.min(top_left, max), math.min(top_right, max)
+	local br, bl = math.min(bottom_right, max), math.min(bottom_left, max)
 	local c = 1 - 0.551915024494 -- bezier control point inset for a quarter circle
-	self:move_to(ax + l, ay)
-	self:line_to(bx - r, ay)
-	self:bezier_curve(bx - r * c, ay, bx, ay + r * c, bx, ay + r)
-	self:line_to(bx, by - r)
-	self:bezier_curve(bx, by - r * c, bx - r * c, by, bx - r, by)
-	self:line_to(ax + l, by)
-	self:bezier_curve(ax + l * c, by, ax, by - l * c, ax, by - l)
-	self:line_to(ax, ay + l)
-	self:bezier_curve(ax, ay + l * c, ax + l * c, ay, ax + l, ay)
+	self:move_to(ax + tl, ay)
+	self:line_to(bx - tr, ay)
+	self:bezier_curve(bx - tr * c, ay, bx, ay + tr * c, bx, ay + tr)
+	self:line_to(bx, by - br)
+	self:bezier_curve(bx, by - br * c, bx - br * c, by, bx - br, by)
+	self:line_to(ax + bl, by)
+	self:bezier_curve(ax + bl * c, by, ax, by - bl * c, ax, by - bl)
+	self:line_to(ax, ay + tl)
+	self:bezier_curve(ax, ay + tl * c, ax + tl * c, ay, ax + tl, ay)
 end
 
 -- Circle.
@@ -306,7 +307,7 @@ end
 ---@param bx number
 ---@param by number
 ---@param points number[] Flat table of normalized points (0–1): start point followed by segment entries cp1x, cp1y, cp2x, cp2y, px, py, ...
----@param opts? {color?: string; border?: number; border_color?: string; opacity?: number|{primary?: number; border?: number, shadow?: number, main?: number}; clip?: string}
+---@param opts? {color?: string; border?: number; border_color?: string; opacity?: number|{primary?: number; border?: number, shadow?: number, main?: number}; clip?: string; base_y?: number} `base_y` closes the curve along that line, making an area
 function ass_mt:smooth_curve(ax, ay, bx, by, points, opts)
 	if not points or #points < 8 then return end
 	opts = opts or {}
@@ -333,7 +334,12 @@ function ass_mt:smooth_curve(ax, ay, bx, by, points, opts)
 	end
 
 	local x0, y0 = scale(points[1], points[2])
-	self:move_to(x0, y0)
+	if opts.base_y then
+		self:move_to(x0, opts.base_y)
+		self:line_to(x0, y0)
+	else
+		self:move_to(x0, y0)
+	end
 	local max = math.floor((#points - 2) / 6) * 6 + 2
 	for i = 3, max, 6 do
 		local x1, y1 = scale(points[i],   points[i+1])
@@ -341,5 +347,6 @@ function ass_mt:smooth_curve(ax, ay, bx, by, points, opts)
 		local x3, y3 = scale(points[i+4], points[i+5])
 		self:bezier_curve(x1, y1, x2, y2, x3, y3)
 	end
+	if opts.base_y then self:line_to(bx, opts.base_y) end
 	self:draw_stop()
 end
