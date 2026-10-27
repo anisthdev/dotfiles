@@ -3,7 +3,7 @@ local mainMod = "SUPER + "
 local name = "jarvis"
 local window_query = "class:jarvis"
 local command =
-	"uwsm app -- foot -a jarvis --title=scratchpad-opencode -o 'font=SF Mono:size=12' -e env OPENCODE_CONFIG=/home/asif/.config/jarvis/opencode.json /home/asif/.opencode/bin/opencode ~"
+	"uwsm app -- foot -a jarvis --title=scratchpad-opencode -o 'font=Google Sans Code NF:size=12' -e env OPENCODE_CONFIG=/home/asif/.config/jarvis/opencode.json /home/asif/.opencode/bin/opencode ~"
 
 local function toggle()
 	if hl.get_window(window_query) then

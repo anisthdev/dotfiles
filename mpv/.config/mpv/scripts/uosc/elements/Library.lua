@@ -10,7 +10,7 @@ local WATCH_HISTORY = mp.command_native({'expand-path', mp.get_property('watch-h
 local DEFAULT_ROWS = {'Movies', 'TV', 'Anime'}
 
 -- libass picks the matching face by weight; falls back to the OSD font if missing.
-local FONT_FAMILY = 'SF Pro Display'
+local FONT_FAMILY = 'Google Sans Flex'
 local WEIGHT = {bold = 700, semibold = 600, medium = 500, regular = 400}
 
 -- mpv allows overlay ids 0-63; thumbfast uses 42.
