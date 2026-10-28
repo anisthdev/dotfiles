@@ -50,6 +50,10 @@ sound:
   #
   # custom_dir: ~/.local/share/sounds/my-sounds
 
+  # How long the volume must stay still before its sound plays (milliseconds).
+  # Changes closer together than this give one sound, after the last one.
+  volume_debounce_ms: 600
+
 
 # ---------------------------------------------------------------------------
 # Notification settings
