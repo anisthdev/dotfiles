@@ -114,12 +114,36 @@ events:
 
   power.ac-unplugged:
     notify: false
+    sound: false
+
+  network.wifi-connected:
+    sound: false
+
+  network.network-disconnected:
+    sound: false
+
+  bluetooth.device-connected:
+    sound: false
+
+  bluetooth.device-disconnected:
+    sound: false
+
+  bluetooth.adapter-on:
+    sound: false
+
+  bluetooth.adapter-off:
+    sound: false
 
   audio.volume-changed:
     icon: gnome-volume-control
 
   network.vpn-connected:
-    notify: true
+    notify: false
+    sound: false
+
+  network.vpn-disconnected:
+    notify: false
+    sound: false
 
   session.screen-locked:
     notify: false
