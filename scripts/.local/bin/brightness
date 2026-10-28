@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+# Brightness keys for the focused monitor: the laptop panel through
+# brightnessctl, an external monitor over DDC/CI with ddcutil.
+#
+#   brightness up|down
+#
+# A DDC write takes ~0.2 s and a held key repeats faster than that, so a
+# press only moves the monitor's target; one writer per monitor (under
+# flock) keeps setting it until the monitor has caught up.
+
+STEP=5
+STATE=${XDG_RUNTIME_DIR:-/tmp}/brightness-ddc
+
+case $1 in
+    up) sign=+ ;;
+    down) sign=- ;;
+    *) echo "Usage: $0 up|down"; exit 1 ;;
+esac
+
+output=$(hyprctl monitors -j | jq -r '.[] | select(.focused) | .name')
+if [[ $output == eDP-* ]]; then
+    exec brightnessctl -e4 -n2 set "5%$sign" >/dev/null
+fi
+
+mkdir -p "$STATE"
+
+# Catch bus $1 up to its target, then forget the target so the next press
+# reads the monitor again (its own buttons may have changed it meanwhile)
+apply() {
+    local bus=$1 want applied
+    exec 8>"$STATE/$bus.lock"
+    flock 8
+    exec 9>"$STATE/$bus.target.lock"
+    while :; do
+        flock 9
+        [[ -s $STATE/$bus.target ]] || break
+        want=$(<"$STATE/$bus.target")
+        applied=
+        [[ -s $STATE/$bus.applied ]] && applied=$(<"$STATE/$bus.applied")
+        if [[ $want == "$applied" ]]; then
+            rm -f "$STATE/$bus.target"
+            break
+        fi
+        flock -u 9
+        ddcutil --bus "$bus" --noverify setvcp 10 "$want" >/dev/null 2>&1 || break
+        echo "$want" >"$STATE/$bus.applied"
+    done
+}
+
+for conn in /sys/class/drm/card*-"$output"; do
+    [[ -e $conn/ddc ]] || continue
+    bus=$(readlink -f "$conn/ddc")
+    bus=${bus##*/i2c-}
+
+    (
+        flock 9
+        if [[ -s $STATE/$bus.target ]]; then
+            current=$(<"$STATE/$bus.target")
+        else
+            # "VCP 10 C <current> <max>"; no DDC/CI on this monitor if it fails
+            read -r _ _ _ current _ < <(ddcutil --bus "$bus" -t getvcp 10 2>/dev/null)
+            [[ $current =~ ^[0-9]+$ ]] || exit 1
+            echo "$current" >"$STATE/$bus.applied"
+        fi
+        target=$((current $sign STEP))
+        ((target > 100)) && target=100
+        ((target < 0)) && target=0
+        echo "$target" >"$STATE/$bus.target"
+    ) 9>"$STATE/$bus.target.lock" && apply "$bus" &
+done
+wait
