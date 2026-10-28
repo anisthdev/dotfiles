@@ -41,7 +41,7 @@ sound:
   # The "freedesktop" theme is the baseline and ships with most distros.
   # Other themes (e.g. "ocean", "glass") can be installed from your package manager
   # or placed in ~/.local/share/sounds/.
-  theme: macos
+  theme: android
 
   # Optional: directory to search for sounds BEFORE the XDG theme.
   # Place files as: <custom_dir>/<event-id>.oga  (also .ogg and .wav are tried)

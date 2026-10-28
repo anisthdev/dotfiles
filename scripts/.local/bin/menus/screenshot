@@ -42,7 +42,7 @@ countdown () {
 
 # Play shutter sound
 play_shutter() {
-    pw-play ~/.local/share/sounds/macos/camera-shutter.ogg &
+    pw-play ~/.local/share/sounds/android/camera-shutter.ogg &
 }
 
 # Actions
