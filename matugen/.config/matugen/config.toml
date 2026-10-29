@@ -74,7 +74,6 @@ output_path = '~/.config/gtk-3.0/matugen.css'
 [templates.gtk3_overrides]
 input_path = './templates/gtk3.css'
 output_path = '~/.config/gtk-3.0/gtk.css'
-post_hook = 'systemctl --user restart xdg-desktop-portal.service xdg-desktop-portal-gtk.service xdg-desktop-portal-hyprland.service'
 
 [templates.gtk3_dark]
 input_path = './templates/gtk-dark.css'
