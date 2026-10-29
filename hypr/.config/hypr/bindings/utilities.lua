@@ -52,8 +52,9 @@ hl.bind(mainMod .. "SHIFT + N", shell("note toggle"), { description = "Quick not
 hl.bind(mainMod .. "SHIFT + T", shell("tasks toggle"), { description = "To-do list" })
 hl.bind(mainMod .. "CTRL + K", shell("keybindings toggle"), { description = "Keybindings" })
 -- Seedling (~/Projects/seedling), its own Quickshell config: toggled
--- through its IPC, or started (it opens on starting) when not running
-hl.bind(mainMod .. "T", hl.dsp.exec_cmd("qs -p $HOME/Projects/seedling ipc call seedling toggle || uwsm app -- qs -p $HOME/Projects/seedling"), { description = "Torrents" })
+-- through its IPC, or started (it opens on starting) when not running; -n
+-- so a press while it's still starting doesn't start a second one
+hl.bind(mainMod .. "T", hl.dsp.exec_cmd("qs -p $HOME/Projects/seedling ipc call seedling toggle || uwsm app -- qs -n -p $HOME/Projects/seedling"), { description = "Torrents" })
 hl.bind("PRINT", shell("screenshot toggle"), { description = "Screenshot" })
 hl.bind("ALT + PRINT", shell("record toggle"), { description = "Screenrecord" })
 
