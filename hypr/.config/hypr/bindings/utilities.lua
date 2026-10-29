@@ -11,7 +11,6 @@ end
 hl.bind(mainMod .. "B", hl.dsp.exec_cmd("uwsm app -- firefox -P asif"), { description = "Browser" })
 hl.bind(mainMod .. "Return", hl.dsp.exec_cmd("uwsm app -- ghostty"), { description = "Terminal" })
 hl.bind(mainMod .. "Y", hl.dsp.exec_cmd("uwsm app -- ghostty --title=yazi -e yazi"), { description = "Yazi" })
-hl.bind(mainMod .. "T", hl.dsp.exec_cmd("uwsm app -- ghostty --title=tremc -e tremc"), { description = "Tremc" })
 hl.bind(mainMod .. "SHIFT + B", hl.dsp.exec_cmd("uwsm app -- firefox --private-window"), { description = "Incognito" })
 hl.bind("XF86Calculator", shell("calculator toggle"), { description = "Calculator" })
 hl.bind("XF86Explorer", hl.dsp.exec_cmd("uwsm app -- nautilus"), { description = "File manager" })
@@ -52,6 +51,9 @@ hl.bind(mainMod .. "CTRL + V", shell("search open play"), { description = "Play 
 hl.bind(mainMod .. "SHIFT + N", shell("note toggle"), { description = "Quick note to inbox" })
 hl.bind(mainMod .. "SHIFT + T", shell("tasks toggle"), { description = "To-do list" })
 hl.bind(mainMod .. "CTRL + K", shell("keybindings toggle"), { description = "Keybindings" })
+-- Seedling (~/Projects/seedling), its own Quickshell config: toggled
+-- through its IPC, or started (it opens on starting) when not running
+hl.bind(mainMod .. "T", hl.dsp.exec_cmd("qs -p $HOME/Projects/seedling ipc call seedling toggle || uwsm app -- qs -p $HOME/Projects/seedling"), { description = "Torrents" })
 hl.bind("PRINT", shell("screenshot toggle"), { description = "Screenshot" })
 hl.bind("ALT + PRINT", shell("record toggle"), { description = "Screenrecord" })
 
