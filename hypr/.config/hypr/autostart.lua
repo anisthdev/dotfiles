@@ -6,9 +6,9 @@
 hl.on("hyprland.start", function()
 	-- The wallpaper daemon (awww-daemon), once quickbar has locked
 	hl.exec_cmd("uwsm app -- /usr/lib/quickbar/boot")
-	-- The shell: bar, notifications, menus, lock screen and polkit agent;
-	-- locked from the start (QUICKBAR_BOOT)
-	hl.exec_cmd("uwsm app -- env QUICKBAR_BOOT=1 qs -c quickbar")
+	-- The shell (bar, notifications, menus, lock screen, polkit agent) is
+	-- quickbar.service, enabled for graphical-session.target: locked from
+	-- the start, and restarted, locked again, if it crashes
 	hl.exec_cmd("uwsm app -- hypridle")
 	hl.exec_cmd("clipse -listen")
 	hl.exec_cmd("hyprpm reload")
