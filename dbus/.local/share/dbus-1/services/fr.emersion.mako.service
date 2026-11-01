@@ -1,0 +1,6 @@
+# Overrides mako's D-Bus activation: quickbar serves notifications, and a
+# notification sent before it starts mustn't start mako in its place.
+# Remove with mako.
+[D-BUS Service]
+Name=org.freedesktop.Notifications
+Exec=/usr/bin/false

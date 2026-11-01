@@ -1,0 +1,11 @@
+[Unit]
+Description=llama-server (Gemma 4B Q4)
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/llama-server -m %h/.models/gemma/google_gemma-4-E2B-it-Q4_K_M.gguf -ngl 4 -c 4096 --reasoning off
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

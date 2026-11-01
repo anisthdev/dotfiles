@@ -1,0 +1,14 @@
+# Packages built from my own repos (github.com/anisthdev), all named
+# totoro-*: REPO [the folder its PKGBUILD is in]
+glint
+sysaud
+systray
+skipper packaging/arch
+quickbar
+tunes
+reel
+seedling
+margin
+weather
+handoff
+foxkit

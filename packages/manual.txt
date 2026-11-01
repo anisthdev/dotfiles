@@ -1,0 +1,5 @@
+# Installed here but from nowhere bootstrap can fetch: build or install
+# these by hand.
+clipse-bin         # clipse; the AUR has clipse (built from source)
+llama.cpp-vulkan   # llama-server, for llama-server.service
+totoro             # the Totoro cursor theme

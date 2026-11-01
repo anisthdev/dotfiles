@@ -1,0 +1,7 @@
+[Sound Theme]
+Name=macOS
+Comment=macOS-inspired sound theme
+Directories=stereo
+
+[stereo]
+OutputProfile=stereo

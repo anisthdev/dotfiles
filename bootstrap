@@ -1,0 +1,130 @@
+#!/usr/bin/env bash
+# Sets this desktop up on a fresh Arch install, from these dotfiles. Every
+# step can run on its own and again: what's already there is left alone.
+#
+#   ./bootstrap              all the steps below, in order
+#   ./bootstrap STEP...      only these
+#
+#   packages     the official packages (packages/pacman.txt)
+#   aur          yay, then the AUR packages (packages/aur.txt)
+#   own          my own packages, totoro-*, built from their GitHub repos
+#                (packages/own.txt)
+#   link         every package here stowed into ~
+#   system       system/ into /etc and /usr/local, and the system services
+#   services     the user services
+#   fingerprint  the patched libfprint for the ELAN sensor (not in "all":
+#                only for that laptop)
+#
+# Run as your user; sudo is asked for when needed. packages/manual.txt and
+# README.md list what's left to do by hand (secrets, Firefox profiles).
+set -euo pipefail
+
+here="$(cd "$(dirname "$(realpath "$0")")" && pwd)"
+github=https://github.com/anisthdev
+
+say() { printf '\n\033[1m== %s\033[0m\n' "$*"; }
+warn() { printf '\033[33m%s\033[0m\n' "$*" >&2; }
+# A list file without its comments and blank lines
+list() { sed -e 's/#.*//' -e 's/[[:space:]]*$//' -e '/^$/d' "$here/packages/$1"; }
+
+step_packages() {
+    say "Official packages"
+    list pacman.txt | sudo pacman -S --needed -
+}
+
+step_aur() {
+    say "AUR packages"
+    if ! command -v yay >/dev/null; then
+        local tmp
+        tmp="$(mktemp -d)"
+        git clone --depth 1 https://aur.archlinux.org/yay-bin.git "$tmp/yay-bin"
+        (cd "$tmp/yay-bin" && makepkg -si --needed </dev/tty)
+        rm -rf "$tmp"
+    fi
+    list aur.txt | yay -S --needed -
+}
+
+step_own() {
+    say "My packages (totoro-*)"
+    local tmp repo dir
+    tmp="$(mktemp -d)"
+    while read -r repo dir; do
+        say "$repo"
+        git clone --depth 1 "$github/$repo.git" "$tmp/$repo"
+        # Built in a folder of its own, with only the PKGBUILD (and its
+        # .install): makepkg clones the source to ./REPO, which the
+        # checkout may already have (tunes' script is called tunes)
+        mkdir "$tmp/build-$repo"
+        cp "$tmp/$repo/${dir:-.}"/PKGBUILD "$tmp/build-$repo/"
+        cp "$tmp/$repo/${dir:-.}"/*.install "$tmp/build-$repo/" 2>/dev/null || true
+        # No --noconfirm: replacing a package of the old name is asked
+        (cd "$tmp/build-$repo" && makepkg -si --needed </dev/tty) || warn "$repo didn't build or install"
+    done < <(list own.txt)
+    rm -rf "$tmp"
+}
+
+step_link() {
+    say "Linking dotfiles into ~"
+    local pkg folding
+    for pkg in "$here"/*/; do
+        pkg="$(basename "$pkg")"
+        case "$pkg" in system | packages) continue ;; esac
+        # Folders others write into stay real folders, the files linked
+        # one by one: systemd's .wants, D-Bus services, ~/.local/share
+        case "$pkg" in systemd | dbus | share) folding=--no-folding ;; *) folding= ;; esac
+        stow $folding -d "$here" -t "$HOME" "$pkg" || warn "$pkg: not linked (a file of the same name is in the way?)"
+    done
+}
+
+step_system() {
+    say "System files"
+    local file
+    while IFS= read -r -d '' file; do
+        file="${file#"$here/system/"}"
+        sudo install -Dm "$(stat -c %a "$here/system/$file")" "$here/system/$file" "/$file"
+    done < <(find "$here/system/etc" "$here/system/usr" -type f -print0)
+    # vpn-bypass's namespace, kept beside its script
+    local vpn="$here/scripts/.local/bin/vpn-bypass.d"
+    sudo install -Dm755 "$vpn/vpn-bypass-setup" /usr/local/sbin/vpn-bypass-setup
+    sudo install -Dm644 "$vpn/vpn-bypass-netns.service" /etc/systemd/system/vpn-bypass-netns.service
+    sudo install -Dm755 "$vpn/vpn-bypass-netns-dispatcher" /etc/NetworkManager/dispatcher.d/90-vpn-bypass-netns
+    sudo udevadm control --reload
+    sudo systemctl daemon-reload
+
+    say "System services"
+    local unit
+    for unit in NetworkManager iwd bluetooth keyd sshd cups.socket jackett \
+        vpn-bypass-netns update-mirrors.timer fstrim.timer systemd-timesyncd; do
+        sudo systemctl enable "$unit" || warn "$unit: not enabled"
+    done
+}
+
+step_services() {
+    say "User services"
+    systemctl --user daemon-reload
+    local unit
+    # quickbar and sysaud with the graphical session, the rest at login
+    for unit in quickbar sysaud mpd pipewire-pulse.socket ydotool \
+        transmission-daemon rclone-gdrive trakt-scrobbler; do
+        systemctl --user enable "$unit" || warn "$unit: not enabled"
+    done
+}
+
+step_fingerprint() {
+    say "Fingerprint (ELAN eFSA80SC)"
+    sh "$here/system/libfprint-elanspi-sigfm/install.sh"
+}
+
+all=(packages aur own link system services)
+steps=("$@")
+[[ ${#steps[@]} -gt 0 ]] || steps=("${all[@]}")
+for s in "${steps[@]}"; do
+    if ! declare -F "step_$s" >/dev/null; then
+        sed -n '2,/^$/s/^# \{0,1\}//p' "$0" >&2
+        exit 2
+    fi
+done
+for s in "${steps[@]}"; do
+    "step_$s"
+done
+say "Done. README.md lists what's left by hand."

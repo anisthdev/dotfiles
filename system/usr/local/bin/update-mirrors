@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Mirrorlist backup location
+BACKUP_DIR="/etc/pacman.d/mirrorlist.bak"
+TIMESTAMP=$(date +'%Y%m%d-%H%M%S')
+
+# Create backup
+mkdir -p "$BACKUP_DIR"
+cp /etc/pacman.d/mirrorlist "$BACKUP_DIR/mirrorlist-$TIMESTAMP"
+
+# Update mirrorlist with fastest mirrors
+reflector \
+  --country India,Australia,Singapore \
+  --age 12 \
+  --protocol https \
+  --sort rate \
+  --latest 20 \
+  --save /etc/pacman.d/mirrorlist
+
+echo "Mirrorlist updated on $(date)"
+

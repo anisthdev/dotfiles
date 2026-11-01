@@ -1,0 +1,7 @@
+[Sound Theme]
+Name=Android
+Comment=Pixel sounds pulled from the phone
+Directories=stereo
+
+[stereo]
+OutputProfile=stereo
