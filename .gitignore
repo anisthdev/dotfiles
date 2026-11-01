@@ -26,3 +26,4 @@ scripts/.local/bin/trakts
 # Secret iCal addresses
 quickbar/.config/quickbar/calendars
 sysaud/.config/sysaud/primary-color
+quickbar/.config/quickbar/jackett
