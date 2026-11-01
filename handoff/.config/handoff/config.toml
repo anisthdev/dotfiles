@@ -1,0 +1,5 @@
+# handoffd's settings (`systemctl --user reload handoffd` after a change);
+# the options are in handoff's README.
+
+# The tray's Phone mirror row: the mirror scratchpad, as SUPER+CTRL+P
+mirror = "hyprctl eval 'require(\"scratchpads.phone\").toggle()'"
