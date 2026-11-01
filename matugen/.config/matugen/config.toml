@@ -10,6 +10,20 @@ input_path = './templates/colors.css'
 output_path = '~/.config/waybar/colors.css'
 post_hook = 'pkill -SIGUSR2 waybar'
 
+# The Quickshell apps' palettes, each in its own config folder; they
+# reload them on change
+[templates.quickbar]
+input_path = './templates/colors.css'
+output_path = '~/.config/quickbar/colors.css'
+
+[templates.seedling]
+input_path = './templates/colors.css'
+output_path = '~/.config/seedling/colors.css'
+
+[templates.margin]
+input_path = './templates/colors.css'
+output_path = '~/.config/margin/colors.css'
+
 [templates.inflight]
 input_path = './templates/inflight-colors.css'
 output_path = '~/.config/inflight/colors.css'
