@@ -14,8 +14,6 @@ RESOLV_DIR="/etc/netns/$NS"
 RESOLV_CONF="$RESOLV_DIR/resolv.conf"
 NFT_TABLE="${VPN_BYPASS_NFT_TABLE:-vpn_bypass}"
 NFT_CHAIN="${VPN_BYPASS_NFT_CHAIN:-postrouting}"
-ROUTE_WAIT_SECONDS="${VPN_BYPASS_ROUTE_WAIT_SECONDS:-30}"
-
 die() {
     printf '%s\n' "$*" >&2
     exit 1
@@ -45,22 +43,6 @@ default_route() {
             }
         }
     '
-}
-
-wait_for_default_route() {
-    local deadline route
-
-    deadline=$((SECONDS + ROUTE_WAIT_SECONDS))
-    while (( SECONDS <= deadline )); do
-        route="$(default_route)"
-        if [[ -n "$route" ]]; then
-            printf '%s\n' "$route"
-            return 0
-        fi
-        sleep 1
-    done
-
-    return 1
 }
 
 route_field() {
@@ -163,8 +145,11 @@ main() {
     require nft
     require sysctl
 
-    route="$(wait_for_default_route || true)"
-    [[ -n "$route" ]] || die "No non-VPN IPv4 default route found"
+    route="$(default_route)"
+    if [[ -z "$route" ]]; then
+        printf '%s\n' "vpn-bypass namespace skipped: no non-VPN IPv4 default route yet" >&2
+        exit 0
+    fi
 
     iface="$(route_field "$route" dev)"
     gateway="$(route_field "$route" via)"

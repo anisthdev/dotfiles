@@ -1,7 +1,7 @@
-font-family = SF Mono
+font-family = Google Sans Code NF
 font-size = 14
-font-style = semibold
-adjust-cell-width = -5%
+# font-style = semibold
+adjust-cell-width = 0%
 adjust-cell-height = 12
 adjust-underline-thickness = 1
 window-padding-x = 20
