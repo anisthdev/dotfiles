@@ -3,10 +3,11 @@
 # Extra arguments are passed on to scrcpy.
 set -euo pipefail
 
-# scrcpy must use the same adb as the running server, or they kill each other
-export ADB="$HOME/.sdks/android/platform-tools/adb"
+# scrcpy must use the same adb as the running server, or they kill each other:
+# the one on PATH, as phone-connect and handoffd use, unless $ADB says
+export ADB="${ADB:-$(command -v adb)}"
 
-serial="$(busy --icon phone "Connecting to phone" -- "$HOME/.local/bin/phone-connect")" || exit 1
+serial="$(busy --icon phone "Connecting to phone" -- phone-connect)" || exit 1
 
 # USB has bandwidth to spare; Wi-Fi and the hotspot need a lighter stream
 [[ "$serial" == *:* || "$serial" == *_adb-tls-connect* ]] && bitrate=8M || bitrate=16M

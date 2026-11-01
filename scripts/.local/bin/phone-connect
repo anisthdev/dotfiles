@@ -9,9 +9,9 @@
 # Wi-Fi without wireless debugging. On the hotspot the phone is the gateway.
 set -uo pipefail
 
-HOTSPOT_SSID="Pixel10A"
+HOTSPOT_SSID="${PHONE_HOTSPOT_SSID:-Pixel10A}"
 PORT=5555
-ADB="$HOME/.sdks/android/platform-tools/adb"
+ADB="${ADB:-adb}"
 CACHE="${XDG_CACHE_HOME:-$HOME/.cache}/phone-connect"
 
 network() {
