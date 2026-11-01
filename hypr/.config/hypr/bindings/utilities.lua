@@ -49,6 +49,9 @@ hl.bind(mainMod .. "CTRL + N", shell("glyphs toggle"), { description = "Glyph se
 hl.bind(mainMod .. "period", shell("emoji toggle"), { description = "Emoji picker" })
 hl.bind(mainMod .. "CTRL + V", shell("search open play"), { description = "Play video from URL" })
 hl.bind(mainMod .. "SHIFT + N", shell("note toggle"), { description = "Quick note to inbox" })
+-- margin (~/Projects/margin), notes in place of Keep: its menu, starting
+-- margin when it isn't running
+hl.bind(mainMod .. "N", hl.dsp.exec_cmd("$HOME/Projects/margin/margin-app menu"), { description = "Notes (margin)" })
 hl.bind(mainMod .. "SHIFT + T", shell("tasks toggle"), { description = "To-do list" })
 hl.bind(mainMod .. "CTRL + K", shell("keybindings toggle"), { description = "Keybindings" })
 -- Seedling (~/Projects/seedling), its own Quickshell config: its script

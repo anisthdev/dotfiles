@@ -20,4 +20,4 @@ hl.window_rule({
 	move = { 10, "monitor_h*0.3-10" },
 })
 
-hl.bind(mainMod .. "N", toggle, { description = "Toggle notes scratchpad" })
+hl.bind(mainMod .. "ALT + N", toggle, { description = "Toggle notes scratchpad" })
