@@ -5,11 +5,6 @@ version_check = false
 command = "awww img --transition-type random {{image}}"
 set = true
 
-[templates.waybar]
-input_path = './templates/colors.css'
-output_path = '~/.config/waybar/colors.css'
-post_hook = 'pkill -SIGUSR2 waybar'
-
 # The Quickshell apps' palettes, each in its own config folder; they
 # reload them on change
 [templates.quickbar]
@@ -24,27 +19,14 @@ output_path = '~/.config/seedling/colors.css'
 input_path = './templates/colors.css'
 output_path = '~/.config/margin/colors.css'
 
-[templates.inflight]
-input_path = './templates/inflight-colors.css'
-output_path = '~/.config/inflight/colors.css'
-
 [templates.starship]
 input_path = './templates/starship2.toml'
 output_path = '~/.config/starship.toml'
-
-[templates.rofi]
-input_path = './templates/colors.rasi'
-output_path = '~/.config/rofi/colors.rasi'
 
 [templates.hyprland]
 input_path = './templates/hyprland.conf'
 output_path = '~/.config/hypr/colors.conf'
 post_hook = 'hyprctl reload'
-
-[templates.mako]
-input_path = './templates/mako.ini'
-output_path = '~/.config/mako/config'
-post_hook = '/home/asif/.config/matugen/post_scripts/set_mako_opacity.sh && makoctl reload'
 
 [templates.btop]
 input_path = './templates/btop.theme'

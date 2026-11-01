@@ -4,11 +4,7 @@ nvim/.config/nvim/db_ui/
 openai.fish
 secrets.fish
 colors.conf
-mako/.config/mako/config
-waybar/.config/waybar/colors.css
 quickbar/.config/quickbar/colors.css
-inflight/.config/inflight/colors.css
-rofi/.config/rofi/colors.rasi
 scripts/.local/bin/claude
 node_modules/
 package-lock.json
