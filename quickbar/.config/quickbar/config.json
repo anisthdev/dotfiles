@@ -9,5 +9,12 @@
         "notes": "sticky_note_2",
         "jarvis": "auto_awesome"
     },
+    "glyphFonts": [
+        {
+            "name": "Lucide",
+            "font": "lucide",
+            "tags": "~/.local/share/lucide/tags.json"
+        }
+    ],
     "phoneMirror": "hyprctl eval 'require(\"scratchpads.phone\").toggle()'"
 }

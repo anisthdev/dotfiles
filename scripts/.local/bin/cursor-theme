@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Switch cursor theme everywhere (Hyprland, GTK 3/4, gsettings, xsettingsd, XCursor default).
+# Usage: cursor-theme [toggle|Totoro|OutLier-Lightsout-v2|current]
+
+THEMES=(Totoro OutLier-Lightsout-v2)
+SIZE=24
+DEFAULT_INDEX="$HOME/.local/share/icons/default/index.theme"
+
+current() { sed -n 's/^Inherits=//p' "$DEFAULT_INDEX" 2>/dev/null; }
+
+case "${1:-toggle}" in
+    current) current; exit 0 ;;
+    toggle) [ "$(current)" = "${THEMES[0]}" ] && theme=${THEMES[1]} || theme=${THEMES[0]} ;;
+    *) theme=$1 ;;
+esac
+
+if [ ! -d "$HOME/.local/share/icons/$theme/cursors" ] && [ ! -d "/usr/share/icons/$theme/cursors" ]; then
+    echo "cursor-theme: no cursor theme named '$theme'" >&2
+    exit 1
+fi
+
+hyprctl setcursor "$theme" "$SIZE" > /dev/null
+gsettings set org.gnome.desktop.interface cursor-theme "$theme"
+gsettings set org.gnome.desktop.interface cursor-size "$SIZE"
+for f in "$HOME/.config/gtk-3.0/settings.ini" "$HOME/.config/gtk-4.0/settings.ini"; do
+    [ -f "$f" ] && sed -i "s/^gtk-cursor-theme-name=.*/gtk-cursor-theme-name=$theme/" "$f"
+done
+xs="$HOME/.config/xsettingsd/xsettingsd.conf"
+[ -f "$xs" ] && sed -i "s/^Gtk\/CursorThemeName .*/Gtk\/CursorThemeName \"$theme\"/" "$xs"
+pkill -HUP -x xsettingsd 2> /dev/null
+printf '[Icon Theme]\nName=Default\nComment=Default Cursor Theme\nInherits=%s\n' "$theme" > "$DEFAULT_INDEX"
+
+notify-send "Cursor" "$theme" -i preferences-desktop-theme
