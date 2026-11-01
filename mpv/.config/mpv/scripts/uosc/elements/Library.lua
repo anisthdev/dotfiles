@@ -1,8 +1,7 @@
 local Element = require('elements/Element')
 
--- Start screen: rows of cards for ~/Videos, built by ~/Projects/reel/scan.py.
+-- Start screen: rows of cards for ~/Videos, built by reel's reel-scan.
 
-local SCAN_SCRIPT = mp.command_native({'expand-path', '~/Projects/reel/scan.py'})
 local LIBRARY_FILE = mp.command_native({'expand-path', '~/.cache/reel/library.json'})
 local WATCH_LATER_DIR = mp.command_native({'expand-path', '~~state/watch_later'})
 local WATCH_HISTORY = mp.command_native({'expand-path', mp.get_property('watch-history-path', '~~state/watch_history.jsonl')})
@@ -137,7 +136,7 @@ function Library:scan()
 	self.scanning = true
 	mp.command_native_async({
 		name = 'subprocess',
-		args = {'uv', 'run', '--quiet', '--script', SCAN_SCRIPT},
+		args = {'reel-scan'},
 		playback_only = false,
 		capture_stderr = true,
 	}, function(success, result)

@@ -1,4 +1,4 @@
-# The library's rows (scan.py in ~/Projects/reel), top to bottom, as mpv's
+# The library's rows (reel-scan, from reel), top to bottom, as mpv's
 # start screen shows them.
 #
 #   name  row heading (also the prefix for keys in overrides.json)
