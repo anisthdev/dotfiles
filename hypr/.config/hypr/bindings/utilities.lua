@@ -2,7 +2,7 @@ local mainMod = "SUPER + "
 local scriptDir = os.getenv("HOME") .. "/.local/bin/"
 
 -- quickbar's windows, through its IPC
-local quickbar = "qs -p $HOME/Projects/quickbar ipc call "
+local quickbar = "qs -c quickbar ipc call "
 local function shell(call)
 	return hl.dsp.exec_cmd(quickbar .. call)
 end
