@@ -8,5 +8,6 @@
         "terminal": "terminal",
         "notes": "sticky_note_2",
         "jarvis": "auto_awesome"
-    }
+    },
+    "phoneMirror": "hyprctl eval 'require(\"scratchpads.phone\").toggle()'"
 }

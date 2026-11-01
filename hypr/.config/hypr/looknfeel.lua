@@ -46,9 +46,10 @@ hl.config({
 	},
 })
 
--- blur for quickbar (and its full-screen overlays) and its notifications
+-- blur for quickbar (and its full-screen overlays), its notifications, and
+-- Seedling's and margin's menus, which look like quickbar's
 hl.layer_rule({
-	match = { namespace = "quickbar|quickbar-overlay|notifications" },
+	match = { namespace = "quickbar|quickbar-overlay|notifications|seedling|margin" },
 	blur = true,
 	ignore_alpha = 0.2,
 	blur_popups = true,
@@ -56,6 +57,7 @@ hl.layer_rule({
 
 -- no animation for these layers, since they are used for popups and selection and stuff
 hl.layer_rule({ match = { namespace = "glint|selection|hyprpicker" }, no_anim = true })
--- quickbar's full-screen overlays animate themselves; a layer slide would
--- carry the whole screen-sized surface off
-hl.layer_rule({ match = { namespace = "quickbar-overlay|quickbar-dialog" }, no_anim = true })
+-- quickbar's full-screen overlays (and Seedling's and margin's menus)
+-- animate themselves; a layer slide would carry the whole screen-sized
+-- surface off
+hl.layer_rule({ match = { namespace = "quickbar-overlay|quickbar-dialog|seedling|margin" }, no_anim = true })
