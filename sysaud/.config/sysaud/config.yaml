@@ -114,7 +114,11 @@ notify:
 events:
   power.ac-plugged:
     notify: false
-    script: glint --origin bottom-right --primary-color '{{colors.primary.default.hex}}'
+    # The colour is the wallpaper's (matugen writes primary-color here),
+    # else glint's own
+    script: >-
+      glint --origin bottom-right --primary-color
+      "$(cat "${XDG_CONFIG_HOME:-$HOME/.config}/sysaud/primary-color" 2>/dev/null || echo '#fff0b4')"
 
   power.ac-unplugged:
     notify: false

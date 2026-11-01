@@ -109,7 +109,7 @@ output_path = '~/.mozilla/firefox/asif/chrome/userContent.css'
 input_path = './templates/background.lua'
 output_path = '~/.config/nvim/lua/core/ui/background.lua'
 
+# The colour of sysaud's glint on plugging in (its config reads it)
 [templates.sysaud]
-input_path = './templates/sysaud.yaml'
-output_path = '~/.config/sysaud/config.yaml'
-post_hook = 'systemctl --user reload sysaud.service'
+input_path = './templates/primary-color'
+output_path = '~/.config/sysaud/primary-color'
