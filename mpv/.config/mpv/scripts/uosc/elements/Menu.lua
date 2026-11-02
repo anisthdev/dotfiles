@@ -303,6 +303,7 @@ function Menu:update_content_dimensions()
 	self.font_size = round(self.item_height * 0.48)
 	self.font_size_hint = self.font_size - 1
 	self.item_padding = round((self.item_height - self.font_size) * 0.6)
+	self.item_spacing = round(options.controls_spacing * state.scale)
 	self.scroll_step = self.item_height + self.item_spacing
 
 	local title_opts = {size = self.font_size, italic = false, bold = false}
@@ -869,7 +870,7 @@ function search_items(items, query, recursive, prefix)
 
 		if item.selectable ~= false and not (item.items and recursive) and not seen[item] then
 			local bold = item.bold or options.font_bold
-			local font_color = item.active and fgt or bgt
+			local font_color = bgt
 			local ass_safe_title = highlight_match(matched_title, positions, font_color, bold) or nil
 			local new_item = table_assign({}, item)
 			new_item.title = prefixed_title
@@ -884,7 +885,7 @@ function search_items(items, query, recursive, prefix)
 		local title = item.title and item.title:lower()
 		local hint = item.hint and item.hint:lower()
 		local bold = item.bold or options.font_bold
-		local font_color = item.active and fgt or bgt
+		local font_color = bgt
 		local ass_safe_title = nil
 		local prefixed_title = prefix and prefix .. ' / ' .. (item.title or '') or item.title
 		if item.selectable ~= false and not (item.items and recursive) and not seen[item] then
@@ -1408,7 +1409,7 @@ function Menu:render()
 		ass:rect(bg_rect.ax, bg_rect.ay, bg_rect.bx, bg_rect.by, {
 			color = bg,
 			opacity = menu_opacity * config.opacity.menu,
-			radius = state.radius > 0 and math.min(state.radius + self.padding, state.radius * 3) or 0,
+			radius = round(UI_RADIUS * state.scale) + self.padding,
 		})
 
 		if is_parent then
@@ -1422,7 +1423,9 @@ function Menu:render()
 			local thumb_y = content_rect.ay + 1 + ((menu.scroll_y / menu.scroll_height) * (groove_height - thumb_height))
 			local sax = content_rect.bx - round(self.scrollbar_size / 2)
 			local sbx = sax + self.scrollbar_size
-			ass:rect(sax, thumb_y, sbx, thumb_y + thumb_height, {color = fg, opacity = menu_opacity * 0.8})
+			ass:rect(sax, thumb_y, sbx, thumb_y + thumb_height, {
+				color = fg, opacity = menu_opacity * 0.5, radius = self.scrollbar_size / 2,
+			})
 		end
 
 		-- Draw submenu if selected
@@ -1472,34 +1475,34 @@ function Menu:render()
 			local next_item = menu.items[index + 1]
 			local next_is_active = next_item and next_item.active
 			local next_has_background = menu.selected_index == index + 1 or next_is_active
-			local font_color = item.active and fgt or bgt
+			local font_color = bgt
 			local actions = is_selected and (item.actions or menu.item_actions) -- not nil = actions are visible
 			local action = actions and actions[menu.action_index] -- not nil = action is selected
 
 			if action then selected_action = action end
 
-			-- Separator
-			if item_by < content_rect.by and ((not has_background and not next_has_background) or item.separator) then
-				local ay, by = item_by, item_by + self.separator_size
-				if has_background then
-					ay, by = ay + self.separator_size, by + self.separator_size
-				elseif next_has_background then
-					ay, by = ay - self.separator_size, by - self.separator_size
-				end
-				ass:rect(
-					content_rect.ax + self.item_padding, ay, content_rect.bx - self.item_padding, by,
-					{color = fg, opacity = menu_opacity * (item.separator and 0.13 or 0.04)}
-				)
+			-- Explicit separators only: rows are told apart by spacing, like the controls row
+			if item.separator and item_by < content_rect.by then
+				local ay = item_by + math.floor(self.item_spacing / 2)
+				ass:rect(content_rect.ax + self.item_padding, ay, content_rect.bx - self.item_padding, ay + self.separator_size, {
+					color = fg, opacity = menu_opacity * 0.12,
+				})
 			end
 
-			-- Background
-			local highlight_opacity = 0 + (item.active and 0.8 or 0) + (is_selected and 0.15 or 0)
+			-- Highlight: the controls' hover tint, rounded like a pill
+			local row_radius = round(UI_RADIUS * state.scale)
+			local highlight_opacity = (is_selected and 0.15 or 0) + (item.active and 0.06 or 0)
 			if highlight_opacity > 0 then
 				ass:rect(content_rect.ax, item_ay, content_rect.bx, item_by, {
-					radius = state.radius,
-					color = fg,
-					opacity = highlight_opacity * menu_opacity,
-					clip = item_clip,
+					radius = row_radius, color = fg, opacity = highlight_opacity * menu_opacity, clip = item_clip,
+				})
+			end
+
+			-- Active: accent dot in the row's leading padding, like an active control button
+			if item.active then
+				local dot_radius = math.max(1.5, 2 * state.scale)
+				ass:circle(content_rect.ax + self.item_padding / 2, item_center_y, dot_radius, {
+					color = config.color.position or fg, opacity = menu_opacity, clip = item_clip,
 				})
 			end
 
@@ -1511,7 +1514,7 @@ function Menu:render()
 				local place = item.actions_place or menu.item_actions_place
 				local margin = self.gap * 2
 				local size = item_by - item_ay - margin * 2
-				local rect_width = size * #actions + margin * (#actions - 1)
+				local rect_width = size * #actions + self.gap * (#actions - 1)
 
 				-- Place actions outside of menu when requested and there's enough space for it
 				actions_rect = {
@@ -1530,7 +1533,7 @@ function Menu:render()
 					-- Hide when the action shouldn't be displayed when the item is a result of a search/filter
 					if not (action.filter_hidden and menu.search) then
 						local is_active = action_index == menu.action_index
-						local bx = actions_rect.ax - (i == 1 and 0 or margin)
+						local bx = actions_rect.ax - (i == 1 and 0 or self.gap)
 						local rect = {
 							ay = actions_rect.ay,
 							by = actions_rect.by,
@@ -1539,16 +1542,22 @@ function Menu:render()
 						}
 						actions_rect.ax = rect.ax
 
+						-- Grouped segments: outer corners at the group's ends, inner where they meet
+						local outer, inner = round(UI_RADIUS * state.scale), round(UI_RADIUS_INNER * state.scale)
+						local corners = {
+							(action_index == 1 or is_active) and outer or inner,
+							(action_index == #actions or is_active) and outer or inner,
+						}
+						if actions_rect.is_outside then
+							ass:rect(rect.ax, rect.ay, rect.bx, rect.by, {
+								color = bg, opacity = menu_opacity * config.opacity.menu, corners = corners, clip = item_clip,
+							})
+						end
 						ass:rect(rect.ax, rect.ay, rect.bx, rect.by, {
-							radius = state.radius > 2 and state.radius - 1 or state.radius,
-							color = is_active and fg or bg,
-							border = is_active and self.gap or nil,
-							border_color = bg,
-							opacity = menu_opacity,
-							clip = item_clip,
+							color = fg, opacity = menu_opacity * (is_active and 0.25 or 0.1), corners = corners, clip = item_clip,
 						})
 						ass:icon(rect.ax + size / 2, rect.ay + size / 2, size * 0.66, action.icon, {
-							color = is_active and bg or fg, opacity = menu_opacity, clip = item_clip,
+							color = fg, opacity = menu_opacity, clip = item_clip,
 						})
 
 						-- Re-use rect as a hitbox by growing it so it bridges gaps to prevent flickering
@@ -1570,17 +1579,6 @@ function Menu:render()
 				end
 
 				title_clip_bx = actions_rect.ax - self.gap * 2
-			end
-
-			-- Selected item indicator line
-			if is_selected and not selected_action then
-				local size = round(2 * state.scale)
-				local v_padding = math.min(state.radius, math.ceil(self.item_height / 3))
-				ass:rect(
-					content_rect.ax - size - 1, item_ay + v_padding,
-					content_rect.ax - 1, item_by - v_padding,
-					{radius = 1 * state.scale, color = fg, opacity = menu_opacity, clip = item_clip}
-				)
 			end
 
 			-- Icon
@@ -1644,8 +1642,7 @@ function Menu:render()
 				ass:txt(title_x, item_center_y, align, item.ass_safe_title, {
 					size = self.font_size,
 					color = font_color,
-					italic = item.italic,
-					bold = item.bold,
+					weight = item.bold and 600 or nil,
 					wrap = 2,
 					opacity = menu_opacity * (item.muted and 0.5 or 1),
 					clip = clip,
@@ -1668,16 +1665,13 @@ function Menu:render()
 			local text = selected_action and selected_action.label or is_icon_hovered and menu.footnote
 			local opacity = (is_icon_hovered and 1 or 0.5) * menu_opacity
 			ass:icon(icon_x, icon_y, self.font_size, is_icon_hovered and 'help' or 'help_outline', {
-				color = fg, border = state.scale, border_color = bg, opacity = opacity,
+				color = fg, opacity = opacity,
 			})
 			if text then
 				ass:txt(icon_x + self.font_size * 0.75, icon_y, 4, text, {
 					size = self.font_size,
 					color = fg,
-					border = state.scale,
-					border_color = bg,
 					opacity = menu_opacity,
-					italic = true,
 				})
 			end
 		end
@@ -1697,11 +1691,6 @@ function Menu:render()
 			if menu.title and not menu.ass_safe_title then
 				menu.ass_safe_title = ass_escape(menu.title)
 			end
-
-			-- Separator
-			ass:rect(
-				rect.ax, rect.by, rect.bx, rect.by + self.separator_size, {color = fg, opacity = menu_opacity * 0.2}
-			)
 
 			-- Blur selection (also activates search input) when user clicks title
 			if is_current then
@@ -1760,7 +1749,6 @@ function Menu:render()
 						or (requires_submit and t('type & ctrl+enter to search') or t('type to search'))
 					ass:txt(rect.bx, rect.cy, 6, placeholder, {
 						size = self.font_size,
-						italic = true,
 						color = bgt,
 						wrap = 2,
 						opacity = menu_opacity * 0.4,
@@ -1789,7 +1777,7 @@ function Menu:render()
 			else
 				ass:txt(rect.cx, rect.cy, 5, menu.ass_safe_title, {
 					size = self.font_size,
-					bold = true,
+					weight = 600,
 					color = bgt,
 					wrap = 2,
 					opacity = menu_opacity,
