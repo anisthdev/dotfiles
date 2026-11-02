@@ -1029,13 +1029,14 @@ function render()
 
 	-- Idle indicator
 	if state.is_idle and not Manager.disabled.idle_indicator and not Elements:v('library', 'enabled') then
-		local smaller_side = math.min(display.width, display.height)
-		local center_x, center_y, icon_size = display.width / 2, display.height / 2, math.max(smaller_side / 4, 56)
-		ass:icon(center_x, center_y - icon_size / 4, icon_size, 'not_started', {
-			color = fg, opacity = config.opacity.idle_indicator,
-		})
-		ass:txt(center_x, center_y + icon_size / 2, 8, t('Drop files or URLs to play here'), {
-			size = icon_size / 4, color = fg, opacity = config.opacity.idle_indicator,
+		-- A faintly tinted circle like the pause indicator, the hint below at menu text size
+		local diameter = round(options.controls_size * state.scale * 2)
+		local center_x, center_y = display.width / 2, display.height / 2 - diameter / 3
+		local opacity = config.opacity.idle_indicator
+		ass:circle(center_x, center_y, diameter / 2, {color = fg, opacity = opacity * 0.12})
+		ass:icon(center_x, center_y, diameter * 0.7, 'play_arrow', {color = fg, opacity = opacity})
+		ass:txt(center_x, center_y + diameter / 2 + round(16 * state.scale), 8, t('Drop files or URLs to play here'), {
+			size = round(options.menu_item_height * state.scale * 0.48), color = fg, opacity = opacity * 0.7,
 		})
 	end
 
