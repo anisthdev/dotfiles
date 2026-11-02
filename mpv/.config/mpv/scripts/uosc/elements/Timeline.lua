@@ -389,12 +389,11 @@ function Timeline:render()
 				(hovered_seconds - state.start_time) or hovered_seconds
 			mp.commandv('script-message-to', 'thumbfast', 'thumb', thumb_seconds, thumb_x, thumb_y)
 			self.has_thumbnail, rendered_thumbnail = true, true
-			-- The time as plain text right above the picture, on a soft shadow
+			-- The time as plain text right above the picture
 			-- (thumbfast's overlay covers anything drawn inside the picture)
 			local draw_time = time_opts.timestamp and ass.timestamp or ass.txt
 			draw_time(ass, thumb_x + thumbnail.width / 2, thumb_y - round(tooltip_gap / 2), 2, hovered_time_human, {
-				size = self.font_size, color = fg, shadow = round(1.5 * state.scale), shadow_color = bg,
-				opacity = {main = 1, shadow = 0.6},
+				size = self.font_size, color = fg,
 			})
 		else
 			time_opts.responsive = false
