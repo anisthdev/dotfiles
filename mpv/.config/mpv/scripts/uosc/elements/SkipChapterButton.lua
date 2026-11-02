@@ -36,14 +36,15 @@ function SkipChapterButton:update_dimensions()
 	end
 
 	self.label = range.title or t('Skip')
-	self.font_size = round(18 * state.scale * options.font_scale)
-	self.icon_size = round(self.font_size * 1.15)
-	self.padding_x = round(14 * state.scale)
-	self.gap = round(6 * state.scale)
-	self.margin = round(10 * state.scale)
-	self.height = round(34 * state.scale)
+	-- Sized like the chapter pill in the controls row
+	self.height = round(options.controls_size * state.scale)
+	self.font_size = round(self.height * 0.45 * options.font_scale)
+	self.icon_size = round(self.font_size * 0.85)
+	self.padding_x = round(self.height * 0.4)
+	self.gap = round(self.height * 0.15)
+	self.margin = round(options.controls_margin * state.scale)
 
-	local label_width = text_width(self.label, {size = self.font_size, bold = options.font_bold})
+	local label_width = text_width(self.label, {size = self.font_size, bold = true})
 	local width = math.ceil(self.padding_x * 2 + label_width + self.gap + self.icon_size)
 	local x = display.width - Elements:v('window_border', 'size', 0) - self.margin - width
 	local anchor_y = Elements:v('timeline', 'ay') or Elements:v('controls', 'ay')
@@ -64,30 +65,21 @@ function SkipChapterButton:render()
 
 	local ass = assdraw.ass_new()
 	local is_hover = self.proximity_raw <= 0
-	local background_opacity = math.max(config.opacity.controls, is_hover and 0.45 or 0.35)
-	local foreground = is_hover and bg or fg
-	local background = is_hover and fg or bg
 	local cy = self.ay + self.height / 2
+	local radius = round(UI_RADIUS * state.scale)
 
-	ass:rect(self.ax, self.ay, self.bx, self.by, {
-		color = background,
-		opacity = visibility * background_opacity,
-		radius = state.radius,
-		border = 1,
-		border_color = fg,
-	})
+	-- A solid accent pill with dark text: the one control that asks for attention.
+	-- Hovered, it dims a little toward the background.
+	local accent = config.color.position or fg
+	ass:rect(self.ax, self.ay, self.bx, self.by, {color = accent, opacity = visibility, radius = radius})
+	if is_hover then
+		ass:rect(self.ax, self.ay, self.bx, self.by, {color = bg, opacity = visibility * 0.12, radius = radius})
+	end
 	ass:txt(self.ax + self.padding_x, cy, 4, self.label, {
-		size = self.font_size,
-		color = foreground,
-		border = options.text_border * state.scale,
-		border_color = background,
-		opacity = visibility,
+		size = self.font_size, weight = 600, color = bg, opacity = visibility,
 	})
 	ass:icon(self.bx - self.padding_x - self.icon_size / 2, cy, self.icon_size, 'skip_next', {
-		color = foreground,
-		border = options.text_border * state.scale,
-		border_color = background,
-		opacity = visibility,
+		color = bg, opacity = visibility,
 	})
 
 	return ass
