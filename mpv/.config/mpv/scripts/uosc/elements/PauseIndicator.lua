@@ -63,19 +63,14 @@ function PauseIndicator:render()
 		ass:rect(0, 0, display.width, display.height, {color = bg, opacity = self.opacity * 0.3})
 	end
 
-	-- Icon
-	local size = round(math.min(display.width, display.height) * (self.fadeout and 0.20 or 0.15))
-	size = size + size * (1 - self.opacity)
-
-	if self.paused then
-		ass:icon(display.width / 2, display.height / 2, size, 'pause',
-			{border = 1, opacity = self.base_icon_opacity * self.opacity}
-		)
-	else
-		ass:icon(display.width / 2, display.height / 2, size, 'play_arrow',
-			{border = 1, opacity = self.base_icon_opacity * self.opacity}
-		)
-	end
+	-- A dark translucent circle, twice the controls' height, with the icon inside;
+	-- it grows a little as it fades out
+	local diameter = round(options.controls_size * state.scale * 2)
+	diameter = diameter + diameter * 0.25 * (1 - self.opacity)
+	local cx, cy = display.width / 2, display.height / 2
+	local opacity = self.base_icon_opacity * self.opacity
+	ass:circle(cx, cy, diameter / 2, {color = bg, opacity = opacity * math.max(config.opacity.controls, 0.6)})
+	ass:icon(cx, cy, diameter * 0.7, self.paused and 'pause' or 'play_arrow', {color = fg, opacity = opacity})
 
 	return ass
 end
