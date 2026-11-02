@@ -423,8 +423,8 @@ function Controls:update_dimensions()
 	local width_for_gaps = math.min(empty_space_width, size * gaps)
 	local individual_space_width = spaces > 0 and ((empty_space_width - width_for_gaps) / spaces) or 0
 
-	-- Buttons next to each other form a group of segments: only the group's ends get
-	-- round corners. Anything else, like gaps and spaces, ends the group.
+	-- Buttons next to each other form one pill: only the group's ends get round
+	-- corners. Anything else, like gaps and spaces, ends the group.
 	local previous_button = nil
 
 	for c, control in ipairs(self.layout) do
@@ -454,7 +454,8 @@ function Controls:update_dimensions()
 			end
 
 			local bx = current_x + width
-			if element then element:set_coordinates(round(current_x), round(self.by - height), bx, self.by) end
+			-- Whole pixels, so grouped buttons' backgrounds meet without a seam
+			if element then element:set_coordinates(round(current_x), round(self.by - height), round(bx), self.by) end
 			current_x = element and bx + spacing or bx
 		end
 	end

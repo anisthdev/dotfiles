@@ -39,24 +39,24 @@ function Button:handle_cursor_click()
 	mp.add_timeout(0.01, self.on_click)
 end
 
--- Segment background: round outer corners, tight inner ones, fully round and lighter
--- when highlighted
+-- Buttons next to each other share one pill: each draws its stretch of the background
+-- across the gap to the next button, and only the group's ends are rounded. Hovered,
+-- a button gets its own fully round tint inside the pill.
 ---@param ass table
 ---@param visibility number
 ---@param is_highlighted boolean
 function Button:render_segment(ass, visibility, is_highlighted)
-	local outer, inner = round(UI_RADIUS * state.scale), round(UI_RADIUS_INNER * state.scale)
-	local corners = {
-		(self.group_first or is_highlighted) and outer or inner,
-		(self.group_last or is_highlighted) and outer or inner,
-	}
+	local outer = round(UI_RADIUS * state.scale)
 	if config.opacity.controls > 0 then
-		ass:rect(self.ax, self.ay, self.bx, self.by, {
-			color = self.background, opacity = visibility * config.opacity.controls, corners = corners,
+		local bx = self.group_last and self.bx or self.bx + round(options.controls_spacing * state.scale)
+		ass:rect(self.ax, self.ay, bx, self.by, {
+			color = self.background,
+			opacity = visibility * config.opacity.controls,
+			corners = {self.group_first and outer or 0, self.group_last and outer or 0},
 		})
 	end
 	if is_highlighted then
-		ass:rect(self.ax, self.ay, self.bx, self.by, {color = self.foreground, opacity = visibility * 0.15, corners = corners})
+		ass:rect(self.ax, self.ay, self.bx, self.by, {color = self.foreground, opacity = visibility * 0.15, radius = outer})
 	end
 end
 
