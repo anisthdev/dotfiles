@@ -1,7 +1,7 @@
 local Button = require('elements/Button')
 
--- Playback speed as a compact label in the controls row. Click opens a speed menu,
--- the wheel steps by `speed_step`, right click resets to 1×.
+-- Playback speed in the controls row: an icon at 1×, the speed as a label otherwise.
+-- Click opens a speed menu, the wheel steps by `speed_step`, right click resets to 1×.
 
 local SPEEDS = {0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3}
 
@@ -22,9 +22,11 @@ function SpeedButton:init(id, props)
 	self:observe_mp_property('speed', function() self:update_label() end)
 end
 
+-- A gauge icon at normal speed; the speed itself as a label once it's changed
 function SpeedButton:update_label()
-	self.label = format_speed(state.speed)
-	self.label_dim = math.abs(state.speed - 1) < 0.001
+	local is_normal = math.abs(state.speed - 1) < 0.001
+	self.icon = 'speed'
+	self.label = not is_normal and format_speed(state.speed) or nil
 	request_render()
 end
 

@@ -68,6 +68,8 @@ defaults = {
 	scale = 1,
 	scale_fullscreen = 1.3,
 	font_scale = 1,
+	-- Icon set: material, or a set built by tools/build-icon-set.py (e.g. lucide)
+	icon_set = 'material',
 	text_border = 1.2,
 	border_radius = 4,
 	color = '',

@@ -6,6 +6,18 @@ local ass_mt = getmetatable(assdraw.ass_new())
 -- built by tools/build-icons.py. Icons are drawn by name.
 ICON_FONT = 'material-symbols-mpv'
 
+-- Alternative icon set (`icon_set` option): a font plus a map from these icon names to its
+-- glyphs, built by tools/build-icon-set.py. Names it doesn't map stay on ICON_FONT.
+local ICON_SET = nil
+if options.icon_set ~= '' and options.icon_set ~= 'material' then
+	local ok, set = pcall(require, 'lib/icon-sets/' .. options.icon_set)
+	if ok then
+		ICON_SET = set
+	else
+		msg.warn('icon_set "' .. options.icon_set .. '" not found, using material: ' .. tostring(set))
+	end
+end
+
 -- Corner radii from the quickbar shell: items and pills use UI_RADIUS, and grouped
 -- segments keep UI_RADIUS_INNER where they meet
 UI_RADIUS = 10
@@ -47,7 +59,13 @@ end
 ---@param opts? {color?: string; border?: number; border_color?: string; opacity?: number; clip?: string; align?: number; font?: string}
 function ass_mt:icon(x, y, size, name, opts)
 	opts = opts or {}
-	opts.font, opts.size, opts.bold = opts.font or ICON_FONT, size, false
+	local glyph = not opts.font and ICON_SET and ICON_SET.glyphs[name]
+	if glyph then
+		opts.font, name, size = ICON_SET.font, glyph, size * (ICON_SET.scale or 1)
+	else
+		opts.font = opts.font or ICON_FONT
+	end
+	opts.size, opts.bold = size, false
 	self:txt(x, y, opts.align or 5, name, opts)
 end
 

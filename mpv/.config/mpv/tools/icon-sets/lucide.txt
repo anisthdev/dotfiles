@@ -1,0 +1,99 @@
+# uosc icon name (Material Symbols) -> Lucide icon name (lucide.dev/icons)
+# Names missing here fall back to the Material font.
+
+# Drawing size relative to Material: Lucide's shapes fill more of their em square
+@scale 0.75
+
+# Playback
+play_arrow        play
+pause             pause
+play_circle       circle-play
+not_started       circle-play
+skip_next         skip-forward
+skip_previous     skip-back
+first_page        arrow-left-to-line
+last_page         arrow-right-to-line
+navigate_before   chevron-left
+navigate_next     chevron-right
+repeat            repeat
+repeat_one        repeat-1
+shuffle           shuffle
+speed             gauge
+stop              square
+
+# Sound
+volume_up         volume-2
+volume_down       volume-1
+volume_mute       volume
+volume_off        volume-x
+speaker           speaker
+graphic_eq        audio-lines
+
+# Tracks and lists
+subtitles         captions
+closed_caption    captions
+movie             clapperboard
+video_library     list-video
+playlist_play     list-video
+playlist_add      list-plus
+bookmark          bookmark
+bookmarks         book-marked
+tune              sliders-horizontal
+stream            radio
+language          languages
+translate         languages
+image             image
+hdr_auto          sparkles
+
+# Window and layout
+fullscreen        maximize
+fullscreen_exit   minimize
+menu              menu
+check_box_outline_blank square
+remove            minus
+close             x
+home              house
+palette           palette
+vertical_align_top arrow-up-to-line
+
+# Menus and actions
+chevron_right     chevron-right
+chevron_left      chevron-left
+expand_more       chevron-down
+expand_less       chevron-up
+arrow_upward      arrow-up
+arrow_downward    arrow-down
+arrow_back        arrow-left
+arrow_forward     arrow-right
+move_up           arrow-up
+move_down         arrow-down
+check             check
+check_circle      circle-check
+cancel            circle-x
+add               plus
+edit              pencil
+delete            trash-2
+refresh           refresh-cw
+autorenew         refresh-cw
+cached            refresh-cw
+search            search
+download          download
+file_download     download
+folder            folder
+folder_open       folder-open
+open_in_new       external-link
+open_in_browser   globe
+content_copy      copy
+content_paste     clipboard
+link              link
+schedule          clock
+settings          settings
+info              info
+warning           triangle-alert
+error             circle-alert
+help              circle-help
+help_outline      circle-help
+help_center       circle-help
+radio_button_unchecked circle
+radio_button_checked   circle-dot
+check_box         square-check

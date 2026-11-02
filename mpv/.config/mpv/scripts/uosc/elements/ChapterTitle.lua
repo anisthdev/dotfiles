@@ -27,9 +27,10 @@ function ChapterTitle:render()
 	local padding = round(height * 0.4)
 	local icon_size = round(height * 0.5)
 	local text_ax = self.ax + padding
-	local max_text_width = self.bx - self.ax - padding * 2 - icon_size
+	local max_text_width = self.bx - self.ax - padding * 2 - icon_size - round(height * 0.08)
 	local text_bx = text_ax + math.min(text_width(chapter.title, text_opts), max_text_width)
-	local pill = {ax = self.ax, ay = self.ay, bx = round(text_bx + icon_size + padding * 0.6), by = self.by}
+	local icon_gap = round(height * 0.08)
+	local pill = {ax = self.ax, ay = self.ay, bx = round(text_bx + icon_gap + icon_size + padding * 0.6), by = self.by}
 	local is_hover = get_point_to_rectangle_proximity(cursor, pill) <= 0
 
 	-- Deferred like Button clicks, so the opening menu doesn't catch this same click
@@ -46,7 +47,7 @@ function ChapterTitle:render()
 
 	text_opts.clip = string.format('\\clip(%d,%d,%d,%d)', self.ax, self.ay, round(text_bx), self.by)
 	ass:txt(text_ax, cy, 4, chapter.title, text_opts)
-	ass:icon(text_bx + icon_size / 2, cy, icon_size, 'chevron_right', {color = fg, opacity = visibility * 0.9})
+	ass:icon(text_bx + icon_gap + icon_size / 2, cy, icon_size, 'chevron_right', {color = fg, opacity = visibility * 0.9})
 	return ass
 end
 
