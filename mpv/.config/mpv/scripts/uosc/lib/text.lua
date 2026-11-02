@@ -599,8 +599,9 @@ function highlight_match(text, byte_positions, font_color, bold)
 	end
 
 	table.sort(byte_positions)
-	local start_tag = '{\\c&H' .. config.color.match .. '&\\b' .. (bold and '1' or '0') .. '}'
-	local end_tag   = '{\\c&H' .. font_color .. '&}'
+	-- Matched letters in the match colour and bold, the rest back to normal
+	local start_tag = '{\\c&H' .. config.color.match .. '&\\b700}'
+	local end_tag   = '{\\c&H' .. font_color .. '&\\b' .. (bold and '600' or '0') .. '}'
 
 	local result = {}
 	local pos_set = {}

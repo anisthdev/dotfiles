@@ -300,7 +300,12 @@ function Menu:update_content_dimensions()
 	self.padding = round(options.menu_padding * state.scale)
 	self.gap = round(2 * state.scale)
 	-- Not scaled by font_scale: menus keep uosc's original text size
-	self.font_size = round(self.item_height * 0.48)
+	self.font_size = round(self.item_height * 0.44)
+	-- quickbar's header: a title, then the filter field
+	self.title_size = round(self.font_size * 1.3)
+	self.title_row = round(self.title_size * 1.4)
+	self.field_height = round(self.item_height * 0.9)
+	self.header_gap = round(6 * state.scale)
 	self.font_size_hint = self.font_size - 1
 	self.item_padding = round((self.item_height - self.font_size) * 0.6)
 	self.item_spacing = round(options.controls_spacing * state.scale)
@@ -331,6 +336,15 @@ function Menu:update_content_dimensions()
 	self:update_dimensions()
 end
 
+-- Height of a menu's header: its title, then the filter field unless search is off
+---@param menu MenuStack
+function Menu:header_height(menu)
+	local height = 0
+	if menu.title and menu.title ~= '' then height = height + self.title_row + self.header_gap end
+	if menu.search or menu.search_style ~= 'disabled' then height = height + self.field_height + self.header_gap end
+	return height
+end
+
 function Menu:update_dimensions()
 	-- Coordinates and sizes are of the scrollable area. Title is rendered
 	-- above it, so we need to account for that in max_height and ay position.
@@ -345,8 +359,7 @@ function Menu:update_dimensions()
 	for _, menu in ipairs(self.all) do
 		local width = math.max(menu.search and menu.search.max_width or 0, menu.max_width)
 		menu.width = round(clamp(min_width, width, width_available))
-		local title_height = (menu.is_root and menu.title or menu.search) and
-			self.scroll_step + self.separator_size + 1 or 0
+		local title_height = self:header_height(menu)
 		local footnote_height = self.font_size * 1.5
 		local max_height = height_available - title_height - footnote_height
 		local content_height = self.scroll_step * #menu.items
@@ -1228,7 +1241,60 @@ function Menu:enable_key_bindings()
 		end
 	end
 
+	-- quickbar's vim keys; while searching, the letters type instead
+	for _, key in ipairs({'j', 'k', 'ctrl+d', 'ctrl+u', 'g', 'G', 'l', 'h', 'i', 'q'}) do
+		local handler = self:create_action(function(info) self:handle_vim_key(key, info) end)
+		local repeatable = key == 'j' or key == 'k' or key == 'ctrl+d' or key == 'ctrl+u'
+		self:add_key_binding(key, {handler, {repeatable = repeatable, complex = true}})
+	end
+
 	self:search_ensure_key_bindings()
+end
+
+-- Vim keys, as in quickbar's menus: j/k move, gg/G go to the ends, Ctrl+d/Ctrl+u by
+-- half a page, l picks, h goes back, i searches (like /), q closes.
+---@param key string
+---@param info ComplexBindingInfo
+function Menu:handle_vim_key(key, info)
+	if not self:is_alive() or info.event == 'up' then return end
+	local menu = self.current
+	if menu.search then
+		if #key == 1 then self:search_query_insert(key) end
+		return
+	end
+	self.mouse_nav = false
+	local half_page = math.max(1, math.floor(menu.height / self.scroll_step / 2))
+	if key == 'j' then
+		self:navigate_by_items(1, true)
+	elseif key == 'k' then
+		self:navigate_by_items(-1, true)
+	elseif key == 'ctrl+d' then
+		self:navigate_by_items(half_page, true)
+	elseif key == 'ctrl+u' then
+		self:navigate_by_items(-half_page, true)
+	elseif key == 'G' then
+		self:navigate_by_items(math.huge)
+	elseif key == 'g' then
+		-- gg: two presses within half a second
+		local now = mp.get_time()
+		if self.last_g_press and now - self.last_g_press < 0.5 then
+			self.last_g_press = nil
+			self:navigate_by_items(-math.huge)
+		else
+			self.last_g_press = now
+		end
+	elseif key == 'l' then
+		if menu.selected_index and menu.items[menu.selected_index] then
+			self:activate_selected_item(create_shortcut('enter'))
+		end
+	elseif key == 'h' then
+		self:back()
+	elseif key == 'i' then
+		self:search_start()
+	elseif key == 'q' then
+		self:close()
+	end
+	request_render()
 end
 
 -- Handles all key and mouse button shortcuts, except unicode inputs.
@@ -1294,8 +1360,11 @@ function Menu:handle_shortcut(shortcut, info)
 	elseif id == '/' or id == 'kp_divide' or id == 'ctrl+f' then
 		self:search_start()
 	elseif key == 'esc' then
+		-- The search goes first, then a submenu, then the menu, as in quickbar
 		if menu.search and menu.search_style ~= 'palette' then
 			self:search_cancel()
+		elseif menu.parent_menu then
+			self:back()
 		else
 			self:close()
 		end
@@ -1393,13 +1462,13 @@ function Menu:render()
 			by = menu.top + menu.height,
 		}
 		-- local ax, ay, bx, by = x + self.padding, menu.top, x + menu.width + self.padding, menu.top + menu.height
-		local draw_title = menu.is_root and menu.title or menu.search
+		local header_height = self:header_height(menu)
 		local scroll_clip = '\\clip(0,' .. content_rect.ay .. ',' .. display.width .. ',' .. content_rect.by .. ')'
 		local start_index = math.floor(menu.scroll_y / self.scroll_step) + 1
 		local end_index = math.ceil((menu.scroll_y + menu.height) / self.scroll_step)
 		local bg_rect = {
 			ax = x,
-			ay = content_rect.ay - (draw_title and self.scroll_step or 0) - self.padding,
+			ay = content_rect.ay - header_height - self.padding,
 			bx = content_rect.bx + self.padding,
 			by = content_rect.by + self.padding,
 		}
@@ -1481,30 +1550,19 @@ function Menu:render()
 
 			if action then selected_action = action end
 
-			-- Explicit separators only: rows are told apart by spacing, like the controls row
-			if item.separator and item_by < content_rect.by then
-				local ay = item_by + math.floor(self.item_spacing / 2)
-				ass:rect(content_rect.ax + self.item_padding, ay, content_rect.bx - self.item_padding, ay + self.separator_size, {
-					color = fg, opacity = menu_opacity * 0.12,
-				})
-			end
-
-			-- Highlight: the controls' hover tint, rounded like a pill
-			local row_radius = round(UI_RADIUS * state.scale)
-			local highlight_opacity = (is_selected and 0.15 or 0) + (item.active and 0.06 or 0)
-			if highlight_opacity > 0 then
-				ass:rect(content_rect.ax, item_ay, content_rect.bx, item_by, {
-					radius = row_radius, color = fg, opacity = highlight_opacity * menu_opacity, clip = item_clip,
-				})
-			end
-
-			-- Active: accent dot in the row's leading padding, like an active control button
-			if item.active then
-				local dot_radius = math.max(1.5, 2 * state.scale)
-				ass:circle(content_rect.ax + self.item_padding / 2, item_center_y, dot_radius, {
-					color = config.color.position or fg, opacity = menu_opacity, clip = item_clip,
-				})
-			end
+			-- A grouped list, as quickbar's: tinted rows with round outer corners and tight
+			-- ones where they meet; a separator starts a new group. The selected row is
+			-- brighter, the active item a little tinted, and both round all over.
+			local outer, inner = round(UI_RADIUS * state.scale), round(UI_RADIUS_INNER * state.scale)
+			local previous_item = menu.items[index - 1]
+			local group_top = index == 1 or (previous_item and previous_item.separator)
+			local group_bottom = index == #menu.items or item.separator
+			local round_all = is_selected or item.active
+			local top, bottom = (group_top or round_all) and outer or inner, (group_bottom or round_all) and outer or inner
+			local fill = is_selected and (item.active and 0.26 or 0.2) or item.active and 0.11 or 0.05
+			ass:rect(content_rect.ax, item_ay, content_rect.bx, item_by, {
+				color = fg, opacity = fill * menu_opacity, corners = {top, top, bottom, bottom}, clip = item_clip,
+			})
 
 			local title_clip_bx = content_bx
 
@@ -1642,7 +1700,7 @@ function Menu:render()
 				ass:txt(title_x, item_center_y, align, item.ass_safe_title, {
 					size = self.font_size,
 					color = font_color,
-					weight = item.bold and 600 or nil,
+					weight = (item.bold or item.active) and 600 or nil,
 					wrap = 2,
 					opacity = menu_opacity * (item.muted and 0.5 or 1),
 					clip = clip,
@@ -1676,113 +1734,81 @@ function Menu:render()
 			end
 		end
 
-		-- Menu title
-		if draw_title then
-			local requires_submit = menu.search_debounce == 'submit'
-			local rect = {
-				ax = content_rect.ax,
-				ay = content_rect.ay - self.scroll_step - self.separator_size - 1,
-				bx = content_rect.bx,
-				by = content_rect.ay - self.separator_size - 1,
-			}
-			-- Centers
-			rect.cx, rect.cy = round(rect.ax + (rect.bx - rect.ax) / 2), round(rect.ay + (rect.by - rect.ay) / 2)
-
-			if menu.title and not menu.ass_safe_title then
-				menu.ass_safe_title = ass_escape(menu.title)
+		-- Header, as quickbar's: a title, then the filter field. The field takes typing
+		-- only after / or i (or a click), brighter while it does.
+		if header_height > 0 then
+			local y = bg_rect.ay + self.padding
+			if menu.title and menu.title ~= '' then
+				menu.ass_safe_title = menu.ass_safe_title or ass_escape(menu.title)
+				ass:txt(content_rect.ax + round(self.item_padding / 2), y + self.title_row / 2, 4, menu.ass_safe_title, {
+					size = self.title_size, weight = 620, color = config.color.position or fg, opacity = menu_opacity,
+					wrap = 2,
+					clip = '\\clip(' .. content_rect.ax .. ',' .. y .. ',' .. content_rect.bx .. ',' .. (y + self.title_row) .. ')',
+				})
+				y = y + self.title_row + self.header_gap
 			end
 
-			-- Blur selection (also activates search input) when user clicks title
-			if is_current then
-				cursor:zone('primary_down', rect, function()
-					self:select_index(nil)
-				end)
-			end
+			if menu.search or menu.search_style ~= 'disabled' then
+				local requires_submit = menu.search_debounce == 'submit'
+				local rect = {ax = content_rect.ax, ay = y, bx = content_rect.bx, by = y + self.field_height}
+				rect.cy = round(rect.ay + self.field_height / 2)
+				local radius = round(UI_RADIUS * state.scale)
+				local is_typing = menu.search and not (requires_submit and menu.selected_index)
+				-- Brighter while typing into it, as a selected row is
+				ass:rect(rect.ax, rect.ay, rect.bx, rect.by, {
+					color = fg, opacity = (is_typing and 0.2 or 0.08) * menu_opacity, radius = radius,
+				})
 
-			-- Title
-			if menu.search then
-				-- Icon
-				local icon_size, icon_opacity = self.font_size * 1.3, menu_opacity * (requires_submit and 0.5 or 1)
-				local icon_rect = {
-					ax = rect.ax,
-					ay = rect.ay,
-					bx = content_rect.ax + icon_size + self.item_padding * 1.5,
-					by = rect.by,
-				}
-
-				if is_current and requires_submit then
+				-- Search icon, a submit button for submittable searches
+				local icon_size = round(self.font_size * 1.2)
+				local icon_rect = {ax = rect.ax, ay = rect.ay, bx = rect.ax + self.field_height, by = rect.by}
+				local icon_opacity = menu_opacity * 0.7
+				if is_current and menu.search and requires_submit then
 					cursor:zone('primary_down', icon_rect, function() self:search_submit() end)
-					if get_point_to_rectangle_proximity(cursor, icon_rect) <= 0 then
-						icon_opacity = menu_opacity
+					if get_point_to_rectangle_proximity(cursor, icon_rect) <= 0 then icon_opacity = menu_opacity end
+				end
+				ass:icon(icon_rect.ax + self.field_height / 2, rect.cy, icon_size, 'search', {
+					color = fg, opacity = icon_opacity,
+				})
+
+				-- A click starts searching, as / does
+				if is_current then
+					cursor:zone('primary_down', {ax = icon_rect.bx, ay = rect.ay, bx = rect.bx, by = rect.by}, function()
+						if menu.search then self:select_index(nil) else self:search_start() end
+					end)
+				end
+
+				-- Query, or the placeholder
+				local text_ax, text_bx = icon_rect.bx, rect.bx - self.item_padding
+				local text_clip = '\\clip(' .. text_ax .. ',' .. rect.ay .. ',' .. text_bx .. ',' .. rect.by .. ')'
+				local opts = {size = self.font_size, color = bgt, wrap = 2, opacity = menu_opacity, clip = text_clip}
+				if menu.search and menu.search.query ~= '' then
+					local query, position = menu.search.query, menu.search.cursor
+					local head_raw = string.sub(query, 1, position)
+					-- A ZWNBSP suffix keeps libass from trimming trailing spaces
+					local head = ass_escape(head_raw) .. '\239\187\191'
+					local tail = ass_escape(string.sub(query, position + 1)) .. '\239\187\191'
+					local cursor_x = math.min(round(text_ax + text_width(head_raw, opts)), text_bx)
+					ass:txt(cursor_x, rect.cy, 6, head, opts)
+					ass:txt(cursor_x, rect.cy, 4, tail, opts)
+					if is_typing then
+						local half, thickness = round(self.font_size * 0.6), math.max(1, round(self.font_size / 12))
+						ass:rect(cursor_x, rect.cy - half, cursor_x + thickness, rect.cy + half, {
+							color = fg, opacity = menu_opacity,
+						})
+					end
+				else
+					local placeholder = (menu.search_style == 'palette' and menu.ass_safe_title) or
+						(requires_submit and t('type & ctrl+enter to search') or t('Filter…'))
+					opts.opacity = menu_opacity * 0.5
+					ass:txt(text_ax, rect.cy, 4, placeholder, opts)
+					if is_typing then
+						local half, thickness = round(self.font_size * 0.6), math.max(1, round(self.font_size / 12))
+						ass:rect(text_ax, rect.cy - half, text_ax + thickness, rect.cy + half, {
+							color = fg, opacity = menu_opacity,
+						})
 					end
 				end
-
-				ass:icon(rect.ax + icon_size / 2, rect.cy, icon_size, 'search', {
-					color = fg,
-					opacity = icon_opacity,
-					clip = '\\clip(' ..
-						icon_rect.ax .. ',' .. icon_rect.ay .. ',' .. icon_rect.bx .. ',' .. icon_rect.by .. ')',
-				})
-
-				-- Query/Placeholder
-				local cursor_height_half, cursor_thickness = round(self.font_size * 0.6), round(self.font_size / 12)
-				local cursor_ax = rect.bx + 1
-				if menu.search.query ~= '' then
-					local opts = {
-						size = self.font_size,
-						color = bgt,
-						wrap = 2,
-						opacity = menu_opacity,
-						clip = '\\clip(' .. icon_rect.bx .. ',' .. rect.ay .. ',' .. rect.bx .. ',' .. rect.by .. ')',
-					}
-					local query, cursor = menu.search.query, menu.search.cursor
-					-- Add a ZWNBSP suffix to prevent libass from trimming trailing spaces
-					local head = ass_escape(string.sub(query, 1, cursor)) .. '\239\187\191'
-					local tail_no_escape = string.sub(query, cursor + 1)
-					local tail = ass_escape(tail_no_escape) .. '\239\187\191'
-					cursor_ax = math.max(round(cursor_ax - text_width(tail_no_escape, opts)), rect.cx)
-					ass:txt(cursor_ax, rect.cy, 6, head, opts)
-					ass:txt(cursor_ax, rect.cy, 4, tail, opts)
-				else
-					local placeholder = (menu.search_style == 'palette' and menu.ass_safe_title)
-						and menu.ass_safe_title
-						or (requires_submit and t('type & ctrl+enter to search') or t('type to search'))
-					ass:txt(rect.bx, rect.cy, 6, placeholder, {
-						size = self.font_size,
-						color = bgt,
-						wrap = 2,
-						opacity = menu_opacity * 0.4,
-						clip = '\\clip(' .. rect.ax .. ',' .. rect.ay .. ',' .. rect.bx .. ',' .. rect.by .. ')',
-					})
-				end
-
-				-- Selected input indicator for submittable searches.
-				-- (input is selected when `selected_index` is `nil`)
-				if menu.search_debounce == 'submit' and not menu.selected_index then
-					local size_half = round(1 * state.scale)
-					ass:rect(
-						content_rect.ax, rect.by - size_half, content_rect.bx, rect.by + size_half,
-						{color = fg, opacity = menu_opacity}
-					)
-				end
-				local input_is_blurred = menu.search_debounce == 'submit' and menu.selected_index
-
-				-- Cursor
-				local cursor_bx = cursor_ax + cursor_thickness
-				ass:rect(cursor_ax, rect.cy - cursor_height_half, cursor_bx, rect.cy + cursor_height_half, {
-					color = fg,
-					opacity = menu_opacity * (input_is_blurred and 0.5 or 1),
-					clip = '\\clip(' .. cursor_ax .. ',' .. rect.ay .. ',' .. cursor_bx .. ',' .. rect.by .. ')',
-				})
-			else
-				ass:txt(rect.cx, rect.cy, 5, menu.ass_safe_title, {
-					size = self.font_size,
-					weight = 600,
-					color = bgt,
-					wrap = 2,
-					opacity = menu_opacity,
-					clip = '\\clip(' .. rect.ax .. ',' .. rect.ay .. ',' .. rect.bx .. ',' .. rect.by .. ')',
-				})
 			end
 		end
 
