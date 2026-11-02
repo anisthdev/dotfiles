@@ -1490,7 +1490,8 @@ function Menu:render()
 			local groove_height = menu.height - 2
 			local thumb_height = math.max((menu.height / (menu.scroll_height + menu.height)) * groove_height, 40)
 			local thumb_y = content_rect.ay + 1 + ((menu.scroll_y / menu.scroll_height) * (groove_height - thumb_height))
-			local sax = content_rect.bx - round(self.scrollbar_size / 2)
+			-- In the panel's right padding, clear of the rows' corners
+			local sax = content_rect.bx + round((self.padding - self.scrollbar_size) / 2)
 			local sbx = sax + self.scrollbar_size
 			ass:rect(sax, thumb_y, sbx, thumb_y + thumb_height, {
 				color = fg, opacity = menu_opacity * 0.5, radius = self.scrollbar_size / 2,
