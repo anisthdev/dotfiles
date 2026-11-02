@@ -121,14 +121,14 @@ function ass_mt:tooltip(element, value, opts)
 	if value == '' then return end
 	opts = opts or {}
 	opts.size = opts.size or round(16 * state.scale)
-	opts.border = options.text_border * state.scale
-	opts.border_color = opts.invert_colors and fg or bg
+	-- A pill like the rest of the UI: plain text on a translucent dark background
+	opts.border = 0
 	opts.margin = opts.margin or round(10 * state.scale)
 	opts.lines = opts.lines or 1
 	opts.color = opts.invert_colors and bg or fg
-	local offset = opts.offset or 2
-	local padding_y = round(opts.size / 6)
-	local padding_x = round(opts.size / 3)
+	local offset = opts.offset or round(6 * state.scale)
+	local padding_y = round(opts.size * 0.35)
+	local padding_x = round(opts.size * 0.6)
 	local width = (opts.width_overwrite or text_width(value, opts)) + padding_x * 2
 	local height = opts.size * opts.lines + 2 * padding_y
 	local width_half, height_half = width / 2, height / 2
@@ -162,7 +162,9 @@ function ass_mt:tooltip(element, value, opts)
 	-- Draw
 	local ax, ay, bx, by = round(x - width_half), round(y - height_half), round(x + width_half), round(y + height_half)
 	self:rect(ax, ay, bx, by, {
-		color = opts.invert_colors and fg or bg, opacity = config.opacity.tooltip, radius = state.radius
+		color = opts.invert_colors and fg or bg,
+		opacity = config.opacity.tooltip,
+		radius = math.min(round(UI_RADIUS * state.scale), math.floor(height / 2)),
 	})
 	local func = opts.timestamp and self.timestamp or self.txt
 	func(self, x, y, 5, tostring(value), opts)

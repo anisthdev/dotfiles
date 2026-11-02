@@ -82,7 +82,12 @@ function Button:render()
 	end
 
 	-- Tooltip on hover
-	if is_hover and self.tooltip then ass:tooltip(self, self.tooltip) end
+	if is_hover and self.tooltip then
+		-- Controls-row tooltips float above the timeline instead of over its track
+		local timeline_ay = self.anchor_id == 'controls' and Elements:v('timeline', 'enabled') and Elements.timeline.ay
+		local anchor = timeline_ay and timeline_ay < self.ay and {ax = self.ax, ay = timeline_ay, bx = self.bx, by = self.by}
+		ass:tooltip(anchor or self, self.tooltip)
+	end
 
 	-- Badge
 	local icon_clip

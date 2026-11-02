@@ -367,64 +367,38 @@ function Timeline:render()
 	if hover_x or hovered_chapter then
 		local cursor_x = hovered_chapter and t2x(hovered_chapter.time) or hover_x
 		local hovered_seconds = hovered_chapter and hovered_chapter.time or self:get_time_at_x(cursor_x)
-		local tooltip_gap = round(4 * state.scale)
+		local tooltip_gap = round(6 * state.scale)
 		local anchor_ay = has_heatmap and heatmap_ay or tay - track_max / 2
 		local tooltip_anchor = {ax = cursor_x - 0.5, ay = anchor_ay, bx = cursor_x + 0.5, by = tby}
-
-		-- Timestamp
-		local opts = {
+		local hovered_time_human = format_time(hovered_seconds, state.duration)
+		local time_opts = {
 			size = self.font_size, offset = tooltip_gap, margin = tooltip_gap, timestamp = options.time_precision > 0,
 		}
-		local hovered_time_human = format_time(hovered_seconds, state.duration)
-		opts.width_overwrite = timestamp_width(hovered_time_human, opts)
-		tooltip_anchor = ass:tooltip(tooltip_anchor, hovered_time_human, opts)
+		time_opts.width_overwrite = timestamp_width(hovered_time_human, time_opts)
 
-		-- Thumbnail
+		-- Thumbnail flush above the track, with the time in a pill above it
 		if not thumbnail.disabled
 			and (not self.pressed or self.pressed.distance < 5)
 			and thumbnail.width ~= 0
 			and thumbnail.height ~= 0
 		then
-			local border = math.ceil(math.max(2, state.radius / 2) * state.scale)
-			local thumb_x_margin, thumb_y_margin = border + tooltip_gap + self.ax, border + tooltip_gap
-			local thumb_width, thumb_height = thumbnail.width, thumbnail.height
-			local thumb_x = round(clamp(
-				thumb_x_margin,
-				cursor_x - thumb_width / 2,
-				display.width - thumb_width - thumb_x_margin
-			))
-			local thumb_y = round(tooltip_anchor.ay - thumb_y_margin - thumb_height)
-			local ax, ay = (thumb_x - border), (thumb_y - border)
-			local bx, by = (thumb_x + thumb_width + border), (thumb_y + thumb_height + border)
-			ass:rect(ax, ay, bx, by, {
-				color = bg,
-				border = 1,
-				opacity = {main = config.opacity.thumbnail, border = 0.08 * config.opacity.thumbnail},
-				border_color = fg,
-				radius = state.radius,
-			})
+			local edge = tooltip_gap + self.ax
+			local thumb_x = round(clamp(edge, cursor_x - thumbnail.width / 2, display.width - thumbnail.width - edge))
+			local thumb_y = round(anchor_ay - tooltip_gap - thumbnail.height)
 			local thumb_seconds = (state.rebase_start_time == false and state.start_time) and
 				(hovered_seconds - state.start_time) or hovered_seconds
 			mp.commandv('script-message-to', 'thumbfast', 'thumb', thumb_seconds, thumb_x, thumb_y)
 			self.has_thumbnail, rendered_thumbnail = true, true
-			tooltip_anchor.ay = ay
-		end
-
-		-- Chapter title
-		if config.opacity.chapters > 0 and #state.chapters > 0 then
-			local _, chapter = itable_find(state.chapters, function(c) return hovered_seconds >= c.time end,
-				#state.chapters, 1)
-			if chapter and not chapter.is_end_only then
-				ass:tooltip(tooltip_anchor, chapter.title_wrapped, {
-					size = self.font_size,
-					offset = tooltip_gap,
-					responsive = false,
-					bold = true,
-					width_overwrite = chapter.title_wrapped_width * self.font_size,
-					lines = chapter.title_lines,
-					margin = tooltip_gap,
-				})
-			end
+			-- The time as plain text right above the picture, on a soft shadow
+			-- (thumbfast's overlay covers anything drawn inside the picture)
+			local draw_time = time_opts.timestamp and ass.timestamp or ass.txt
+			draw_time(ass, thumb_x + thumbnail.width / 2, thumb_y - round(tooltip_gap / 2), 2, hovered_time_human, {
+				size = self.font_size, color = fg, shadow = round(1.5 * state.scale), shadow_color = bg,
+				opacity = {main = 1, shadow = 0.6},
+			})
+		else
+			time_opts.responsive = false
+			ass:tooltip(tooltip_anchor, hovered_time_human, time_opts)
 		end
 	end
 
