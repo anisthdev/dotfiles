@@ -1043,10 +1043,11 @@ function render()
 	-- Audio indicator
 	if state.is_audio and not state.has_image and not Manager.disabled.audio_indicator
 		and not (state.pause and options.pause_indicator == 'static') then
-		local smaller_side = math.min(display.width, display.height)
-		ass:icon(display.width / 2, display.height / 2, smaller_side / 4, 'graphic_eq', {
-			color = fg, opacity = config.opacity.audio_indicator,
-		})
+		-- The idle screen's circle, with a waveform
+		local diameter = round(options.controls_size * state.scale * 2)
+		local opacity = config.opacity.audio_indicator
+		ass:circle(display.width / 2, display.height / 2, diameter / 2, {color = fg, opacity = opacity * 0.12})
+		ass:icon(display.width / 2, display.height / 2, diameter * 0.7, 'graphic_eq', {color = fg, opacity = opacity})
 	end
 
 	-- Elements
