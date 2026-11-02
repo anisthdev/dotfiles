@@ -31,8 +31,8 @@ function TopBar:init()
 	end
 
 	local close = {icon = 'close', hover_bg = '2311e8', hover_fg = 'ffffff', command = function() mp.command('quit') end}
-	local max = {icon = 'crop_square', command = maximized_command}
-	local min = {icon = 'minimize', command = function() mp.command('cycle window-minimized') end}
+	local max = {icon = 'check_box_outline_blank', command = maximized_command}
+	local min = {icon = 'remove', command = function() mp.command('cycle window-minimized') end}
 	self.buttons = options.top_bar_controls == 'left' and {close, max, min} or {min, max, close}
 
 	self:register_observers()
@@ -155,24 +155,23 @@ function TopBar:select_current_chapter()
 end
 
 function TopBar:update_dimensions()
-	self.size = round(options.top_bar_size * state.scale)
-	self.title_spacing = round(1 * state.scale)
-	self.icon_size = round(self.size * 0.5)
-	self.font_size = math.floor((self.size - (math.ceil(self.size * 0.25) * 2)) * options.font_scale)
-	self.alt_title_size = round(self.font_size * 1.2)
-	self.chapter_size = round(self.font_size * 1.1)
+	-- Segments match the controls row: same height, margin and spacing
+	self.segment = round(options.controls_size * state.scale)
+	self.margin = round(options.controls_margin * state.scale)
+	self.spacing = round(options.controls_spacing * state.scale)
+	self.size = self.segment + self.margin
+	self.title_spacing = self.spacing
+	self.icon_size = round(self.segment * 0.66)
+	self.font_size = round(self.segment * 0.45 * options.font_scale)
+	self.alt_title_size = round(self.segment * 0.8)
 	local window_border_size = Elements:v('window_border', 'size', 0)
 	local min_hitbox_height = self.size
 	if self.render_titles.alt and options.top_bar_alt_title_place == 'below' then
-		min_hitbox_height = min_hitbox_height + self.title_spacing + self.alt_title_size
-	end
-	if self.current_chapter then
-		min_hitbox_height = min_hitbox_height + self.title_spacing + self.chapter_size
+		min_hitbox_height = min_hitbox_height + self.spacing + self.alt_title_size
 	end
 	self.ax = window_border_size
 	self.ay = window_border_size
 	self.bx = display.width - window_border_size
-	-- We extend the hitbox so that people with low proximity options can still click on chapter button
 	self.by = math.max(self.size + window_border_size, min_hitbox_height - options.proximity_in)
 end
 
@@ -222,208 +221,116 @@ function TopBar:on_options()
 	self:update_dimensions()
 end
 
+-- Draws a segment like the controls row's: translucent background, quickbar corners, hover highlight
+---@param corners number[]
+local function segment(ass, rect, corners, visibility, hover_color)
+	ass:rect(rect.ax, rect.ay, rect.bx, rect.by, {
+		color = bg, opacity = visibility * config.opacity.controls, corners = corners,
+	})
+	if get_point_to_rectangle_proximity(cursor, rect) <= 0 then
+		if hover_color then
+			ass:rect(rect.ax, rect.ay, rect.bx, rect.by, {color = hover_color, opacity = visibility, corners = corners})
+		else
+			ass:rect(rect.ax, rect.ay, rect.bx, rect.by, {color = fg, opacity = visibility * 0.15, corners = corners})
+		end
+		return true
+	end
+	return false
+end
+
 function TopBar:render()
 	local visibility = self:get_visibility()
 	if visibility <= 0 then return end
 	local ass = assdraw.ass_new()
-	-- `by` might be artificially extended so people with low proximity options
-	-- can still click on chapter button, so we can't use it for rendering.
-	local ax, ay, bx, by = self.ax, self.ay, self.bx, self.ay + self.size
-	local margin = math.floor((self.size - self.font_size) / 4)
+	local outer, inner = round(UI_RADIUS * state.scale), round(UI_RADIUS_INNER * state.scale)
+	local h, spacing = self.segment, self.spacing
+	local ay = self.ay + self.margin
+	local by = ay + h
+	local ax, bx = self.ax + self.margin, self.bx - self.margin
 
-	-- Window controls
+	-- Window controls: one group of segments
 	if options.top_bar_controls then
-		local is_left, button_ax = options.top_bar_controls == 'left', 0
-		if is_left then
-			button_ax = ax
-			ax = self.size * #self.buttons
-		else
-			button_ax = bx - self.size * #self.buttons
-			bx = button_ax
-		end
+		local is_left = options.top_bar_controls == 'left'
+		local count = #self.buttons
+		local group_width = h * count + spacing * (count - 1)
+		local x = is_left and ax or bx - group_width
+		if is_left then ax = x + group_width + spacing * 4 else bx = x - spacing * 4 end
 
-		for _, button in ipairs(self.buttons) do
-			local rect = {ax = button_ax, ay = ay, bx = button_ax + self.size, by = by}
+		for i, button in ipairs(self.buttons) do
+			local rect = {ax = x, ay = ay, bx = x + h, by = by}
 			local is_hover = get_point_to_rectangle_proximity(cursor, rect) <= 0
-			local opacity = is_hover and 1 or config.opacity.controls
-			local button_fg = is_hover and (button.hover_fg or bg) or fg
-			local button_bg = is_hover and (button.hover_bg or fg) or bg
-
+			local corners = {(i == 1 or is_hover) and outer or inner, (i == count or is_hover) and outer or inner}
+			segment(ass, rect, corners, visibility, button.hover_bg)
 			cursor:zone('primary_down', rect, button.command)
-
-			local bg_size = self.size - margin
-			local bg_ax, bg_ay = rect.ax + (is_left and margin or 0), rect.ay + margin
-			local bg_bx, bg_by = bg_ax + bg_size, bg_ay + bg_size
-
-			ass:rect(bg_ax, bg_ay, bg_bx, bg_by, {
-				color = button_bg, opacity = visibility * opacity, radius = state.radius,
+			ass:icon(rect.ax + h / 2, ay + h / 2, self.icon_size, button.icon, {
+				color = is_hover and button.hover_fg or fg, opacity = visibility,
 			})
-
-			ass:icon(bg_ax + bg_size / 2, bg_ay + bg_size / 2, bg_size * 0.5, button.icon, {
-				color = button_fg,
-				border_color = button_bg,
-				opacity = visibility,
-				border = options.text_border * state.scale,
-			})
-
-			button_ax = button_ax + self.size
+			x = x + h + spacing
 		end
 	end
 
-	-- Window title
+	-- Title group: playlist position, then the title, joined like grouped buttons
 	local main_title, alt_title = self.render_titles.main, self.render_titles.alt
-	if main_title or state.has_playlist then
-		local padding = round(self.font_size / 2)
+	local title_ay = by
+	if (main_title or state.has_playlist) and bx - ax > h * 3 then
 		local left_aligned = options.top_bar_controls == 'left'
-		local title_ax, title_bx, title_ay = ax + margin, bx - margin, self.ay + margin
+		local padding = round(h * 0.4)
+		local has_title = main_title and options.top_bar_title ~= 'no'
+		local text_opts = {size = self.font_size, color = fg, opacity = visibility, wrap = 2}
 
-		-- Playlist position
+		-- Lays out a run of segments from the aligned edge; returns their rects
+		local x = left_aligned and bx or ax
+		local function place(width)
+			width = math.min(width, (left_aligned and x - ax) or (bx - x))
+			local rect = left_aligned and {ax = x - width, ay = ay, bx = x, by = by} or {ax = x, ay = ay, bx = x + width, by = by}
+			x = left_aligned and rect.ax - spacing or rect.bx + spacing
+			return rect
+		end
+
 		if state.has_playlist then
-			local text = state.playlist_pos .. '' .. state.playlist_count
-			local formatted_text = '{\\b1}' .. state.playlist_pos .. '{\\b0\\fs' .. self.font_size * 0.9 .. '}/'
-				.. state.playlist_count
-			local opts = {size = self.font_size, wrap = 2, color = fgt, opacity = visibility}
-			local rect_width = round(text_width(text, opts) + padding * 2)
-			local ax = left_aligned and title_bx - rect_width or title_ax
-			local rect = {
-				ax = ax,
-				ay = title_ay,
-				bx = ax + rect_width,
-				by = by - margin,
-			}
-			local opacity = get_point_to_rectangle_proximity(cursor, rect) <= 0
-				and 1 or config.opacity.playlist_position
-			if opacity > 0 then
-				ass:rect(rect.ax, rect.ay, rect.bx, rect.by, {
-					color = fg, opacity = visibility * opacity, radius = state.radius,
-				})
-			end
-			ass:txt(rect.ax + (rect.bx - rect.ax) / 2, rect.ay + (rect.by - rect.ay) / 2, 5, formatted_text, opts)
-			if left_aligned then title_bx = rect.ax - margin else title_ax = rect.bx + margin end
-
-			-- Click action
+			local text = state.playlist_pos .. '/' .. state.playlist_count
+			local opts = {size = self.font_size, weight = 600, color = fg, opacity = visibility}
+			local rect = place(round(text_width(text, opts) + padding * 2))
+			local first, last = not left_aligned or not has_title, left_aligned or not has_title
+			local hovered = get_point_to_rectangle_proximity(cursor, rect) <= 0
+			segment(ass, rect, {(first or hovered) and outer or inner, (last or hovered) and outer or inner}, visibility)
+			ass:txt(rect.ax + (rect.bx - rect.ax) / 2, ay + h / 2, 5, text, opts)
 			cursor:zone('primary_down', rect, function() mp.command('script-binding uosc/playlist') end)
 		end
 
-		-- Skip rendering titles if there's not enough horizontal space
-		if title_bx - title_ax > self.font_size * 3 and options.top_bar_title ~= 'no' then
-			-- Main title
-			if main_title then
-				local opts = {
-					size = self.font_size,
-					wrap = 2,
-					color = bgt,
-					opacity = visibility,
-					border = options.text_border * state.scale,
-					border_color = bg,
-					clip = string.format('\\clip(%d, %d, %d, %d)', self.ax, ay, title_bx, by),
-				}
-				local rect_ideal_width = round(text_width(main_title, opts) + padding * 2)
-				local rect_width = math.min(rect_ideal_width, title_bx - title_ax)
-				local ax = left_aligned and title_bx - rect_width or title_ax
-				local by = by - margin
-				local title_rect = {ax = ax, ay = title_ay, bx = ax + rect_width, by = by}
-
-				if options.top_bar_alt_title_place == 'toggle' then
-					cursor:zone('primary_down', title_rect, function() self:toggle_title() end)
-				end
-
-				ass:rect(title_rect.ax, title_rect.ay, title_rect.bx, title_rect.by, {
-					color = bg, opacity = visibility * config.opacity.title, radius = state.radius,
-				})
-				local align = left_aligned and rect_ideal_width == rect_width and 6 or 4
-				local x = align == 6 and title_rect.bx - padding or ax + padding
-				ass:txt(x, ay + (self.size / 2), align, main_title, opts)
-				title_ay = by + self.title_spacing
+		if has_title then
+			local rect = place(round(text_width(main_title, text_opts) + padding * 2))
+			local joined = state.has_playlist
+			local corners = {
+				(joined and not left_aligned) and inner or outer,
+				(joined and left_aligned) and inner or outer,
+			}
+			ass:rect(rect.ax, rect.ay, rect.bx, rect.by, {
+				color = bg, opacity = visibility * config.opacity.controls, corners = corners,
+			})
+			if options.top_bar_alt_title_place == 'toggle' then
+				cursor:zone('primary_down', rect, function() self:toggle_title() end)
 			end
+			text_opts.clip = string.format('\\clip(%d, %d, %d, %d)', rect.ax + padding, rect.ay, rect.bx - padding, rect.by)
+			ass:txt(rect.ax + padding, ay + h / 2, 4, main_title, text_opts)
 
-			-- Alt title
+			-- Alt title: a smaller pill under the title
 			if alt_title and options.top_bar_alt_title_place == 'below' then
-				local by = title_ay + self.alt_title_size
-				local opts = {
-					size = round(self.alt_title_size * 0.77),
-					wrap = 2,
-					color = bgt,
-					border = options.text_border * state.scale,
-					border_color = bg,
-					opacity = visibility,
-				}
-				local rect_ideal_width = round(text_width(alt_title, opts) + padding * 2)
-				local rect_width = math.min(rect_ideal_width, title_bx - title_ax)
-				local ax = left_aligned and title_bx - rect_width or title_ax
-				local bx = ax + rect_width
-				opts.clip = string.format('\\clip(%d, %d, %d, %d)', title_ax, title_ay, bx, by)
-				ass:rect(ax, title_ay, bx, by, {
-					color = bg, opacity = visibility * config.opacity.title, radius = state.radius,
+				local alt_ay, alt_h = by + spacing, self.alt_title_size
+				local opts = {size = round(alt_h * 0.5 * options.font_scale), color = fg, opacity = visibility * 0.9, wrap = 2}
+				local alt_padding = round(alt_h * 0.4)
+				local width = math.min(round(text_width(alt_title, opts) + alt_padding * 2), bx - ax)
+				local alt_ax = left_aligned and rect.bx - width or rect.ax
+				ass:rect(alt_ax, alt_ay, alt_ax + width, alt_ay + alt_h, {
+					color = bg, opacity = visibility * config.opacity.controls, radius = outer,
 				})
-				local align = left_aligned and rect_ideal_width == rect_width and 6 or 4
-				local x = align == 6 and bx - padding or ax + padding
-				ass:txt(x, title_ay + self.alt_title_size / 2, align, alt_title, opts)
-				title_ay = by + self.title_spacing
-			end
-
-			-- Current chapter
-			if self.current_chapter then
-				local padding_half = round(padding / 2)
-				local prefix, postfix = left_aligned and '' or '└ ', left_aligned and ' ┘' or ''
-				local text = prefix .. self.current_chapter.index .. ': ' .. self.current_chapter.title .. postfix
-				local next_chapter = state.chapters[self.current_chapter.index + 1]
-				local chapter_end = next_chapter and next_chapter.time or state.duration or 0
-				local remaining_time = ((state.time or 0) - chapter_end) /
-					(options.destination_time == 'time-remaining' and 1 or state.speed)
-				local remaining_human = format_time(remaining_time, math.abs(remaining_time))
-				local opts = {
-					size = round(self.chapter_size * 0.77),
-					italic = true,
-					wrap = 2,
-					color = bgt,
-					border = options.text_border * state.scale,
-					border_color = bg,
-					opacity = visibility * 0.8,
-				}
-				local remaining_width = timestamp_width(remaining_human, opts)
-				local remaining_box_width = remaining_width + padding_half * 2
-
-				-- Title
-				local max_bx = title_bx - remaining_box_width - self.title_spacing
-				local rect_ideal_width = round(text_width(text, opts) + padding * 2)
-				local rect_width = math.min(rect_ideal_width, max_bx - title_ax)
-				local ax = left_aligned and title_bx - rect_width or title_ax
-				local rect = {
-					ax = ax,
-					ay = title_ay,
-					bx = ax + rect_width,
-					by = title_ay + self.chapter_size,
-				}
-				opts.clip = string.format('\\clip(%d, %d, %d, %d)', title_ax, title_ay, rect.bx, rect.by)
-				ass:rect(rect.ax, rect.ay, rect.bx, rect.by, {
-					color = bg, opacity = visibility * config.opacity.title, radius = state.radius,
-				})
-				local align = left_aligned and rect_ideal_width == rect_width and 6 or 4
-				local x = align == 6 and rect.bx - padding or rect.ax + padding
-				ass:txt(x, rect.ay + self.chapter_size / 2, align, text, opts)
-
-				-- Time
-				local time_ax = left_aligned
-					and rect.ax - self.title_spacing - remaining_box_width or rect.bx + self.title_spacing
-				local time_bx = time_ax + remaining_box_width
-				opts.clip = nil
-				ass:rect(time_ax, rect.ay, time_bx, rect.by, {
-					color = bg, opacity = visibility * config.opacity.title, radius = state.radius,
-				})
-				ass:txt(time_ax + padding_half, rect.ay + self.chapter_size / 2, 4, remaining_human, opts)
-
-				-- Click action
-				rect.bx = time_bx
-				cursor:zone('primary_down', rect, function() mp.command('script-binding uosc/chapters') end)
-
-				title_ay = rect.by + self.title_spacing
+				opts.clip = string.format('\\clip(%d, %d, %d, %d)', alt_ax, alt_ay, alt_ax + width - alt_padding, alt_ay + alt_h)
+				ass:txt(alt_ax + alt_padding, alt_ay + alt_h / 2, 4, alt_title, opts)
+				title_ay = alt_ay + alt_h
 			end
 		end
-		self.title_by = title_ay - 1
-	else
-		self.title_by = ay
 	end
+	self.title_by = title_ay
 
 	return ass
 end
