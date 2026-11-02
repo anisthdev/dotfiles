@@ -1226,7 +1226,8 @@ local constructors = {
 	top_bar = require('elements/TopBar'),
 	timeline = require('elements/Timeline'),
 	skip_chapter_button = require('elements/SkipChapterButton'),
-	library = require('elements/Library'),
+	-- Start screen (Library.lua) off: idle opens like stock uosc
+	-- library = require('elements/Library'),
 	controls = options.controls and options.controls ~= 'never' and require('elements/Controls'),
 	volume = itable_index_of({'left', 'right'}, options.volume) and require('elements/Volume'),
 	volume_toast = options.volume == 'inline' and require('elements/VolumeToast'),
