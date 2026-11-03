@@ -24,12 +24,12 @@ hl.window_rule({ match = { tag = "noop" }, opacity = "1.0 override 0.88" })
 hl.window_rule({ match = { title = videoWebsites .. browserTitleExtensions }, opacity = "1.0 override 0.88" })
 
 -- floating windows
-hl.window_rule({ match = { class = "xdg-desktop-portal-gtk" }, float = true, size = { "1000", "640" }, animation = "gnomed", })
-hl.window_rule({ match = { class = "thunar", title = "Rename.*" }, float = true, size = { "500", "80" }, animation = "gnomed", })
-hl.window_rule({ match = { class = "hyprland-share-picker" }, float = true, size = { "400", "400" }, animation = "gnomed", })
-hl.window_rule({ match = { class = "org.localsend.localsend_app" }, float = true, size = { "500", "700" }, animation = "gnomed" })
-hl.window_rule({ match = { class = "nwg-look" }, float = true, size = { "500", "700" }, animation = "gnomed" })
-hl.window_rule({ match = { class = "qalculate-gtk" }, float = true, size = { "420", "520" }, center = true, animation = "gnomed" })
+hl.window_rule({ match = { class = "xdg-desktop-portal-gtk" }, float = true, size = { "1000", "640" }, animation = "popin 90%", })
+hl.window_rule({ match = { class = "thunar", title = "Rename.*" }, float = true, size = { "500", "80" }, animation = "popin 90%", })
+hl.window_rule({ match = { class = "hyprland-share-picker" }, float = true, size = { "400", "400" }, animation = "popin 90%", })
+hl.window_rule({ match = { class = "org.localsend.localsend_app" }, float = true, size = { "500", "700" }, animation = "popin 90%" })
+hl.window_rule({ match = { class = "nwg-look" }, float = true, size = { "500", "700" }, animation = "popin 90%" })
+hl.window_rule({ match = { class = "qalculate-gtk" }, float = true, size = { "420", "520" }, center = true, animation = "popin 90%" })
 
 -- pseudo floating windows
 hl.window_rule({ match = { class = "firefox" }, pseudo = true, size = { "monitor_w * 0.65", "monitor_h" } })
