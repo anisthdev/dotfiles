@@ -1,0 +1,135 @@
+/* --- Link Hints --- */
+div > .vimiumHintMarker {
+  background: rgb(40, 40, 40) !important;
+  border: 1px solid rgb(254, 128, 25) !important;
+  border-radius: 3px !important;
+  padding: 2px 4px !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6) !important;
+}
+
+div > .vimiumHintMarker span {
+  color: rgb(235, 219, 178) !important;
+  font-family: monospace !important;
+  font-weight: bold !important;
+  font-size: 11px !important;
+  text-shadow: none !important;
+}
+
+/* Matching typed hint letters */
+div > .vimiumHintMarker > .matchingCharacter {
+  color: rgb(254, 128, 25) !important;
+}
+
+/* --- Vomnibar Wrapper --- */
+#vomnibar {
+  background: rgb(40, 40, 40) !important;
+  border: 1px solid rgb(60, 56, 54) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7) !important;
+}
+
+/* Search input bar */
+#vomnibar input {
+  background: rgb(60, 56, 54) !important;
+  color: rgb(235, 219, 178) !important;
+  font-family: monospace !important;
+  border: 1px solid rgb(29, 32, 33) !important;
+  border-radius: 12px !important;
+  padding: 8px 12px !important;
+}
+
+#vomnibar ul {
+  background: transparent !important;
+  padding: 4px 0 !important;
+}
+
+#vomnibar li {
+  border-bottom: 1px solid rgb(29, 32, 33) !important;
+  color: rgb(235, 219, 178) !important;
+}
+
+/* Active/selected row */
+#vomnibar li.vomnibarSelected {
+  background-color: rgb(60, 56, 54) !important;
+}
+
+#vomnibar li .vomnibarTitle {
+  color: rgb(235, 219, 178) !important;
+}
+
+#vomnibar li .vomnibarUrl {
+  color: rgb(131, 165, 152) !important;
+}
+
+/* Matched query terms in results */
+#vomnibar li .vomnibarMatch {
+  color: rgb(254, 128, 25) !important;
+  font-weight: bold !important;
+}
+
+/* --- HUD Status Bar (Bottom Right) --- */
+div.vimiumHUD {
+  background: rgb(40, 40, 40) !important;
+  border: 1px solid rgb(60, 56, 54) !important;
+  color: rgb(235, 219, 178) !important;
+  border-radius: 3px !important;
+}
+
+/* --- Light mode: the rules above with Gruvbox's light colours --- */
+@media (prefers-color-scheme: light) {
+  div > .vimiumHintMarker {
+    background: rgb(251, 241, 199) !important;
+    border-color: rgb(175, 58, 3) !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25) !important;
+  }
+
+  div > .vimiumHintMarker span {
+    color: rgb(60, 56, 54) !important;
+  }
+
+  div > .vimiumHintMarker > .matchingCharacter {
+    color: rgb(175, 58, 3) !important;
+  }
+
+  #vomnibar {
+    background: rgb(251, 241, 199) !important;
+    border-color: rgb(213, 196, 161) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25) !important;
+  }
+
+  #vomnibar input {
+    background: rgb(235, 219, 178) !important;
+    color: rgb(60, 56, 54) !important;
+    border-color: rgb(213, 196, 161) !important;
+  }
+
+  #vomnibar li {
+    border-bottom-color: rgb(213, 196, 161) !important;
+    color: rgb(60, 56, 54) !important;
+  }
+
+  #vomnibar li.selected {
+    background-color: rgb(235, 219, 178) !important;
+  }
+
+  #vomnibar li em,
+  #vomnibar li .title {
+    color: rgb(60, 56, 54) !important;
+  }
+
+  #vomnibar li .url {
+    color: rgb(7, 102, 120) !important;
+  }
+
+  #vomnibar li .match,
+  #vomnibar li em .match,
+  #vomnibar li .title .match {
+    color: rgb(175, 58, 3) !important;
+  }
+
+  div.vimiumHUD {
+    background: rgb(251, 241, 199) !important;
+    border-color: rgb(213, 196, 161) !important;
+    color: rgb(60, 56, 54) !important;
+  }
+}
