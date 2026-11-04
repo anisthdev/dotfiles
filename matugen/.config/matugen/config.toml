@@ -19,6 +19,10 @@ output_path = '~/.config/seedling/colors.css'
 input_path = './templates/colors.css'
 output_path = '~/.config/margin/colors.css'
 
+[templates.dogear]
+input_path = './templates/colors.css'
+output_path = '~/.config/dogear/colors.css'
+
 [templates.starship]
 input_path = './templates/starship2.toml'
 output_path = '~/.config/starship.toml'
