@@ -52,7 +52,9 @@ clear_graphics() {
 show_text() {
     clear_graphics
     if command -v bat >/dev/null 2>&1; then
-        exec bat --color=always --style=numbers --line-range=:400 -- "$1"
+        # Asked rather than left to bat: it can't detect the terminal from
+        # inside fzf, and forcing it to (auto:always) hangs the preview
+        exec bat --theme="$(theme-mode)" --color=always --style=numbers --line-range=:400 -- "$1"
     fi
 
     exec sed -n '1,400p' -- "$1"

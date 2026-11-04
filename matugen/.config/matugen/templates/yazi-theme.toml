@@ -1,8 +1,8 @@
 [colors]
 background = "{{colors.background.default.hex}}"
 foreground = "{{colors.inverse_primary.default.hex}}"
-selection = "#3A3D41"
-cursor = "#D4D4D4"
+selection = "{{colors.surface_container_highest.default.hex}}"
+cursor = "{{colors.on_surface.default.hex}}"
 black = "#000000"
 red = "#CD3131"
 green = "#0DBC79"
@@ -25,7 +25,7 @@ cwd = { fg = "{{colors.primary.default.hex}}" }
 
 # Find
 find_keyword = { fg = "#569CD6", bold = true, italic = true, underline = true }
-find_position = { fg = "#D4D4D4", bg = "#3A3D41", bold = true }
+find_position = { fg = "{{colors.on_surface.default.hex}}", bg = "{{colors.surface_container_highest.default.hex}}", bold = true }
 
 # Marker
 marker_copied = { fg = "#73C991", bg = "#73C991" }
@@ -40,16 +40,16 @@ count_selected = { fg = "#1E1E1E", bg = "#264F78" }
 
 # Border
 border_symbol = "│"
-border_style = { fg = "#404040" }
+border_style = { fg = "{{colors.outline_variant.default.hex}}" }
 
 [indicator]
-parent = { fg = "#D4D4D4", bg = "#1E1E1E" }
-current = { fg = "#D4D4D4", bg = "{{colors.inverse_primary.default.hex}}" }
+parent = { fg = "{{colors.on_surface.default.hex}}", bg = "{{colors.surface.default.hex}}" }
+current = { fg = "{{colors.on_surface.default.hex}}", bg = "{{colors.inverse_primary.default.hex}}" }
 
 
 [tabs]
-active = { fg = "#D4D4D4", bg = "#1E1E1E" }
-inactive = { fg = "#D4D4D4", bg = "#2D2D2D" }
+active = { fg = "{{colors.on_surface.default.hex}}", bg = "{{colors.surface.default.hex}}" }
+inactive = { fg = "{{colors.on_surface.default.hex}}", bg = "{{colors.surface_container.default.hex}}" }
 
 
 [mode]
@@ -57,10 +57,10 @@ normal_main = { fg = "{{colors.on_surface.default.hex}}", bg = "{{colors.inverse
 normal_alt = { fg = "{{colors.secondary.default.hex}}", bg = "{{colors.on_secondary.default.hex}}" }
 
 select_main = { fg = "blue", bg = "#FFAF00", bold = true }
-select_alt = { fg = "#FFAF00", bg = "#2D2D2D" }
+select_alt = { fg = "#FFAF00", bg = "{{colors.surface_container.default.hex}}" }
 
 unset_main = { fg = "green", bg = "#F44747", bold = true }
-unset_alt = { fg = "#F44747", bg = "#2D2D2D" }
+unset_alt = { fg = "#F44747", bg = "{{colors.surface_container.default.hex}}" }
 
 
 [status]
@@ -68,7 +68,7 @@ overall = { fg = "{{colors.tertiary.default.hex}}", bg = "{{colors.surface_brigh
 sep_left = { open = "▐", close = "▌" }
 sep_right = { open = "▐", close = "▌" }
 # Permissions
-perm_sep = { fg = "#404040" }
+perm_sep = { fg = "{{colors.outline_variant.default.hex}}" }
 perm_type = { fg = "#6A9955" }
 perm_read = { fg = "#CE9178" }
 perm_write = { fg = "#F44747" }
@@ -76,8 +76,8 @@ perm_exec = { fg = "#569CD6" }
 
 # Progress
 progress_label = { bold = true }
-progress_normal = { fg = "#569CD6", bg = "#1E1E1E" }
-progress_error = { fg = "#F44747", bg = "#1E1E1E" }
+progress_normal = { fg = "#569CD6", bg = "{{colors.surface.default.hex}}" }
+progress_error = { fg = "#F44747", bg = "{{colors.surface.default.hex}}" }
 
 
 [pick]
@@ -104,26 +104,26 @@ hovered = { underline = true }
 
 
 [which]
-mask = { bg = "#1E1E1E" }
+mask = { bg = "{{colors.surface.default.hex}}" }
 cand = { fg = "#569CD6" }
-rest = { fg = "#808080" }
+rest = { fg = "{{colors.outline.default.hex}}" }
 desc = { fg = "#CE9178" }
 separator = "  "
-separator_style = { fg = "#808080" }
+separator_style = { fg = "{{colors.outline.default.hex}}" }
 
 
 [help]
 on = { fg = "#569CD6" }
 run = { fg = "#CE9178" }
-hovered = { bg = "#3A3D41", bold = true }
-footer = { fg = "#D4D4D4", bg = "#252526" }
+hovered = { bg = "{{colors.surface_container_highest.default.hex}}", bold = true }
+footer = { fg = "{{colors.on_surface.default.hex}}", bg = "{{colors.surface_container.default.hex}}" }
 
 
 [spot]
 border = { fg = "#569CD6" }
 title = { fg = "#569CD6" }
 tbl_col = { fg = "#11A8CD" }
-tbl_cell = { fg = "#CE9178", bg = "#2D2D2D" }
+tbl_cell = { fg = "#CE9178", bg = "{{colors.surface_container.default.hex}}" }
 
 
 [notify]
@@ -144,9 +144,9 @@ rules = [
     { mime = "application/{pdf,doc,rtf}", fg = "#569CD6" },
     { mime = "application/vnd.openxmlformats-officedocument.*", fg = "#569CD6" },
     # Virtual file system
-    { mime = "vfs/{absent,stale}", fg = "#808080" },
+    { mime = "vfs/{absent,stale}", fg = "{{colors.outline.default.hex}}" },
     # Fallback
-    { url = "*", fg = "#D4D4D4" },
+    { url = "*", fg = "{{colors.on_surface.default.hex}}" },
     { url = "*/", fg = "{{colors.inverse_primary.default.hex}}" },
 ]
 
@@ -167,5 +167,5 @@ conds = [
     { if = "dir & hovered", text = " ", fg = "#2472C8" },
     { if = "dir", text = " ", fg = "{{colors.inverse_primary.default.hex}}" },
     { if = "exec", text = "", fg = "#0DBC79" },
-    { if = "!dir", text = "", fg = "#D4D4D4" },
+    { if = "!dir", text = "", fg = "{{colors.on_surface.default.hex}}" },
 ]

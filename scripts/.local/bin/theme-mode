@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+# The whole desktop in light or dark mode: the portal's colour scheme, which
+# apps follow by themselves, then every palette again from the same wallpaper.
+#
+#   theme-mode                 what it is now
+#   theme-mode light|dark      set it
+#   theme-mode toggle          the other one
+set -euo pipefail
+
+scheme() { gsettings get org.gnome.desktop.interface color-scheme; }
+current() { [[ "$(scheme)" == *light* ]] && echo light || echo dark; }
+
+apply() {
+    local mode=$1 theme=Matugen prefer_dark=1
+    if [[ $mode == light ]]; then
+        theme=Matugen-Light
+        prefer_dark=0
+    fi
+
+    gsettings set org.gnome.desktop.interface color-scheme "prefer-$mode"
+    gsettings set org.gnome.desktop.interface gtk-theme "$theme"
+    sed -i -e "s/^gtk-theme-name=.*/gtk-theme-name=$theme/" \
+        -e "s/^gtk-application-prefer-dark-theme=.*/gtk-application-prefer-dark-theme=$prefer_dark/" \
+        "$HOME/.config/gtk-3.0/settings.ini" "$HOME/.config/gtk-4.0/settings.ini"
+
+    local wallpaper
+    wallpaper="$(awww query | sed -n 's/.*image: //p' | head -1)"
+    # The same flags as quickbar's wallpaper picker
+    matugen --quiet --mode "$mode" --type scheme-expressive image "$wallpaper" --source-color-index 0 >/dev/null
+
+    # What matugen's files don't reach by themselves
+    local socket
+    for socket in "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"/nvim.*.0; do
+        [[ -S $socket ]] || continue
+        nvim --server "$socket" --remote-expr 'luaeval("require(\"core.ui\").reload()")' >/dev/null 2>&1 || true
+    done
+    # foot's signals pick its [colors-dark] or [colors-light]
+    if [[ $mode == light ]]; then
+        pkill -USR2 -x foot || true
+    else
+        pkill -USR1 -x foot || true
+    fi
+}
+
+case "${1:-}" in
+    "") current ;;
+    light | dark) apply "$1" ;;
+    toggle) [[ "$(current)" == light ]] && apply dark || apply light ;;
+    *)
+        sed -n '5,7p' "$0" | sed 's/^# *//' >&2
+        exit 2
+        ;;
+esac

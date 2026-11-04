@@ -12,7 +12,6 @@ set -x TMUX_CONF $HOME/.config/tmux/.tmux.conf
 set -x TNS_ADMIN /opt/instantclient/network/admin
 set -x SESSHIN_DIR $HOME/.config/sesshin
 set -x SYSTEM_TEME gruvbox
-set -x BAT_THEME gruvbox-dark
 
 # initiate tools
 starship init fish | source

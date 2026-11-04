@@ -8,7 +8,11 @@ window-padding-x = 20
 window-padding-y = 20
 window-padding-balance = true
 keybind = shift+enter=text:\x1b\r
-theme = Gruvbox Dark
+theme = light:Gruvbox Light,dark:Gruvbox Dark
 
 config-file = colors.conf
+
+# GTK reads its own gtk.css once, at startup; this one is read again on every
+# reload, so the tab bar follows matugen too
+gtk-custom-css = ~/.config/gtk-4.0/gtk.css
 

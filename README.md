@@ -40,7 +40,8 @@ Then by hand:
   extension.
 - **The phone**: handoff's app (its repo's `android/`), then `handoffd pair`.
 - **Colours**: pick a wallpaper (Super+Ctrl+Space); matugen writes every
-  app's palette from it.
+  app's palette from it. Super+Ctrl+D (`theme-mode toggle`) switches the
+  whole desktop between light and dark.
 
 ## Layout
 

@@ -61,7 +61,6 @@ post_hook = 'pkill -USR2 ghostty'
 [templates.foot]
 input_path = './templates/foot.ini'
 output_path = '~/.config/foot/colors.ini'
-post_hook = 'killall -USR2 foot'
 
 [templates.glow_style]
 input_path = './templates/glow-style.json'
@@ -82,6 +81,9 @@ output_path = '~/.config/gtk-3.0/gtk-dark.css'
 [templates.gtk4]
 input_path = './templates/gtk.css'
 output_path = '~/.config/gtk-4.0/gtk.css'
+# Ghostty's tab bar reads this file too, and matugen's order isn't fixed: this
+# hook and the ghostty one cover whichever is written last
+post_hook = 'pkill -USR2 ghostty'
 
 [templates.gtk4_dark]
 input_path = './templates/gtk-dark.css'
@@ -94,6 +96,15 @@ output_path = '~/.mozilla/firefox/asif/chrome/userContent.css'
 [templates.nvim]
 input_path = './templates/background.lua'
 output_path = '~/.config/nvim/lua/core/ui/background.lua'
+
+[templates.nvim_mode]
+input_path = './templates/nvim-mode.lua'
+output_path = '~/.config/nvim/lua/core/ui/mode.lua'
+
+[templates.tmux]
+input_path = './templates/tmux-mode.conf'
+output_path = '~/.config/tmux/mode.conf'
+post_hook = "sh -c 'pgrep -x tmux >/dev/null && tmux source-file ~/.config/tmux/tmux.conf || true'"
 
 # The colour of sysaud's glint on plugging in (its config reads it)
 [templates.sysaud]

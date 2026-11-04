@@ -1,3 +1,4 @@
+pcall(require, "core.ui.mode")
 vim.g.gruvbox_material_enable_italic = true
 vim.g.gruvbox_material_background = "soft"
 vim.g.gruvbox_material_float_style = "dim"

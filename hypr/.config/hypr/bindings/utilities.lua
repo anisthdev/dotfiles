@@ -44,6 +44,7 @@ hl.bind(mainMod .. "M", shell("reelmenu toggle"), { description = "Video library
 hl.bind(mainMod .. "SHIFT + M", shell("musicmenu toggle"), { description = "Music library" })
 hl.bind(mainMod .. "R", shell("games toggle"), { description = "RetroArch NES" })
 hl.bind(mainMod .. "CTRL + SPACE", shell("wallpaper toggle"), { description = "Wallpaper picker" })
+hl.bind(mainMod .. "CTRL + D", hl.dsp.exec_cmd("theme-mode toggle"), { description = "Light or dark mode" })
 hl.bind(mainMod .. "ESCAPE", shell("power toggle"), { description = "Power menu" })
 hl.bind(mainMod .. "CTRL + N", shell("glyphs toggle"), { description = "Glyph selector" })
 hl.bind(mainMod .. "period", shell("emoji toggle"), { description = "Emoji picker" })

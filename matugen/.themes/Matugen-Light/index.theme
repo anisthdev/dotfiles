@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=X-GNOME-Metatheme
+Name=Matugen-Light
+Comment=GTK's own light theme, for matugen's colours to sit on
+
+[X-GNOME-Metatheme]
+GtkTheme=Matugen-Light
