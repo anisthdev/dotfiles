@@ -23,6 +23,9 @@ hl.window_rule({ match = { class = videoPlayers }, opacity = "1.0 override 0.88"
 hl.window_rule({ match = { tag = "noop" }, opacity = "1.0 override 0.88" })
 hl.window_rule({ match = { title = videoWebsites .. browserTitleExtensions }, opacity = "1.0 override 0.88" })
 
+-- Dogear's Book scheme: only the book shows, solid, on the wallpaper
+hl.window_rule({ match = { class = "io.github.anisthdev.Dogear" }, opacity = "1.0 override 1.0 override", no_blur = true, no_shadow = true })
+
 -- floating windows
 hl.window_rule({ match = { class = "xdg-desktop-portal-gtk" }, float = true, size = { "1000", "640" }, animation = "popin 90%", })
 hl.window_rule({ match = { class = "thunar", title = "Rename.*" }, float = true, size = { "500", "80" }, animation = "popin 90%", })
