@@ -37,5 +37,3 @@ hl.window_rule({ match = { class = "qalculate-gtk" }, float = true, size = { "42
 -- pseudo floating windows
 hl.window_rule({ match = { class = "firefox" }, pseudo = true, size = { "monitor_w * 0.65", "monitor_h" } })
 
--- quickbar's video library (Reel) is full screen
-hl.window_rule({ match = { class = "org.quickshell", title = "Reel" }, fullscreen = true })
