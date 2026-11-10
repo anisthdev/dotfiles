@@ -61,6 +61,10 @@ vim.api.nvim_create_autocmd("LspAttach", {
 -- default root_markers for all servers
 vim.lsp.config("*", { root_markers = { ".git" } })
 
+-- emmylua_ls logs at info by default; that filled ~/.local/share/emmylua_ls/logs with 36G.
+-- Set here rather than in lsp/emmylua_ls.lua, which nvim-lspconfig's own file would override.
+vim.lsp.config("emmylua_ls", { cmd = { "emmylua_ls", "--log-level", "error" } })
+
 -- inlay hints: enabled globally rather than per attach, because some servers (e.g. dartls)
 -- register the capability dynamically after LspAttach has already fired
 vim.lsp.inlay_hint.enable(true)
