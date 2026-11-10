@@ -16,5 +16,6 @@
             "tags": "~/.local/share/lucide/tags.json"
         }
     ],
-    "phoneMirror": "hyprctl eval 'require(\"scratchpads.phone\").toggle()'"
+    "phoneMirror": "hyprctl eval 'require(\"scratchpads.phone\").toggle()'",
+    "reelRatings": ["imdb", "mal"]
 }

@@ -19,6 +19,8 @@ nvim/.config/nvim/lua/core/ui/mode.lua
 tmux/.config/tmux/mode.conf
 __pycache__/
 reel/.config/reel/tmdb_token
+reel/.config/reel/omdb_key
+reel/.config/reel/mal_client_id
 scripts/.local/bin/trakts
 
 # Secret iCal addresses
