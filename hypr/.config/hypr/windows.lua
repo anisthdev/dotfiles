@@ -36,4 +36,6 @@ hl.window_rule({ match = { class = "qalculate-gtk" }, float = true, size = { "42
 
 -- pseudo floating windows
 hl.window_rule({ match = { class = "firefox" }, pseudo = true, size = { "monitor_w * 0.65", "monitor_h" } })
+-- quickbar's video window (the reel menu's window mode)
+hl.window_rule({ match = { class = "org.quickshell", title = "^Videos$" }, pseudo = true, size = { "1246", "1131" } })
 
