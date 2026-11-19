@@ -48,6 +48,8 @@ hl.bind(mainMod .. "CTRL + D", hl.dsp.exec_cmd("theme-mode toggle"), { descripti
 hl.bind(mainMod .. "ESCAPE", shell("power toggle"), { description = "Power menu" })
 hl.bind(mainMod .. "CTRL + N", shell("glyphs toggle"), { description = "Glyph selector" })
 hl.bind(mainMod .. "period", shell("emoji toggle"), { description = "Emoji picker" })
+-- The search window in its last mode, as Entertainment's Search opens it
+hl.bind(mainMod .. "S", shell('search open ""'), { description = "Search: movies, anime, music, ebooks" })
 hl.bind(mainMod .. "CTRL + V", shell("search open play"), { description = "Play video from URL" })
 hl.bind(mainMod .. "SHIFT + N", shell("note toggle"), { description = "Quick note to inbox" })
 -- margin, notes in place of Keep (qs -c margin): its menu, starting
