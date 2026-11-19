@@ -212,7 +212,42 @@ end
 ---@param destination string
 ---@param callback fun(error: string|nil)
 function wyzie.download(url, destination, callback)
-	curl({url = url, output = destination}, function(error) callback(error and 'Wyzie: ' .. error) end)
+	curl({url = url, output = destination}, function(error)
+		if error then return callback('Wyzie: ' .. error) end
+		wyzie.strip_ad(destination)
+		callback(nil)
+	end)
+end
+
+-- The free plan adds a cue advertising sub.wyzie.io; drops any cue that mentions it.
+-- SRT/VTT cues are blank-line separated blocks, ASS/SSA ones are Dialogue lines.
+---@param path string
+function wyzie.strip_ad(path)
+	local file = io.open(path, 'rb')
+	if not file then return end
+	local content = file:read('*a')
+	file:close()
+	if not content:lower():find('wyzie', 1, true) then return end
+
+	local newline = content:find('\r\n', 1, true) and '\r\n' or '\n'
+	local text = content:gsub('\r\n', '\n')
+	local kept = {}
+	if text:sub(1, 200):find('[Script Info]', 1, true) then
+		for line in (text .. '\n'):gmatch('(.-)\n') do
+			if not (line:match('^Dialogue:') and line:lower():find('wyzie', 1, true)) then kept[#kept + 1] = line end
+		end
+		text = table.concat(kept, '\n')
+	else
+		for block in (text:gsub('\n\n+$', '') .. '\n\n'):gmatch('(.-)\n\n+') do
+			if not block:lower():find('wyzie', 1, true) then kept[#kept + 1] = block end
+		end
+		text = table.concat(kept, '\n\n') .. '\n'
+	end
+
+	file = io.open(path, 'wb')
+	if not file then return end
+	file:write((text:gsub('\n', newline)))
+	file:close()
 end
 
 -- ISO 639-1 codes from mpv's language list (slang has en,eng; Wyzie wants en).
