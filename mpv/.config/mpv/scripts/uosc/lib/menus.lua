@@ -884,6 +884,8 @@ function create_track_loader_menu_opener(opts)
 	end
 end
 
+-- Subtitle downloader on Wyzie Subs (lib/wyzie.lua), in place of uosc's OpenSubtitles one.
+-- Opens on results for what's playing; typing a title (with S01E02 for an episode) searches that instead.
 function open_subtitle_downloader()
 	local menu_type = 'download-subtitles'
 	---@type Menu
@@ -894,245 +896,145 @@ function open_subtitle_downloader()
 		return
 	end
 
-	local search_suggestion, file_path, destination_directory = '', nil, nil
-	local credentials = {'--api-key', config.open_subtitles_api_key, '--agent', config.open_subtitles_agent}
+	local wyzie = require('lib/wyzie')
+	local path = state.path
+	local serialized_path = path and serialize_path(path)
+	local languages = wyzie.languages(get_languages())
 
-	if state.path then
-		if is_protocol(state.path) then
-			local title = mp.get_property_native('title')
-			if title and not is_protocol(title) then search_suggestion = title end
-		else
-			local serialized_path = serialize_path(state.path)
-			if serialized_path then
-				search_suggestion = serialized_path.filename
-				file_path = state.path
-				destination_directory = serialized_path.dirname
-			end
-		end
-	end
-
+	local destination_directory = serialized_path and serialized_path.dirname
 	local force_destination = options.subtitles_directory:sub(1, 1) == '!'
 	if force_destination or not destination_directory then
 		local subtitles_directory = options.subtitles_directory:sub(force_destination and 2 or 1)
 		destination_directory = mp.command_native({'expand-path', subtitles_directory})
 	end
 
-	local handle_download, handle_search
-
-	-- Checks if there an error, or data is invalid. If true, reports the error,
-	-- updates menu to inform about it, and returns true.
-	---@param error string|nil
-	---@param data any
-	---@param check_is_valid? fun(data: any):boolean
-	---@return boolean abort Whether the further response handling should be aborted.
-	local function should_abort(error, data, check_is_valid)
-		if error or not data or (not check_is_valid or not check_is_valid(data)) then
-			menu:update_items({
-				{
-					title = t('Something went wrong.'),
-					align = 'center',
-					muted = true,
-					italic = true,
-					selectable = false,
-				},
-				{
-					title = t('See console for details.'),
-					align = 'center',
-					muted = true,
-					italic = true,
-					selectable = false,
-				},
-			})
-			msg.error(error or ('Invalid response: ' .. (utils.format_json(data) or tostring(data))))
-			return true
-		end
-		return false
-	end
-
-	---@param data {kind: 'file', id: number}|{kind: 'page', query: string, page: number}
-	handle_download = function(data)
-		if data.kind == 'page' then
-			handle_search(data.query, data.page)
-			return
-		end
-
-		menu = Menu:open({
-			type = menu_type .. '-result',
-			search_style = 'disabled',
-			items = {{icon = 'spinner', align = 'center', selectable = false, muted = true}},
-		}, function(event)
-			if event.type == 'key' and event.key == 'enter' then
-				menu:close()
-			end
-		end)
-
-		local args = itable_join({'download-subtitles'}, credentials, {
-			'--file-id', tostring(data.id),
-			'--destination', destination_directory,
-		})
-
-		call_ziggy_async(args, function(error, data)
-			if not menu:is_alive() then return end
-			if should_abort(error, data, function(data) return type(data.file) == 'string' end) then return end
-
-			load_track('sub', data.file)
-
-			menu:update_items({
-				{
-					title = t('Subtitles loaded & enabled'),
-					bold = true,
-					icon = 'check',
-					selectable = false,
-				},
-				{
-					title = t('Remaining downloads today: %s', data.remaining .. '/' .. data.total),
-					italic = true,
-					muted = true,
-					icon = 'file_download',
-					selectable = false,
-				},
-				{
-					title = t('Resets in: %s', data.reset_time),
-					italic = true,
-					muted = true,
-					icon = 'schedule',
-					selectable = false,
-				},
-			})
+	local function message_items(lines, icon)
+		return itable_map(lines, function(line, i)
+			return {
+				title = line,
+				icon = i == 1 and icon or nil,
+				align = icon and 'left' or 'center',
+				muted = not icon or i > 1,
+				italic = not icon or i > 1,
+				bold = icon and i == 1,
+				selectable = false,
+			}
 		end)
 	end
 
-	---@param query string
-	---@param page number|nil
-	handle_search = function(query, page)
+	local function show(title, items)
 		if not menu:is_alive() then return end
-		page = math.max(1, type(page) == 'number' and round(page) or 1)
+		menu:update(table_assign({}, menu.root, {title = title, items = items}))
+	end
 
-		menu:update_items({{icon = 'spinner', align = 'center', selectable = false, muted = true}})
+	local function show_error(error)
+		msg.error(error)
+		show(menu.root.title, message_items({t('Something went wrong.'), error}))
+	end
 
-		local args = itable_join({'search-subtitles'}, credentials)
+	local function media_label(media)
+		local label = media.title
+		if media.season then label = label .. string.format(' S%02dE%02d', media.season, media.episode) end
+		return label
+	end
 
-		local languages = itable_filter(get_languages(), function(lang) return lang:match('.json$') == nil end)
-		args[#args + 1] = '--languages'
-		args[#args + 1] = table.concat(table_keys(create_set(languages)), ',') -- deduplicates stuff like `en,eng,en`
-
-		args[#args + 1] = '--page'
-		args[#args + 1] = tostring(page)
-
-		if file_path then
-			args[#args + 1] = '--hash'
-			args[#args + 1] = file_path
-		end
-
-		if query and #query > 0 then
-			args[#args + 1] = '--query'
-			args[#args + 1] = query
-		end
-
-		call_ziggy_async(args, function(error, data)
+	---@param media WyzieMedia
+	local function search(media)
+		local label = media_label(media)
+		show(label, {{icon = 'spinner', align = 'center', selectable = false, muted = true}})
+		wyzie.search(media, {
+			languages = languages,
+			video = serialized_path and serialized_path.basename or nil,
+		}, function(error, subs)
 			if not menu:is_alive() then return end
+			if error then return show_error(error) end
 
-			local function check_is_valid(data)
-				return type(data.data) == 'table' and data.page and data.total_pages
+			local items = {}
+			for _, sub in ipairs(subs) do
+				if type(sub) == 'table' and sub.url then
+					local hints = {}
+					if #languages > 1 then hints[#hints + 1] = sub.display or sub.language end
+					if sub.isHearingImpaired then hints[#hints + 1] = 'SDH' end
+					if sub.ai then hints[#hints + 1] = 'AI' end
+					if sub.format and sub.format ~= 'srt' then hints[#hints + 1] = sub.format end
+					if type(sub.match) == 'table' and sub.match.score then
+						hints[#hints + 1] = sub.match.score .. '%'
+					end
+					items[#items + 1] = {
+						title = sub.release or sub.fileName or sub.media or '?',
+						hint = table.concat(hints, ' · '),
+						value = {kind = 'file', sub = sub, media = media},
+						keep_open = true,
+					}
+				end
 			end
-
-			if should_abort(error, data, check_is_valid) then return end
-
-			local subs = itable_filter(data.data, function(sub)
-				return sub and sub.attributes and sub.attributes.release and type(sub.attributes.files) == 'table' and
-					#sub.attributes.files > 0
-			end)
-			local items = itable_map(subs, function(sub)
-				local hints = {sub.attributes.language}
-				if sub.attributes.foreign_parts_only then hints[#hints + 1] = t('foreign parts only') end
-				if sub.attributes.hearing_impaired then hints[#hints + 1] = t('hearing impaired') end
-				local url = sub.attributes.url
-				return {
-					title = sub.attributes.release,
-					hint = table.concat(hints, ', '),
-					value = {kind = 'file', id = sub.attributes.files[1].file_id, url = url},
-					keep_open = true,
-					actions = url and
-						{{name = 'open_in_browser', icon = 'open_in_new', label = t('Open in browser') .. ' (shift)'}},
-				}
-			end)
 
 			if #items == 0 then
-				items = {
-					{title = t('no results'), align = 'center', muted = true, italic = true, selectable = false},
-				}
+				items = message_items({t('no results'), t('Type a title to search, with S01E02 for an episode')})
 			end
-
-			if data.page > 1 then
-				items[#items + 1] = {
-					title = t('Previous page'),
-					align = 'center',
-					bold = true,
-					italic = true,
-					icon = 'navigate_before',
-					keep_open = true,
-					value = {kind = 'page', query = query, page = data.page - 1},
-				}
-			end
-
-			if data.page < data.total_pages then
-				items[#items + 1] = {
-					title = t('Next page'),
-					align = 'center',
-					bold = true,
-					italic = true,
-					icon = 'navigate_next',
-					keep_open = true,
-					value = {kind = 'page', query = query, page = data.page + 1},
-				}
-			end
-
-			menu:update_items(items)
+			show(label, items)
 		end)
 	end
 
-	local initial_items = {
-		{title = t('%s to search', 'enter'), align = 'center', muted = true, italic = true, selectable = false},
-	}
+	local function identify(query)
+		show(query or t('Subtitles'), {{icon = 'spinner', align = 'center', selectable = false, muted = true}})
+		wyzie.identify({path = path, query = query}, function(error, media)
+			if not menu:is_alive() then return end
+			if error then return show_error(error) end
+			if not media then
+				return show(query or t('Subtitles'), message_items({
+					query and t('Nothing on TMDB for "%s"', query) or t('Couldn\'t tell what this is'),
+					t('Type a title to search, with S01E02 for an episode'),
+				}))
+			end
+			search(media)
+		end)
+	end
+
+	local function download(sub, media)
+		local base = serialized_path and serialized_path.filename
+			or media_label(media):gsub('[/\\:*?"<>|]', ''):gsub('%s+', '.')
+		local destination = join_path(destination_directory,
+			base .. '.' .. (sub.language or 'und') .. '.' .. (sub.format or 'srt'))
+
+		show(menu.root.title, {{icon = 'spinner', align = 'center', selectable = false, muted = true}})
+		wyzie.download(sub.url, destination, function(error)
+			if error then
+				if menu:is_alive() then show_error(error) else msg.error(error) end
+				return
+			end
+
+			-- Same path loaded before (another pick of the same language): drop the stale track
+			for _, track in ipairs(mp.get_property_native('track-list') or {}) do
+				if track.type == 'sub' and track.external and track['external-filename'] == destination then
+					mp.commandv('sub-remove', tostring(track.id))
+				end
+			end
+			load_track('sub', destination)
+			mp.commandv('show-text', t('Loaded subtitles') .. ': ' .. (sub.release or sub.fileName or ''), 3000)
+			if menu:is_alive() then menu:close() end
+		end)
+	end
 
 	menu = Menu:open(
 		{
 			type = menu_type,
-			title = t('enter query'),
-			items = initial_items,
+			title = t('Subtitles'),
+			footnote = t('Type a title to search another, with S01E02 for an episode'),
+			items = {{icon = 'spinner', align = 'center', selectable = false, muted = true}},
 			search_style = 'palette',
 			on_search = 'callback',
 			search_debounce = 'submit',
-			search_suggestion = search_suggestion,
-			search_submit = search_suggestion and #search_suggestion > 0,
 		},
 		function(event)
-			if event.type == 'activate' then
-				if event.action == 'open_in_browser' or event.modifiers == 'shift' then
-					local command = ({
-						windows = 'explorer',
-						linux = 'xdg-open',
-						darwin = 'open',
-					})[state.platform]
-					local url = event.value.url
-					mp.command_native_async({
-						name = 'subprocess',
-						capture_stderr = true,
-						capture_stdout = true,
-						playback_only = false,
-						args = {command, url},
-					}, function(success, result, error)
-						if not success then
-							local err_str = utils.to_string(error or result.stderr)
-							msg.error('Error trying to open url "' .. url .. '" in browser: ' .. err_str)
-						end
-					end)
-				elseif not event.action then
-					handle_download(event.value)
-				end
+			if event.type == 'activate' and type(event.value) == 'table' and event.value.kind == 'file' then
+				download(event.value.sub, event.value.media)
 			elseif event.type == 'search' then
-				handle_search(event.query)
+				local query = event.query and event.query:match('^%s*(.-)%s*$')
+				identify(query ~= '' and query or nil)
 			end
 		end
 	)
+
+	identify(nil)
 end

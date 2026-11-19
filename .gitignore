@@ -27,3 +27,6 @@ scripts/.local/bin/trakts
 quickbar/.config/quickbar/calendars
 sysaud/.config/sysaud/primary-color
 quickbar/.config/quickbar/jackett
+
+# Wyzie Subs API key, read by uosc/lib/wyzie.lua
+mpv/.config/mpv/wyzie_key
