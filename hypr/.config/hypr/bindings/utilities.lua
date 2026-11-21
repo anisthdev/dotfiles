@@ -56,6 +56,11 @@ hl.bind(mainMod .. "SHIFT + N", shell("note toggle"), { description = "Quick not
 -- margin when it isn't running
 hl.bind(mainMod .. "N", hl.dsp.exec_cmd("margin-app menu"), { description = "Notes (margin)" })
 hl.bind(mainMod .. "SHIFT + T", shell("tasks toggle"), { description = "To-do list" })
+-- Interview prep (prep): log a problem, time an attempt, the pipeline
+hl.bind(mainMod .. "D", shell("prep toggle"), { description = "Interview prep" })
+hl.bind(mainMod .. "ALT + D", shell("prepcard toggle"), { description = "Interview prep dashboard" })
+-- Days off: the prep pill out of the bar, and back
+hl.bind(mainMod .. "SHIFT + D", shell("prepbar toggle"), { description = "Show or hide interview prep" })
 hl.bind(mainMod .. "CTRL + K", shell("keybindings toggle"), { description = "Keybindings" })
 -- Seedling, its own Quickshell config (qs -c seedling): its script
 -- toggles the menu, starting Seedling when it isn't running
@@ -72,7 +77,6 @@ hl.bind(mainMod .. "ALT + B", shell("bluetooth toggle"), { description = "Blueto
 hl.bind(mainMod .. "ALT + A", shell("audio toggle"), { description = "Sound menu" })
 hl.bind(mainMod .. "ALT + C", shell("calendar toggle"), { description = "Calendar" })
 hl.bind(mainMod .. "ALT + M", shell("media toggle"), { description = "Now playing" })
-hl.bind(mainMod .. "ALT + D", shell("downloads toggle"), { description = "Downloads" })
 hl.bind(mainMod .. "ALT + P", shell("battery toggle"), { description = "Battery and power profile" })
 
 --others
